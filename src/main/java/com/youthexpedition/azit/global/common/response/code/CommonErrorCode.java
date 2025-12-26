@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum ApiErrorCode implements BaseErrorCode {
+public enum CommonErrorCode implements BaseErrorCode {
 
     // 시스템 공통 에러
     INTERNAL_SERVER_ERROR("COMMON_001", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

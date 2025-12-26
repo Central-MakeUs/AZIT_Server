@@ -8,15 +8,15 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 값이면 JSON 응답에서 제외
-public class ApiErrorResponse {
+public class CommonErrorResponse {
     private final String code;
     private final String message;
 
-    public static ApiErrorResponse of(BaseErrorCode errorCode) {
-        return new ApiErrorResponse(errorCode.getCode(), errorCode.getMessage());
+    public static CommonErrorResponse of(BaseErrorCode errorCode) {
+        return new CommonErrorResponse(errorCode.getCode(), errorCode.getMessage());
     }
 
-    public static ApiErrorResponse of(String code, String message) {
-        return new ApiErrorResponse(code, message);
+    public static CommonErrorResponse of(String code, String message) {
+        return new CommonErrorResponse(code, message);
     }
 }
