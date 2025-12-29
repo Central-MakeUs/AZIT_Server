@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Objects;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -35,9 +37,17 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<CommonErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error("MethodArgumentNotValidException: {}", e.getMessage());
 
+        // 에러 결과에서 첫 번째 FieldError의 메시지 가져오기
+        String errorMessage = Objects.requireNonNull(e.getBindingResult()
+                        .getFieldError())
+                .getDefaultMessage();
+
         return ResponseEntity
                 .status(CommonErrorCode.INVALID_INPUT_VALUE.getStatus())
-                .body(CommonErrorResponse.of(CommonErrorCode.INVALID_INPUT_VALUE));
+                .body(CommonErrorResponse.of(
+                        CommonErrorCode.INVALID_INPUT_VALUE.getCode(),
+                        errorMessage
+                ));
     }
 
     /**
