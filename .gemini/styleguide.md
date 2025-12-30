@@ -44,7 +44,6 @@
 - **Java 21**: 최신 문법(Switch Expressions 등)과 가상 스레드(Virtual Threads) 사용을 고려하십시오.
 - **Spring Boot 3.5.x**: 최신 설정 방식(특히 Security Config의 람다 스타일)을 사용하십시오.
 - **Jakarta**: `javax` 패키지 대신 `jakarta` 패키지를 사용하십시오.
-- **Lombok**: `@Data` 사용을 금지하고, `@Getter`, `@Builder`, `@NoArgsConstructor(access = AccessLevel.PROTECTED)`를 조합하여 사용하십시오.
 
 ### Record 활용 지침
 Java 21의 `record`를 상황에 맞게 전략적으로 사용합니다.
@@ -53,8 +52,8 @@ Java 21의 `record`를 상황에 맞게 전략적으로 사용합니다.
 
 ## 3. 공통 응답 및 예외 처리 (Error Handling)
 - 모든 API 응답은 프로젝트에서 정의한 `CommonResponse<T>` 또는 `CommonErrorResponse`를 사용하십시오.
-- 비즈니스 예외 발생 시 `BusinessException(CommonErrorCode)`를 던지도록 제안하십시오.
-- 유효성 검증 실패 시 `@Valid`와 함께 `MethodArgumentNotValidException`을 처리하는 로직을 포함하십시오.
+- **비즈니스 예외 상황에서는 `BusinessException`을 사용하십시오.**
+- 예외 발생 시 `throw new BusinessException(UserErrorCode.USER_NOT_FOUND)`와 같이 도메인별 에러 코드(BaseErrorCode 구현체)를 인자로 전달하는 방식을 제안하십시오.
 
 ## 4. 테스트 코드
 - 모든 핵심 로직에는 단위 테스트를 포함하십시오.
