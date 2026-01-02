@@ -1,12 +1,12 @@
 spring:
   profiles:
-    active: local # local profile ?? ???
+    active: dev
   application:
     name: azit
 
   threads:
     virtual:
-      enabled: true # ?? ??? ???
+      enabled: true
 
   jpa:
     open-in-view: false
@@ -17,4 +17,4 @@ spring:
       hibernate:
         format_sql: true
         highlight_sql: true
-        default_batch_fetch_size: 100 # ?? ??? ??? ?? ??? ???
+        default_batch_fetch_size: 100
