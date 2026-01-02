@@ -13,6 +13,7 @@ spring:
     redis:
       host: redis
       port: 6379
+      password: ${REDIS_PASSWORD}
 
 # 서버 포트 (도커 컨테이너 내부 포트)
 server:
