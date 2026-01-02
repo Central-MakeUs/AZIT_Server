@@ -1,4 +1,5 @@
 name: AZIT CI/CD
+run-name: AZIT CI/CD (${{ github.event.inputs.profile }}) by @${{ github.actor }}
 
 on:
   workflow_dispatch:
