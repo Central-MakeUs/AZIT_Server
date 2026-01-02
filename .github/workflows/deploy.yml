@@ -1,5 +1,5 @@
 name: AZIT CI/CD
-run-name: AZIT CI/CD (${{ github.event.inputs.profile }}) by @${{ github.actor }}
+run-name: AZIT server deployed to ${{ github.event.inputs.profile }} by ${{ github.actor }}
 
 on:
   workflow_dispatch:
@@ -49,6 +49,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.profile || 'dev' }}
     steps:
+      - name: Get GitHub Runner IP
+        id: ip
+        run: echo "ipv4=$(curl -s https://checkip.amazonaws.com)" >> $GITHUB_OUTPUT
+
+      - name: Authorize Security Group Inbound Rule # 임시로 깃허브 액션 포트 열기
+        run: |
+          aws ec2 authorize-security-group-inbound \
+            --group-id ${{ secrets.AWS_SG_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
       - name: Execute Remote SSH Commands
         uses: appleboy/ssh-action@master
         with:
@@ -68,3 +84,16 @@ jobs:
             sudo docker compose pull
             sudo docker compose up -d
             sudo docker image prune -f
+
+      - name: Revoke Security Group Inbound Rule
+        if: always() # 배포 실패 시에도 보안을 위해 포트 닫기
+        run: |
+          aws ec2 revoke-security-group-inbound \
+            --group-id ${{ secrets.AWS_SG_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
