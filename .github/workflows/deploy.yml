@@ -61,8 +61,8 @@ jobs:
             --port 22 \
             --cidr ${{ steps.ip.outputs.ipv4 }}/32
         env:
-          AWS_GIT_ACTIONS_SG_ACCESS_KEY: ${{ secrets.AWS_GIT_ACTIONS_SG_ACCESS_KEY }}
-          AWS_GIT_ACTIONS_SG_SECRET_KEY: ${{ secrets.AWS_GIT_ACTIONS_SG_SECRET_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_GIT_ACTIONS_SG_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_GIT_ACTIONS_SG_SECRET_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Execute Remote SSH Commands
@@ -96,6 +96,6 @@ jobs:
             --port 22 \
             --cidr ${{ steps.ip.outputs.ipv4 }}/32
         env:
-          AWS_GIT_ACTIONS_SG_ACCESS_KEY: ${{ secrets.AWS_GIT_ACTIONS_SG_ACCESS_KEY }}
-          AWS_GIT_ACTIONS_SG_SECRET_KEY: ${{ secrets.AWS_GIT_ACTIONS_SG_SECRET_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_GIT_ACTIONS_SG_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_GIT_ACTIONS_SG_SECRET_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
