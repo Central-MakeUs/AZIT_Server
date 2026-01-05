@@ -109,12 +109,11 @@ jobs:
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          noprefix: true
           status: ${{ needs.build-and-push.result == 'success' && needs.deploy.result == 'success' && 'success' || 'failure' }}
           title: "🚀 AZIT 서버 배포 결과"
           description: |
             **배포 환경:** `${{ github.event.inputs.profile }}`
-            **배포 브랜치:** `${{ github.ref_name }}`
             **결과:** ${{ (needs.build-and-push.result == 'success' && needs.deploy.result == 'success') && '✅ 성공' || '❌ 실패' }}
-            **실행자:** ${{ github.actor }}
             **로그 확인:** [GitHub Actions 링크](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           color: ${{ (needs.build-and-push.result == 'success' && needs.deploy.result == 'success') && '0x00ff00' || '0xff0000' }}
