@@ -13,10 +13,7 @@ import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -48,12 +45,14 @@ public class ApiErrorCodeExampleCustomizer implements OperationCustomizer {
         if (errorNames.length > 0) {
             List<String> specificNames = Arrays.asList(errorNames);
 
+            Set<String> existingErrorNames = selectedErrorCodes.stream()
+                    .map(BaseErrorCode::toString)
+                    .collect(Collectors.toSet());
+
             errorCodeEnums.stream()
                     .flatMap(enumClass -> Arrays.stream(enumClass.getEnumConstants()))
                     .filter(errorCode -> specificNames.contains(errorCode.toString()))
-                    // 이미 전역 에러(CommonErrorCode)에 포함되지 않은 것만 필터링
-                    .filter(errorCode -> selectedErrorCodes.stream()
-                            .noneMatch(existing -> existing.toString().equals(errorCode.toString())))
+                    .filter(errorCode -> !existingErrorNames.contains(errorCode.toString()))
                     .forEach(selectedErrorCodes::add);
         }
 
