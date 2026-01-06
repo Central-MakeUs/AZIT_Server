@@ -31,6 +31,15 @@ swagger:
     url: https://api.azitcrew.com
     description: Production Server
 
+security:
+  cors:
+    allowed-origins:
+      - "https://api.azitcrew.com"
+      - "https://azitcrew.com"
+    allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed-headers: ["*"]
+    allow-credentials: true
+
 # 서버 포트 (도커 컨테이너 내부 포트)
 server:
   port: 8080

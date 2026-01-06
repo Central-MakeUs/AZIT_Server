@@ -32,5 +32,14 @@ swagger:
     url: https://dev-api.azitcrew.com
     description: Develop Server
 
+security:
+  cors:
+    allowed-origins:
+      - "https://dev-api.azitcrew.com"
+      - "http://localhost:3000"
+    allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed-headers: ["*"]
+    allow-credentials: true
+
 server:
   port: 8080

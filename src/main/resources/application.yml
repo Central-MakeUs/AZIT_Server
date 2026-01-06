@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: dev
+    active: local
   application:
     name: azit
 
@@ -18,3 +18,10 @@ spring:
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
+
+security:
+  permit-all-paths:
+    - "/v3/api-docs/**"
+    - "/swagger-ui/**"
+    - "/swagger-ui.html"
+    - "/api/v1/swagger-test/**"
