@@ -16,8 +16,8 @@ public enum CommonErrorCode implements BaseErrorCode {
     METHOD_NOT_ALLOWED("COMMON_005", "지원하지 않는 HTTP 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
     TYPE_MISMATCH_ERROR("COMMON_006", "데이터 타입이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
 
-    // User 에러
-    USER_NOT_FOUND("USER_001", "존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
+    // Member 에러
+    MEMBER_NOT_FOUND("MEMBER_001", "존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
 
     // Auth 에러
     UNAUTHORIZED("AUTH_001", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
