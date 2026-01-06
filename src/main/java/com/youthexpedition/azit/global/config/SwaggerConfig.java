@@ -17,7 +17,7 @@ public class SwaggerConfig {
         // API 기본 정보 설정
         Info info = new Info()
                 .title("AZIT API 명세서")
-                .description("청춘탐험대의 AZIT API 문서입니다.")
+                .description("청춘탐험대 AZIT API 문서입니다.")
                 .version("v1.0.0");
 
         // JWT 보안 스키마 설정
@@ -34,7 +34,8 @@ public class SwaggerConfig {
                 .info(info)
                 .addSecurityItem(securityRequirement)
                 .addServersItem(new Server().url("http://localhost:8080").description("Local Server"))
-                // .addServersItem(new Server().url("https://api.azit.com").description("Production Server"))
+                .addServersItem(new Server().url("https://dev-api.azitcrew.com").description("Develop Server"))
+                .addServersItem(new Server().url("https://api.azitcrew.com").description("Production Server"))
                 .components(components);
     }
 }
