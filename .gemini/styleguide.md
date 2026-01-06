@@ -7,16 +7,23 @@
 
 ### 계층별 규칙
 - **Domain 계층**:
-    - 모든 비즈니스 핵심 로직과 엔티티를 포함합니다.
-    - **중요**: 프레임워크(JPA, Spring, Hibernate 등)에 대한 의존성이 전혀 없는 **순수 자바 객체(POJO)**여야 합니다.
-    - `@Entity` 어노테이션을 도메인 모델에 직접 사용하지 마십시오.
+  - 모든 비즈니스 핵심 로직과 엔티티를 포함합니다.
+  - **도메인 순수성**: 외부 프레임워크(Spring, JPA, Jakarta 등) 및 라이브러리에 대한 의존성이 전혀 없는 **순수 자바 객체(POJO)**여야 합니다.
+  - `@Entity`는 물론, `@NotBlank`와 같은 유효성 검사 어노테이션도 도메인 모델에는 직접 사용하지 않습니다.
 - **Application 계층**:
-    - 비즈니스 유즈케이스(UseCase)와 포트(Inbound/Outbound Port)를 정의합니다.
-    - 도메인 모델 간의 흐름을 제어하며, 구체적인 구현 기술을 알지 못해야 합니다.
+  - 비즈니스 유즈케이스를 수행하고 흐름을 제어합니다.
+  - **포트(Port) 정의**: 외부와의 통신을 위한 인터페이스(Inbound: UseCase / Outbound: Port)를 정의합니다.
+  - **DTO 전략**: 외부 어댑터로부터 전달받은 데이터를 비즈니스 로직에 맞게 가공한 **Command/Query DTO**를 정의합니다.
+  - **도메인 보호**: 도메인 모델을 애플리케이션 계층 외부(Controller 등)로 직접 노출하지 않습니다.
 - **Adapter 계층**:
-    - 외부 기술(Web, DB, Redis 등)과의 연결을 담당합니다.
-    - **Inbound Adapter**: REST Controller 등이 위치하며, `CommonResponse`로 응답해야 합니다.
-    - **Outbound Adapter**: JPA Repository, QueryDSL 등을 사용하여 포트를 구현합니다.
+  - 외부 기술(Web, Persistence, 외부 API 등)과의 실제 연결을 담당합니다.
+  - **변환 책임**: 외부 요청 DTO를 애플리케이션 명령(Command)으로 변환하거나, 내부 결과를 외부 응답 규격으로 변환하는 책임을 가집니다.
+  - **Web Adapter**: REST Controller가 위치하며, 응답 시 `CommonResponse` 규격을 준수합니다.
+  - **Persistence Adapter**: JPA Repository, QueryDSL 등을 사용하여 아웃바운드 포트를 구현하며, 엔티티와 도메인 모델 간의 매핑을 수행합니다.
+- **Infrastructure 계층**:
+  - 특정 도메인에 종속되지 않는 **시스템 전역의 기술적 기반**을 담당합니다.
+  - 구성 요소: `SecurityConfig`, `JwtProvider`, `RedisConfig`, `GlobalExceptionHandler` 등.
+  - 전역적인 보안 필터링, 예외 처리, 공통 라이브러리 설정을 관리합니다.
 
 ### 의존성 방향
 - 의존성은 항상 **바깥쪽에서 안쪽(Adapter -> Application -> Domain)**으로 향해야 합니다.
@@ -44,11 +51,6 @@
 - **Java 21**: 최신 문법(Switch Expressions 등)과 가상 스레드(Virtual Threads) 사용을 고려하십시오.
 - **Spring Boot 3.5.x**: 최신 설정 방식(특히 Security Config의 람다 스타일)을 사용하십시오.
 - **Jakarta**: `javax` 패키지 대신 `jakarta` 패키지를 사용하십시오.
-
-### Record 활용 지침
-Java 21의 `record`를 상황에 맞게 전략적으로 사용합니다.
-- **DTO 및 VO**: 데이터 전달이 목적인 객체와 도메인 내 값 객체(VO)는 `record` 사용을 우선적으로 고려하십시오.
-- **Domain Entity**: 식별자가 있고 상태 변경이 빈번한 도메인 엔티티는 `@Getter`와 `@Builder`를 갖춘 `class`를 사용하십시오.
 
 ## 3. 공통 응답 및 예외 처리 (Error Handling)
 - 모든 API 응답은 프로젝트에서 정의한 `CommonResponse<T>` 또는 `CommonErrorResponse`를 사용하십시오.
