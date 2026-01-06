@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.global.config;
+package com.youthexpedition.azit.infrastructure.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

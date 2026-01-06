@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.global.common.response.code;
+package com.youthexpedition.azit.infrastructure.common.response.code;
 
 import org.springframework.http.HttpStatus;
 

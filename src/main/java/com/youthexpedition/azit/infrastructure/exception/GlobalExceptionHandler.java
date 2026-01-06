@@ -1,8 +1,8 @@
-package com.youthexpedition.azit.global.exception;
+package com.youthexpedition.azit.infrastructure.exception;
 
-import com.youthexpedition.azit.global.common.response.CommonErrorResponse;
-import com.youthexpedition.azit.global.common.response.code.CommonErrorCode;
-import com.youthexpedition.azit.global.common.response.code.BaseErrorCode;
+import com.youthexpedition.azit.infrastructure.common.response.CommonErrorResponse;
+import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
+import com.youthexpedition.azit.infrastructure.common.response.code.BaseErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;

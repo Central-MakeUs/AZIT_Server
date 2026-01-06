@@ -1,8 +1,8 @@
-package com.youthexpedition.azit.global.config.swagger;
+package com.youthexpedition.azit.infrastructure.config.swagger;
 
-import com.youthexpedition.azit.global.common.response.CommonErrorResponse;
-import com.youthexpedition.azit.global.common.response.code.BaseErrorCode;
-import com.youthexpedition.azit.global.common.response.code.CommonErrorCode;
+import com.youthexpedition.azit.infrastructure.common.response.CommonErrorResponse;
+import com.youthexpedition.azit.infrastructure.common.response.code.BaseErrorCode;
+import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.Content;

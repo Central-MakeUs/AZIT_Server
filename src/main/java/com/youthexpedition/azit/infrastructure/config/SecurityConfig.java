@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.global.config;
+package com.youthexpedition.azit.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

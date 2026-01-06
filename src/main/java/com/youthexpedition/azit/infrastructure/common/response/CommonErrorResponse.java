@@ -1,7 +1,7 @@
-package com.youthexpedition.azit.global.common.response;
+package com.youthexpedition.azit.infrastructure.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.youthexpedition.azit.global.common.response.code.BaseErrorCode;
+import com.youthexpedition.azit.infrastructure.common.response.code.BaseErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

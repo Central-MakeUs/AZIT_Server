@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.global.config.swagger;
+package com.youthexpedition.azit.infrastructure.config.swagger;
 
 import io.swagger.v3.oas.models.examples.Example;
 import lombok.Builder;

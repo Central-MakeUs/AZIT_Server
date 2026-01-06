@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.global.config;
+package com.youthexpedition.azit.infrastructure.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

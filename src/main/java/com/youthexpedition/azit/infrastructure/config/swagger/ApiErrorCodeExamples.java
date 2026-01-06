@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.global.config.swagger;
+package com.youthexpedition.azit.infrastructure.config.swagger;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
