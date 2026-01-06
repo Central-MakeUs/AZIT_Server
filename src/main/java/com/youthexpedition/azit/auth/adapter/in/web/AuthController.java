@@ -1,4 +1,6 @@
 package com.youthexpedition.azit.auth.adapter.in.web;
 
-public class AuthController {
+import com.youthexpedition.azit.auth.adapter.in.web.docs.AuthControllerDocs;
+
+public class AuthController implements AuthControllerDocs {
 }
