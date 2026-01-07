@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.infrastructure.config;
 
+import com.youthexpedition.azit.infrastructure.auth.exception.JwtAuthenticationEntryPoint;
+import com.youthexpedition.azit.infrastructure.auth.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -19,24 +22,35 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final SecurityProperties securityProperties;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint; // 에러 핸들러
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
-                // CSRF 해제 (REST API이므로 불필요)
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // 세션을 사용하지 않음
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                // 인증 실패 시 처리를 위한 EntryPoint 설정
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
 
                 // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(securityProperties.getPermitAllPaths().toArray(String[]::new)).permitAll()
+                         // 공통 허용 경로 (로그인, 스웨거 등)
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+
+                        // 크루 도메인 권한 분리 예시
+//                        .requestMatchers(HttpMethod.POST, "/api/v1/crews").hasAnyRole("MEMBER", "LEADER")
+//                        .requestMatchers(HttpMethod.PATCH, "/api/v1/crews/**").hasRole("LEADER")
+//                        .requestMatchers(HttpMethod.DELETE, "/api/v1/crews/**").hasRole("LEADER")
                         .anyRequest().authenticated()
-                );
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
