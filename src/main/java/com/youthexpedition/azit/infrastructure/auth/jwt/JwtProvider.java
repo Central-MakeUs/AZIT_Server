@@ -1,7 +1,7 @@
 package com.youthexpedition.azit.infrastructure.auth.jwt;
 
 import com.youthexpedition.azit.infrastructure.auth.service.MemberDetailsService;
-import com.youthexpedition.azit.member.domain.model.enums.MemberRole;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

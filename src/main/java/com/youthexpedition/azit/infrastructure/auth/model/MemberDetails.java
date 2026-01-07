@@ -1,7 +1,7 @@
 package com.youthexpedition.azit.infrastructure.auth.model;
 
-import com.youthexpedition.azit.member.domain.model.Member;
-import com.youthexpedition.azit.member.domain.model.enums.MemberStatus;
+import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
