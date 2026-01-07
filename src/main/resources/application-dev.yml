@@ -50,5 +50,13 @@ oauth:
     token-url: https://kauth.kakao.com/oauth/token
     user-info-url: https://kapi.kakao.com/v2/user/me
 
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-token-expiration-seconds: ${JWT_ACCESS_EXPIRATION}
+  refresh-token-expiration-seconds: ${JWT_REFRESH_EXPIRATION}
+  refresh-token-name: azit_rt_dev
+  cookie:
+    secure: true
+
 server:
   port: 8080
