@@ -5,9 +5,9 @@ import com.youthexpedition.azit.member.domain.model.enums.MemberRole;
 import com.youthexpedition.azit.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.member.domain.model.enums.SocialProvider;
 import jakarta.persistence.*;
-import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "members")
