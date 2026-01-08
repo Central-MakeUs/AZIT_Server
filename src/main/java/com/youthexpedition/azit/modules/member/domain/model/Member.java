@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class Member {
-
     private final Long id;
     private final SocialProvider socialProvider;
     private final String socialProviderId;
