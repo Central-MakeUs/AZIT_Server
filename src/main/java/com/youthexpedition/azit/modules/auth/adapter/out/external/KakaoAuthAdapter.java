@@ -42,8 +42,8 @@ public class KakaoAuthAdapter implements SocialAuthPort {
             var account = userInfo.kakaoAccount();
             var profile = account.profile();
 
-            String profileImageUrl = (profile.isDefaultImage() != null && profile.isDefaultImage()) ? null : profile.profileImageUrl();
-            String email = (account.hasEmail() != null && account.hasEmail()) ? account.email() : null;
+            String profileImageUrl = Boolean.TRUE.equals(profile.isDefaultImage()) ? null : profile.profileImageUrl();
+            String email = Boolean.TRUE.equals(account.hasEmail()) ? account.email() : null;
 
             return SocialProfile.builder()
                     .socialProviderId(userInfo.id().toString())
