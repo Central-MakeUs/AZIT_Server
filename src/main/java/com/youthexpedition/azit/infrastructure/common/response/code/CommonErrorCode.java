@@ -14,14 +14,7 @@ public enum CommonErrorCode implements BaseErrorCode {
     FORBIDDEN_ERROR("COMMON_003", "사용자 권한이 없습니다.", HttpStatus.FORBIDDEN),
     BAD_REQUEST_ERROR("COMMON_004", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
     METHOD_NOT_ALLOWED("COMMON_005", "지원하지 않는 HTTP 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
-    TYPE_MISMATCH_ERROR("COMMON_006", "데이터 타입이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
-
-    // Member 에러
-    MEMBER_NOT_FOUND("MEMBER_001", "존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
-
-    // Auth 에러
-    UNAUTHORIZED("AUTH_001", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
-    INVALID_TOKEN("AUTH_002", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
+    TYPE_MISMATCH_ERROR("COMMON_006", "데이터 타입이 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;

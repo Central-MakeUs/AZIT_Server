@@ -13,6 +13,7 @@ spring:
     redis:
       host: redis
       port: 6379
+      password: ${REDIS_PASSWORD}
 
   cloud:
     aws:
@@ -39,6 +40,20 @@ security:
     allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     allowed-headers: ["*"]
     allow-credentials: true
+
+oauth:
+  kakao:
+    client-id: ${KAKAO_REST_API_KEY}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    redirect-uri: https://azitcrew.com/oauth/callback?provider=kakao
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-token-expiration-seconds: ${JWT_ACCESS_EXPIRATION}
+  refresh-token-expiration-seconds: ${JWT_REFRESH_EXPIRATION}
+  refresh-token-name: azit_rt_prod
+  cookie:
+    secure: true
 
 # 서버 포트 (도커 컨테이너 내부 포트)
 server:

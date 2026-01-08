@@ -36,10 +36,25 @@ security:
   cors:
     allowed-origins:
       - "https://dev-api.azitcrew.com"
+      - "https://dev.azitcrew.com"
       - "http://localhost:3000"
     allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     allowed-headers: ["*"]
     allow-credentials: true
+
+oauth:
+  kakao:
+    client-id: ${KAKAO_REST_API_KEY}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    redirect-uri: https://dev.azitcrew.com/oauth/callback?provider=kakao
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-token-expiration-seconds: ${JWT_ACCESS_EXPIRATION}
+  refresh-token-expiration-seconds: ${JWT_REFRESH_EXPIRATION}
+  refresh-token-name: azit_rt_dev
+  cookie:
+    secure: true
 
 server:
   port: 8080
