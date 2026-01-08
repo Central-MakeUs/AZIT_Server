@@ -19,6 +19,8 @@ public class MemberMapper {
                 .status(entity.getStatus())
                 .role(entity.getRole())
                 .totalPoints(entity.getTotalPoints())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 
