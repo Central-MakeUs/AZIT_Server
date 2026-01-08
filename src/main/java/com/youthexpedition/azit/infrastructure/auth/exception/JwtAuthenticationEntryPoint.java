@@ -2,7 +2,7 @@ package com.youthexpedition.azit.infrastructure.auth.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youthexpedition.azit.infrastructure.common.response.CommonErrorResponse;
-import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
+import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +30,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
 
-        CommonErrorResponse errorResponse = CommonErrorResponse.of(CommonErrorCode.UNAUTHORIZED);
+        CommonErrorResponse errorResponse = CommonErrorResponse.of(AuthErrorCode.UNAUTHORIZED);
 
         // JSON으로 변환하여 응답 바디에 쓰기
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);

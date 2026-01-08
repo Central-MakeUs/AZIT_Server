@@ -1,9 +1,9 @@
 package com.youthexpedition.azit.infrastructure.auth.service;
 
 import com.youthexpedition.azit.infrastructure.auth.model.MemberDetails;
-import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.member.application.port.out.LoadMemberPort;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,6 +21,6 @@ public class MemberDetailsService implements UserDetailsService {
         // username(Member ID)으로 유저를 조회
         return loadMemberPort.findById(Long.parseLong(username))
                 .map(MemberDetails::new)
-                .orElseThrow(() -> new BusinessException(CommonErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }
