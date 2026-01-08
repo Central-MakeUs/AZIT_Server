@@ -43,7 +43,7 @@ public class CookieUtil {
                 .path("/")
                 .httpOnly(true)
                 .secure(secure) // 운영 환경에서는 HTTPS가 필수이므로 true 설정
-                .sameSite("None") // CSRF 방어 강화
+                .sameSite("None")
                 .maxAge(maxAgeSeconds)
                 .build();
     }
