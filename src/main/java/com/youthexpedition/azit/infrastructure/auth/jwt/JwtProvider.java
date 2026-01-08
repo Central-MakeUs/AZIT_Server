@@ -18,26 +18,33 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class JwtProvider {
-    @Value("${jwt.secret}") String secretKeyPlain;
-    @Value("${jwt.access-token-expiration-seconds}") long accessTokenExpirationSeconds;
-    @Value("${jwt.refresh-token-expiration-seconds}") long refreshTokenExpirationSeconds;
+
+    private final long accessTokenExpirationSeconds;
+    private final long refreshTokenExpirationSeconds;
+    private final SecretKey secretKey;
 
     @Getter
-    @Value("${jwt.refresh-token-name}")
-    private String refreshTokenName;
-
-    private SecretKey secretKey;
+    private final String refreshTokenName;
 
     private final MemberDetailsService memberDetailsService;
 
-    @PostConstruct
-    protected void init() {
+    public JwtProvider(
+            @Value("${jwt.secret}") String secretKeyPlain,
+            @Value("${jwt.access-token-expiration-seconds}") long accessTokenExpirationSeconds,
+            @Value("${jwt.refresh-token-expiration-seconds}") long refreshTokenExpirationSeconds,
+            @Value("${jwt.refresh-token-name}") String refreshTokenName,
+            MemberDetailsService memberDetailsService
+    ) {
+        this.accessTokenExpirationSeconds = accessTokenExpirationSeconds;
+        this.refreshTokenExpirationSeconds = refreshTokenExpirationSeconds;
+        this.refreshTokenName = refreshTokenName;
+        this.memberDetailsService = memberDetailsService;
         this.secretKey = Keys.hmacShaKeyFor(secretKeyPlain.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -45,14 +52,14 @@ public class JwtProvider {
      * Access Token 생성
      */
     public String generateAccessToken(Long memberId, MemberRole role) {
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + accessTokenExpirationSeconds * 1000);
+        Instant now = Instant.now();
+        Instant validity = now.plusSeconds(accessTokenExpirationSeconds);
 
         return Jwts.builder()
                 .subject(memberId.toString())
                 .claim("role", "ROLE_" + role.name())
-                .issuedAt(now)
-                .expiration(validity)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(validity))
                 .signWith(secretKey)
                 .compact();
     }

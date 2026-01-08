@@ -12,8 +12,11 @@ import java.util.Optional;
 @Component
 public class CookieUtil {
 
-    @Value("${jwt.cookie.secure}")
-    private boolean secure;
+    private final boolean secure;
+
+    public CookieUtil(@Value("${jwt.cookie.secure}") boolean secure) {
+        this.secure = secure;
+    }
 
     /**
      * 요청에서 특정 이름의 쿠키를 반환
