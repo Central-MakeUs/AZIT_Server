@@ -6,7 +6,7 @@ import lombok.Builder;
 @Builder
 public record SocialProfile(
         String socialProviderId,
-        SocialProvider provider, // KAKAO, APPLE
+        SocialProvider socialProvider, // KAKAO, APPLE
         String nickname,         // 필수
         String email,
         String profileImageUrl

@@ -5,14 +5,14 @@ import com.youthexpedition.azit.modules.member.domain.model.enums.MemberRole;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "members")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 무분별한 객체 생성 제한 (JPA만 생성할 수 있도록)
+@AllArgsConstructor(access = AccessLevel.PRIVATE) // 빌더로만 생성하도록 강제
+@Builder
 public class MemberEntity extends BaseTimeEntity {
 
     @Id

@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.infrastructure.auth.jwt;
 
-import com.youthexpedition.azit.infrastructure.auth.service.MemberDetailsService;
+import com.youthexpedition.azit.infrastructure.auth.model.MemberDetails;
+import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -11,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -23,26 +23,26 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
+    @Getter
     private final long accessTokenExpirationSeconds;
+
+    @Getter
     private final long refreshTokenExpirationSeconds;
-    private final SecretKey secretKey;
 
     @Getter
     private final String refreshTokenName;
 
-    private final MemberDetailsService memberDetailsService;
+    private final SecretKey secretKey;
 
     public JwtProvider(
             @Value("${jwt.secret}") String secretKeyPlain,
             @Value("${jwt.access-token-expiration-seconds}") long accessTokenExpirationSeconds,
             @Value("${jwt.refresh-token-expiration-seconds}") long refreshTokenExpirationSeconds,
-            @Value("${jwt.refresh-token-name}") String refreshTokenName,
-            MemberDetailsService memberDetailsService
+            @Value("${jwt.refresh-token-name}") String refreshTokenName
     ) {
         this.accessTokenExpirationSeconds = accessTokenExpirationSeconds;
         this.refreshTokenExpirationSeconds = refreshTokenExpirationSeconds;
         this.refreshTokenName = refreshTokenName;
-        this.memberDetailsService = memberDetailsService;
         this.secretKey = Keys.hmacShaKeyFor(secretKeyPlain.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -66,13 +66,13 @@ public class JwtProvider {
      * Refresh Token 생성
      */
     public String generateRefreshToken(Long memberId) {
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + refreshTokenExpirationSeconds * 1000);
+        Instant now = Instant.now();
+        Instant validity = now.plusSeconds(refreshTokenExpirationSeconds);
 
         return Jwts.builder()
                 .subject(memberId.toString())
-                .issuedAt(now)
-                .expiration(validity)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(validity))
                 .signWith(secretKey)
                 .compact();
     }
@@ -81,12 +81,19 @@ public class JwtProvider {
      * 토큰에서 인증 객체(Authentication) 추출
      */
     public Authentication getAuthentication(String token) {
-        // 토큰에서 Member ID 추출
-        Long memberId = extractMemberId(token);
-        UserDetails userDetails = memberDetailsService.loadUserByUsername(memberId.toString());
+        Claims claims = parseClaims(token);
+        Long memberId = Long.parseLong(claims.getSubject());
+        String roleName = claims.get("role", String.class).replace("ROLE_", "");
 
-        // 인증 객체 반환
-        return new UsernamePasswordAuthenticationToken(userDetails, token, userDetails.getAuthorities());
+        // Member 엔티티 스텁 생성
+        Member member = Member.builder()
+                .id(memberId)
+                .role(MemberRole.valueOf(roleName))
+                .build();
+
+        MemberDetails principal = new MemberDetails(member);
+
+        return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
     }
 
     public boolean validateToken(String token) {
