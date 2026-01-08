@@ -46,8 +46,6 @@ oauth:
     client-id: ${KAKAO_REST_API_KEY}
     client-secret: ${KAKAO_CLIENT_SECRET}
     redirect-uri: https://azitcrew.com/oauth/callback?provider=kakao
-    token-url: https://kauth.kakao.com/oauth/token
-    user-info-url: https://kapi.kakao.com/v2/user/me
 
 jwt:
   secret: ${JWT_SECRET_KEY}
