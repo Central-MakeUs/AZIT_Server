@@ -14,6 +14,10 @@ java {
     }
 }
 
+ext {
+    set('springCloudVersion', "2024.0.0")
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -60,6 +64,15 @@ dependencies {
 
     // AWS
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.0.0'
+
+    // OpenFeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 // QueryDSL QClass 생성 경로 설정
