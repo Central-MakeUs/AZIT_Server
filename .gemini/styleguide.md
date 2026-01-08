@@ -48,7 +48,7 @@
 
 ### 기술 스택 준수
 - **Java 21**: 최신 문법(Switch Expressions 등)과 가상 스레드(Virtual Threads) 사용을 고려하십시오.
-- **Spring Boot 3.5.x**: 최신 설정 방식(특히 Security Config의 람다 스타일)을 사용하십시오.
+- **Spring Boot 3.4.1**: 최신 설정 방식(특히 Security Config의 람다 스타일)을 사용하십시오.
 - **Jakarta**: `javax` 패키지 대신 `jakarta` 패키지를 사용하십시오.
 
 ## 3. 공통 응답 및 예외 처리 (Error Handling)

@@ -1,7 +1,9 @@
 package com.youthexpedition.azit.infrastructure.auth.util;
 
+import com.youthexpedition.azit.infrastructure.auth.jwt.JwtProvider;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
@@ -13,8 +15,10 @@ import java.util.Optional;
 public class CookieUtil {
 
     private final boolean secure;
+    private final JwtProvider jwtProvider;
 
-    public CookieUtil(@Value("${jwt.cookie.secure}") boolean secure) {
+    public CookieUtil(JwtProvider jwtProvider, @Value("${jwt.cookie.secure}") boolean secure) {
+        this.jwtProvider = jwtProvider;
         this.secure = secure;
     }
 
@@ -39,7 +43,7 @@ public class CookieUtil {
                 .path("/")
                 .httpOnly(true)
                 .secure(secure) // 운영 환경에서는 HTTPS가 필수이므로 true 설정
-                .sameSite("Strict") // CSRF 방어 강화
+                .sameSite("None")
                 .maxAge(maxAgeSeconds)
                 .build();
     }
@@ -54,5 +58,17 @@ public class CookieUtil {
                 .secure(secure)
                 .maxAge(0)
                 .build();
+    }
+
+    /**
+     * 리프레시 토큰 쿠키 세팅
+     */
+    public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        ResponseCookie cookie = createCookie(
+                jwtProvider.getRefreshTokenName(),
+                refreshToken,
+                jwtProvider.getRefreshTokenExpirationSeconds()
+        );
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 }
