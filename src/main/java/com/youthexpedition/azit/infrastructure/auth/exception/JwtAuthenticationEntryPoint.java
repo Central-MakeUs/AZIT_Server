@@ -25,12 +25,20 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
 
+        // 필터에서 넘겨준 커스텀 에러 코드가 있는지 확인
+        AuthErrorCode errorCode = (AuthErrorCode) request.getAttribute("exception");
+
+        // 별도 설정된 에러가 없다면 기본 UNAUTHORIZED 사용
+        if (errorCode == null) {
+            errorCode = AuthErrorCode.UNAUTHORIZED;
+        }
+
         // 응답 헤더 설정
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
+        response.setStatus(errorCode.getStatus().value());
 
-        CommonErrorResponse errorResponse = CommonErrorResponse.of(AuthErrorCode.UNAUTHORIZED);
+        CommonErrorResponse errorResponse = CommonErrorResponse.of(errorCode);
 
         // JSON으로 변환하여 응답 바디에 쓰기
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);

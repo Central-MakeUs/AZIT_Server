@@ -7,9 +7,11 @@ import com.youthexpedition.azit.modules.auth.adapter.in.web.docs.AuthControllerD
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginRequest;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginResponse;
 import com.youthexpedition.azit.modules.auth.application.port.in.SocialLoginUseCase;
+import com.youthexpedition.azit.modules.auth.application.port.in.TokenUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController implements AuthControllerDocs {
 
     private final SocialLoginUseCase socialLoginUseCase;
+    private final TokenUseCase tokenUseCase;
     private final CookieUtil cookieUtil;
 
     @PostMapping("/social-login/{provider}")
@@ -31,6 +34,17 @@ public class AuthController implements AuthControllerDocs {
         SocialLoginResponse loginResponse = SocialLoginResponse.from(authToken);
 
         cookieUtil.setRefreshTokenCookie(response, authToken.refreshToken());
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, loginResponse);
+    }
+
+    @PostMapping("/reissue")
+    public CommonResponse<SocialLoginResponse> reissue(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = cookieUtil.getRefreshToken(request);
+        AuthToken newToken = tokenUseCase.reissue(refreshToken);
+        SocialLoginResponse loginResponse = SocialLoginResponse.from(newToken);
+
+        cookieUtil.setRefreshTokenCookie(response, newToken.refreshToken());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, loginResponse);
     }

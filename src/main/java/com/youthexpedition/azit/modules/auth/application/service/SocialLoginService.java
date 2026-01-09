@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.auth.application.service;
 import com.youthexpedition.azit.infrastructure.auth.jwt.JwtProvider;
 import com.youthexpedition.azit.modules.auth.application.port.in.SocialLoginUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
+import com.youthexpedition.azit.modules.auth.application.port.out.RefreshTokenPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
@@ -10,11 +11,8 @@ import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPo
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +21,8 @@ public class SocialLoginService implements SocialLoginUseCase {
     private final SocialAuthPort socialAuthPort;
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
+    private final RefreshTokenPort refreshTokenPort;
     private final JwtProvider jwtProvider;
-    private final StringRedisTemplate redisTemplate;
 
     @Override
     public AuthToken login(SocialLoginCommand command) {
@@ -39,7 +37,7 @@ public class SocialLoginService implements SocialLoginUseCase {
         String refreshToken = jwtProvider.generateRefreshToken(member.getId());
 
         // Redis에 Refresh Token 저장
-        saveRefreshTokenToRedis(member.getId(), refreshToken);
+        saveRefreshToken(member.getId(), refreshToken);
 
         return AuthToken.builder()
                 .accessToken(accessToken)
@@ -59,12 +57,7 @@ public class SocialLoginService implements SocialLoginUseCase {
         return saveMemberPort.save(newMember);
     }
 
-    private void saveRefreshTokenToRedis(Long memberId, String refreshToken) {
-        redisTemplate.opsForValue().set(
-                "RT:" + memberId,
-                refreshToken,
-                jwtProvider.getRefreshTokenExpirationSeconds(),
-                TimeUnit.SECONDS
-        );
+    private void saveRefreshToken(Long memberId, String refreshToken) {
+        refreshTokenPort.save(memberId, refreshToken, jwtProvider.getRefreshTokenExpirationSeconds());
     }
 }

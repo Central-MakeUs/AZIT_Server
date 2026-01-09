@@ -1,9 +1,12 @@
 package com.youthexpedition.azit.infrastructure.auth.jwt;
 
 import com.youthexpedition.azit.infrastructure.auth.model.MemberDetails;
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberRole;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -96,13 +99,17 @@ public class JwtProvider {
         return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
     }
 
+    // 토큰 유효성 검사
     public boolean validateToken(String token) {
         try {
             Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            log.error("JWT 검증 실패: {}", e.getMessage());
-            return false;
+        } catch (ExpiredJwtException e) { // 토큰 만료
+            log.error("만료된 JWT 토큰입니다: {}", e.getMessage());
+            throw new BusinessException(AuthErrorCode.EXPIRED_TOKEN);
+        } catch (JwtException | IllegalArgumentException e) { // 그 외 유효하지 않은 토큰
+            log.error("유효하지 않은 JWT 토큰입니다: {}", e.getMessage());
+            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
         }
     }
 
