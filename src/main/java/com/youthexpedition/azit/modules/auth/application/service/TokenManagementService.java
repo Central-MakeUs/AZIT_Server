@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,9 @@ public class TokenManagementService implements TokenUseCase {
         }
 
         // 신규 토큰 발급 및 Redis 업데이트
-        Member member = loadMemberPort.findById(memberId).orElseThrow();
+        Member member = loadMemberPort.findById(memberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
         String newAT = jwtProvider.generateAccessToken(member.getId(), member.getRole());
         String newRT = jwtProvider.generateRefreshToken(member.getId());
 
