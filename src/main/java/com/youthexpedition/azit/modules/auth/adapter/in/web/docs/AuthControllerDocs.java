@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginRespo
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,4 +21,10 @@ public interface AuthControllerDocs {
             "INVALID_SOCIAL_CODE", "SOCIAL_AUTHENTICATION_FAILED"
     })
     CommonResponse<SocialLoginResponse> socialLogin(@PathVariable SocialProvider provider, @Valid @RequestBody SocialLoginRequest request, HttpServletResponse response);
+
+    @Operation(summary = "토큰 재발급", description = "쿠키에 저장된 Refresh Token을 사용하여 Access Token을 갱신합니다. (RTR 방식 적용)")
+    @ApiErrorCodeExamples({
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "TOKEN_REUSE_DETECTED"
+    })
+    CommonResponse<SocialLoginResponse> reissue(HttpServletRequest request, HttpServletResponse response);
 }
