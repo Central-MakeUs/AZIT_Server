@@ -1,6 +1,8 @@
 package com.youthexpedition.azit.infrastructure.auth.util;
 
 import com.youthexpedition.azit.infrastructure.auth.jwt.JwtProvider;
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,16 +25,11 @@ public class CookieUtil {
     }
 
     /**
-     * 요청에서 특정 이름의 쿠키를 반환
+     * 쿠키에서 refresh token 추출
      */
-    public Optional<String> getCookieValue(HttpServletRequest request, String name) {
-        if (request.getCookies() == null) {
-            return Optional.empty();
-        }
-        return Arrays.stream(request.getCookies())
-                .filter(cookie -> name.equals(cookie.getName()))
-                .map(Cookie::getValue)
-                .findFirst();
+    public String getRefreshToken(HttpServletRequest request) {
+        return getCookieValue(request, jwtProvider.getRefreshTokenName())
+                .orElseThrow(() -> new BusinessException(AuthErrorCode.EXPIRED_TOKEN));
     }
 
     /**
@@ -70,5 +67,18 @@ public class CookieUtil {
                 jwtProvider.getRefreshTokenExpirationSeconds()
         );
         response.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    /**
+     * 요청에서 특정 이름의 쿠키를 반환
+     */
+    public Optional<String> getCookieValue(HttpServletRequest request, String name) {
+        if (request.getCookies() == null) {
+            return Optional.empty();
+        }
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> name.equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst();
     }
 }
