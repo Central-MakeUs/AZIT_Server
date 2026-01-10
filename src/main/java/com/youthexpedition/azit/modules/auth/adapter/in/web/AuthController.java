@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.auth.adapter.in.web;
 
 import com.youthexpedition.azit.infrastructure.auth.util.CookieUtil;
+import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.docs.AuthControllerDocs;
@@ -47,5 +48,13 @@ public class AuthController implements AuthControllerDocs {
         cookieUtil.setRefreshTokenCookie(response, newToken.refreshToken());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, loginResponse);
+    }
+
+    @PostMapping("/logout")
+    public CommonResponse<Void> logout(@CurrentMemberId Long memberId, HttpServletResponse response) {
+        tokenUseCase.logout(memberId);
+        cookieUtil.deleteRefreshTokenCookie(response);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 }

@@ -42,7 +42,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(securityProperties.getPermitAllPaths().toArray(String[]::new)).permitAll()
                          // 공통 허용 경로 (로그인, 스웨거 등)
-                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/logout").authenticated()
+                        .requestMatchers("/api/v1/auth/social-login/**", "/api/v1/auth/reissue").permitAll()
+
 
                         // 크루 도메인 권한 분리 예시
 //                        .requestMatchers(HttpMethod.POST, "/api/v1/crews").hasAnyRole("MEMBER", "LEADER")

@@ -13,6 +13,7 @@
 - **Domain**:
 - **Application (Port/UseCase)**:
 - **Adapter (In/Out)**:
+- **infrastructure**:
 
 ## 📸 스크린샷 (선택 사항)
 > API 테스트 결과 등을 첨부해주세요.
