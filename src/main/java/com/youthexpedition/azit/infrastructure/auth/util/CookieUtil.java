@@ -70,6 +70,14 @@ public class CookieUtil {
     }
 
     /**
+     * 리프레시 토큰 쿠키 삭제
+     */
+    public void deleteRefreshTokenCookie(HttpServletResponse response) {
+        ResponseCookie cookie = deleteCookie(jwtProvider.getRefreshTokenName());
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    /**
      * 요청에서 특정 이름의 쿠키를 반환
      */
     public Optional<String> getCookieValue(HttpServletRequest request, String name) {
