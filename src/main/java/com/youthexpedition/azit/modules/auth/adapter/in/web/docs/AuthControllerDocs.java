@@ -25,13 +25,13 @@ public interface AuthControllerDocs {
 
     @Operation(summary = "토큰 재발급", description = "쿠키에 저장된 Refresh Token을 사용하여 Access Token을 갱신합니다. (RTR 방식 적용)")
     @ApiErrorCodeExamples({
-            "UNAUTHORIZED", "EXPIRED_TOKEN", "TOKEN_REUSE_DETECTED"
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED"
     })
     CommonResponse<SocialLoginResponse> reissue(HttpServletRequest request, HttpServletResponse response);
 
     @Operation(summary = "로그아웃", description = "현재 사용자의 세션을 종료하고 리프레시 토큰 쿠키를 제거합니다.")
     @ApiErrorCodeExamples({
-            "UNAUTHORIZED" // 로그인되지 않은 상태에서 호출할 경우
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED"
     })
     CommonResponse<Void> logout(@CurrentMemberId Long memberId, HttpServletResponse response);
 }
