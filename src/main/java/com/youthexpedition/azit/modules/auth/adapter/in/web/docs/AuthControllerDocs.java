@@ -31,7 +31,7 @@ public interface AuthControllerDocs {
 
     @Operation(summary = "로그아웃", description = "현재 사용자의 세션을 종료하고 리프레시 토큰 쿠키를 제거합니다.")
     @ApiErrorCodeExamples({
-            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED"
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN"
     })
     CommonResponse<Void> logout(@CurrentMemberId Long memberId, HttpServletResponse response);
 }
