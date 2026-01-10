@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.auth.adapter.in.web.docs;
 
+import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginRequest;
@@ -27,4 +28,10 @@ public interface AuthControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "TOKEN_REUSE_DETECTED"
     })
     CommonResponse<SocialLoginResponse> reissue(HttpServletRequest request, HttpServletResponse response);
+
+    @Operation(summary = "로그아웃", description = "현재 사용자의 세션을 종료하고 리프레시 토큰 쿠키를 제거합니다.")
+    @ApiErrorCodeExamples({
+            "UNAUTHORIZED" // 로그인되지 않은 상태에서 호출할 경우
+    })
+    CommonResponse<Void> logout(@CurrentMemberId Long memberId, HttpServletResponse response);
 }
