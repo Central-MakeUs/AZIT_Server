@@ -32,7 +32,7 @@ public class AuthController implements AuthControllerDocs {
                                                            @Valid @RequestBody SocialLoginRequest request, HttpServletResponse response) {
         SocialLoginCommand command = request.toCommand(provider);
         AuthToken authToken = socialLoginUseCase.login(command);
-        SocialLoginResponse loginResponse = SocialLoginResponse.from(authToken);
+        SocialLoginResponse loginResponse = SocialLoginResponse.from(authToken, m);
 
         cookieUtil.setRefreshTokenCookie(response, authToken.refreshToken());
 

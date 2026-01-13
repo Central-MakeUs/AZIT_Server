@@ -7,6 +7,8 @@ import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "members")
 @Getter
@@ -37,7 +39,7 @@ public class MemberEntity extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private MemberStatus status = MemberStatus.ACTIVE;
+    private MemberStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
@@ -45,4 +47,13 @@ public class MemberEntity extends BaseTimeEntity {
 
     @Column(name = "total_points", nullable = false)
     private Long totalPoints = 0L;
+
+    @Column(name = "essential_terms_agreed_at")
+    private LocalDateTime essentialTermsAgreedAt; // 필수 약관(전체) 동의 시점
+
+    @Column(name = "is_marketing_terms_agreed", nullable = false)
+    private boolean isMarketingTermsAgreed; // 마케팅 동의 여부
+
+    @Column(name = "marketing_terms_agreed_at")
+    private LocalDateTime marketingTermsAgreedAt; // 마케팅 동의 시점
 }
