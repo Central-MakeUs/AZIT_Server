@@ -19,15 +19,17 @@ public class MemberMapper {
                 .status(entity.getStatus())
                 .role(entity.getRole())
                 .totalPoints(entity.getTotalPoints())
+                .essentialTermsAgreedAt(entity.getEssentialTermsAgreedAt())
+                .isMarketingTermsAgreed(entity.isMarketingTermsAgreed())
+                .marketingTermsAgreedAt(entity.getMarketingTermsAgreedAt())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 
     public MemberEntity toEntity(Member member) {
-        if (member == null) return null;
-
         return MemberEntity.builder()
+                .id(member.getId())
                 .socialProvider(member.getSocialProvider())
                 .socialProviderId(member.getSocialProviderId())
                 .nickname(member.getNickname())
@@ -36,6 +38,9 @@ public class MemberMapper {
                 .status(member.getStatus())
                 .role(member.getRole())
                 .totalPoints(member.getTotalPoints())
+                .essentialTermsAgreedAt(member.getEssentialTermsAgreedAt())
+                .isMarketingTermsAgreed(member.isMarketingTermsAgreed())
+                .marketingTermsAgreedAt(member.getMarketingTermsAgreedAt())
                 .build();
     }
 }
