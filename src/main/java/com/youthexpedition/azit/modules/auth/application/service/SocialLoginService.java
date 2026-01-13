@@ -5,6 +5,7 @@ import com.youthexpedition.azit.modules.auth.application.port.in.SocialLoginUseC
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
 import com.youthexpedition.azit.modules.auth.application.port.out.RefreshTokenPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
+import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
@@ -25,7 +26,7 @@ public class SocialLoginService implements SocialLoginUseCase {
     private final JwtProvider jwtProvider;
 
     @Override
-    public AuthToken login(SocialLoginCommand command) {
+    public AuthResult login(SocialLoginCommand command) {
         SocialProfile profile = socialAuthPort.getSocialProfile(command.authorizationCode());
 
         // 기존 회원 확인 및 신규 회원 가입
@@ -33,17 +34,16 @@ public class SocialLoginService implements SocialLoginUseCase {
                 .orElseGet(() -> registerNewMember(profile));
 
         // 토큰 생성
-        String accessToken = jwtProvider.generateAccessToken(member.getId(), member.getRole());
-        String refreshToken = jwtProvider.generateRefreshToken(member.getId());
-
-        // Redis에 Refresh Token 저장
-        saveRefreshToken(member.getId(), refreshToken);
-
-        return AuthToken.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
+        AuthToken authToken = AuthToken.builder()
+                .accessToken(jwtProvider.generateAccessToken(member.getId(), member.getRole()))
+                .refreshToken(jwtProvider.generateRefreshToken(member.getId()))
                 .accessTokenExpiresIn(jwtProvider.getAccessTokenExpirationSeconds())
                 .build();
+
+        // Redis에 Refresh Token 저장
+        saveRefreshToken(member.getId(), authToken.refreshToken());
+
+        return new AuthResult(authToken, member.getStatus());
     }
 
     private Member registerNewMember(SocialProfile profile) {

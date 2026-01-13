@@ -10,7 +10,9 @@ import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginRespo
 import com.youthexpedition.azit.modules.auth.application.port.in.SocialLoginUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.TokenUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
+import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,10 +33,10 @@ public class AuthController implements AuthControllerDocs {
     public CommonResponse<SocialLoginResponse> socialLogin(@PathVariable SocialProvider provider,
                                                            @Valid @RequestBody SocialLoginRequest request, HttpServletResponse response) {
         SocialLoginCommand command = request.toCommand(provider);
-        AuthToken authToken = socialLoginUseCase.login(command);
-        SocialLoginResponse loginResponse = SocialLoginResponse.from(authToken, m);
+        AuthResult authResult = socialLoginUseCase.login(command);
+        SocialLoginResponse loginResponse = SocialLoginResponse.from(authResult);
 
-        cookieUtil.setRefreshTokenCookie(response, authToken.refreshToken());
+        cookieUtil.setRefreshTokenCookie(response, authResult.authToken().refreshToken());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, loginResponse);
     }
@@ -43,7 +45,9 @@ public class AuthController implements AuthControllerDocs {
     public CommonResponse<SocialLoginResponse> reissue(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = cookieUtil.getRefreshToken(request);
         AuthToken newToken = tokenUseCase.reissue(refreshToken);
-        SocialLoginResponse loginResponse = SocialLoginResponse.from(newToken);
+
+        // 재발급 시점의 유저 상태를 ACTIVE로 가정하거나 별도 조회 로직 필요
+        SocialLoginResponse loginResponse = SocialLoginResponse.from(newToken, MemberStatus.ACTIVE);
 
         cookieUtil.setRefreshTokenCookie(response, newToken.refreshToken());
 

@@ -30,9 +30,6 @@ public class CrewEntity extends BaseTimeEntity {
     @Column(name = "profile_image_url", length = 255)
     private String profileImageUrl;
 
-    @Column(name = "joining_question", nullable = false, length = 50)
-    private String joiningQuestion;
-
     @Column(name = "bank_name", length = 50)
     private String bankName;
 

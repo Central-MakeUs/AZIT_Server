@@ -32,7 +32,4 @@ public class CrewMemberEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private CrewMemberStatus status;
-
-    @Column(name = "joining_answer", length = 100)
-    private String joiningAnswer;
 }
