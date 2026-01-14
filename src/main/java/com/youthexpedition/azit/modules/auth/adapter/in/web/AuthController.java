@@ -50,7 +50,6 @@ public class AuthController implements AuthControllerDocs {
     @PostMapping(value = "/social-login/apple", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public void appleLogin(@RequestParam("code") String code, @RequestParam("id_token") String idToken,
                            @RequestParam(value = "user", required = false) String user, HttpServletResponse response) throws IOException {
-
         SocialLoginCommand command = SocialLoginCommand.of(SocialProvider.APPLE, code, idToken, user);
         AuthResult authResult = socialLoginUseCase.login(command);
 
