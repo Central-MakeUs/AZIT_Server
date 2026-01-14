@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.auth.adapter.out.external;
+package com.youthexpedition.azit.modules.auth.adapter.out.external.Feign;
 
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.KakaoTokenResponse;
 import org.springframework.cloud.openfeign.FeignClient;

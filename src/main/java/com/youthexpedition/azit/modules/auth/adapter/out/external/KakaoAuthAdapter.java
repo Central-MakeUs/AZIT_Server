@@ -1,6 +1,8 @@
 package com.youthexpedition.azit.modules.auth.adapter.out.external;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.KakaoApiFeignClient;
+import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.KakaoAuthFeignClient;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.KakaoTokenResponse;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.KakaoUserInfoResponse;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
