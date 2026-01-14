@@ -5,6 +5,7 @@ import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberRole;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -15,12 +16,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -52,13 +56,14 @@ public class JwtProvider {
     /**
      * Access Token 생성
      */
-    public String generateAccessToken(Long memberId, MemberRole role) {
+    public String generateAccessToken(Long memberId, MemberRole role, MemberStatus status) {
         Instant now = Instant.now();
         Instant validity = now.plusSeconds(accessTokenExpirationSeconds);
 
         return Jwts.builder()
                 .subject(memberId.toString())
                 .claim("role", "ROLE_" + role.name())
+                .claim("status", "STATUS_" + status.name())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(validity))
                 .signWith(secretKey)
@@ -86,17 +91,24 @@ public class JwtProvider {
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
         Long memberId = Long.parseLong(claims.getSubject());
-        String roleName = claims.get("role", String.class).replace("ROLE_", "");
 
-        // Member 엔티티 스텁 생성
+        String roleName = claims.get("role", String.class);
+        String statusName = claims.get("status", String.class);
+
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(roleName));
+        authorities.add(new SimpleGrantedAuthority(statusName));
+
+        // SecurityContext에 저장할 Member 생성
         Member member = Member.builder()
                 .id(memberId)
-                .role(MemberRole.valueOf(roleName))
+                .role(MemberRole.valueOf(roleName.replace("ROLE_", "")))
+                .status(MemberStatus.valueOf(statusName.replace("STATUS_", "")))
                 .build();
 
         MemberDetails principal = new MemberDetails(member);
 
-        return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
     // 토큰 유효성 검사

@@ -1,8 +1,8 @@
 package com.youthexpedition.azit.modules.auth.application.port.in;
 
-import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
+import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 
 public interface TokenUseCase {
-    AuthToken reissue(String refreshToken);
+    AuthResult reissue(String refreshToken);
     void logout(Long memberId);
 }

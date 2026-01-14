@@ -46,6 +46,12 @@ oauth:
     client-id: ${KAKAO_REST_API_KEY}
     client-secret: ${KAKAO_CLIENT_SECRET}
     redirect-uri: https://azitcrew.com/oauth/callback?provider=kakao
+  apple:
+    team-id: ${APPLE_TEAM_ID}
+    client-id: ${APPLE_SERVICE_ID}
+    key-id: ${APPLE_KEY_ID}
+    key-path: ${APPLE_KEY_PATH}
+    redirect-uri: https://api.azitcrew.com/api/v1/auth/social-login/apple
 
 jwt:
   secret: ${JWT_SECRET_KEY}
