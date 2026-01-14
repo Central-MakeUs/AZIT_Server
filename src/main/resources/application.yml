@@ -30,3 +30,4 @@ oauth:
   kakao:
     auth-url: https://kauth.kakao.com
     api-url: https://kapi.kakao.com
+  apple-url: https://appleid.apple.com
