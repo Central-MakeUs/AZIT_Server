@@ -37,14 +37,19 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name = "profile_image_url", length = 255)
     private String profileImageUrl;
 
+    @Column(name = "apple_refresh_token", length = 500)
+    private String appleRefreshToken;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private MemberStatus status;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
     private MemberRole role = MemberRole.MEMBER;
 
+    @Builder.Default
     @Column(name = "total_points", nullable = false)
     private Long totalPoints = 0L;
 

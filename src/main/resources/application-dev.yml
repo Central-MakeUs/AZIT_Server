@@ -53,6 +53,7 @@ oauth:
     key-id: ${APPLE_KEY_ID}
     key-path: ${APPLE_KEY_PATH}
     redirect-uri: https://dev-api.azitcrew.com/api/v1/auth/social-login/apple
+    success-redirect-uri: https://dev.azitcrew.com/login-success
 
 jwt:
   secret: ${JWT_SECRET_KEY}

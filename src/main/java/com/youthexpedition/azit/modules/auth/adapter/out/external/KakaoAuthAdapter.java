@@ -5,6 +5,7 @@ import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.KakaoApi
 import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.KakaoAuthFeignClient;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.KakaoTokenResponse;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.KakaoUserInfoResponse;
+import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
@@ -31,11 +32,11 @@ public class KakaoAuthAdapter implements SocialAuthPort {
     private String clientSecret;
 
     @Override
-    public SocialProfile getSocialProfile(String authorizationCode) {
+    public SocialProfile getSocialProfile(SocialLoginCommand command) {
         try {
             // 카카오 토큰 요청
             KakaoTokenResponse tokenResponse = kakaoAuthFeignClient.getToken(
-                    "authorization_code", clientId, redirectUri, authorizationCode, clientSecret
+                    "authorization_code", clientId, redirectUri, command.authorizationCode(), clientSecret
             );
 
             // 카카오 사용자 정보 요청
@@ -62,5 +63,10 @@ public class KakaoAuthAdapter implements SocialAuthPort {
             log.error("카카오 API 호출 중 오류 발생: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.SOCIAL_AUTHENTICATION_FAILED);
         }
+    }
+
+    @Override
+    public SocialProvider getProvider() {
+        return SocialProvider.KAKAO;
     }
 }

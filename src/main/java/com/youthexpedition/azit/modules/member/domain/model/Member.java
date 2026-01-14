@@ -21,6 +21,8 @@ public class Member {
     private String nickname;
     private String email;
     private String profileImageUrl;
+    // 애플 리프레시 토큰
+    private String appleRefreshToken;
     private MemberStatus status;
     private MemberRole role;
     private Long totalPoints;
@@ -60,5 +62,13 @@ public class Member {
 
         this.status = MemberStatus.PENDING_ONBOARDING; // 약관 완료 후 온보딩 대기 상태로 변경
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // 애플 리프레시 토큰 업데이트
+    public void updateAppleRefreshToken(String appleRefreshToken) {
+        if (this.socialProvider == SocialProvider.APPLE) {
+            this.appleRefreshToken = appleRefreshToken;
+            this.updatedAt = LocalDateTime.now();
+        }
     }
 }
