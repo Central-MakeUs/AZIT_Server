@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.member.adapter.in.web;
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
+import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import jakarta.validation.Valid;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/members")
 @RequiredArgsConstructor
-public class MemberController {
+public class MemberController implements MemberControllerDocs {
     private final MemberUseCase memberUseCase;
 
     @PostMapping("/terms")
