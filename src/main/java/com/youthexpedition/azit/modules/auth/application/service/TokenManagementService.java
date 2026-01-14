@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.auth.jwt.JwtProvider;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.in.TokenUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.out.RefreshTokenPort;
+import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
@@ -22,7 +23,7 @@ public class TokenManagementService implements TokenUseCase {
     private final JwtProvider jwtProvider;
 
     @Override
-    public AuthToken reissue(String refreshToken) {
+    public AuthResult reissue(String refreshToken) {
         // 검증 및 memberId 추출
         jwtProvider.validateToken(refreshToken);
         Long memberId = jwtProvider.extractMemberId(refreshToken);
@@ -40,16 +41,18 @@ public class TokenManagementService implements TokenUseCase {
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        String newAT = jwtProvider.generateAccessToken(member.getId(), member.getRole());
+        String newAT = jwtProvider.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
         String newRT = jwtProvider.generateRefreshToken(member.getId());
 
         refreshTokenPort.save(member.getId(), newRT, jwtProvider.getRefreshTokenExpirationSeconds());
 
-        return AuthToken.builder()
+        AuthToken token = AuthToken.builder()
                 .accessToken(newAT)
                 .refreshToken(newRT)
                 .accessTokenExpiresIn(jwtProvider.getAccessTokenExpirationSeconds())
                 .build();
+
+        return new AuthResult(token, member.getStatus());
     }
 
     @Override

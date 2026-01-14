@@ -35,7 +35,7 @@ public class SocialLoginService implements SocialLoginUseCase {
 
         // 토큰 생성
         AuthToken authToken = AuthToken.builder()
-                .accessToken(jwtProvider.generateAccessToken(member.getId(), member.getRole()))
+                .accessToken(jwtProvider.generateAccessToken(member.getId(), member.getRole(), member.getStatus()))
                 .refreshToken(jwtProvider.generateRefreshToken(member.getId()))
                 .accessTokenExpiresIn(jwtProvider.getAccessTokenExpirationSeconds())
                 .build();

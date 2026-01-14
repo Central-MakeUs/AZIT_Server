@@ -5,25 +5,25 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 public record AgreeToTermsRequest(
-        @Schema(description = "서비스 이용약관 동의 여부 (필수)", example = "true")
+        @Schema(description = "서비스 이용약관 동의 여부 (필수)")
         @NotNull(message = "서비스 이용약관 동의 여부는 필수입니다.")
-        boolean serviceTermsAgreed,
+        Boolean serviceTermsAgreed,
 
-        @Schema(description = "개인정보 처리방침 동의 여부 (필수)", example = "true")
+        @Schema(description = "개인정보 처리방침 동의 여부 (필수)")
         @NotNull(message = "개인정보 처리방침 동의 여부는 필수입니다.")
-        boolean privacyPolicyAgreed,
+        Boolean privacyPolicyAgreed,
 
-        @Schema(description = "위치기반 서비스 이용약관 동의 여부 (필수)", example = "true")
+        @Schema(description = "위치기반 서비스 이용약관 동의 여부 (필수)")
         @NotNull(message = "위치기반 서비스 이용약관 동의 여부는 필수입니다.")
-        boolean locationServiceAgreed,
+        Boolean locationServiceAgreed,
 
-        @Schema(description = "제3자 정보제공 동의 여부 (필수)", example = "true")
+        @Schema(description = "제3자 정보제공 동의 여부 (필수)")
         @NotNull(message = "제3자 정보제공 동의 여부는 필수입니다.")
-        boolean thirdPartyInfoAgreed,
+        Boolean thirdPartyInfoAgreed,
 
-        @Schema(description = "마케팅 정보 수신 동의 여부 (선택)", example = "false")
-        @NotNull(message = "마케팅 정보 수신 동의 여부는 필수입니다.") // 값 자체는 반드시 전송되어야 함
-        boolean marketingTermsAgreed
+        @Schema(description = "마케팅 정보 수신 동의 여부 (선택)")
+        @NotNull(message = "마케팅 정보 수신 동의 여부는 필수입니다.")
+        Boolean marketingTermsAgreed
 ) {
     public AgreeToTermsCommand toCommand() {
         return AgreeToTermsCommand.of(

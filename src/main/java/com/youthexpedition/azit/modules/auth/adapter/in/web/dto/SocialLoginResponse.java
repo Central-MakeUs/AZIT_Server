@@ -15,14 +15,6 @@ public record SocialLoginResponse(
         @Schema(description = "회원 상태")
         MemberStatus status
 ) {
-    public static SocialLoginResponse from(AuthToken token, MemberStatus status) { // from: 타입 하나를 받아서 새로운 객체 생성하는 메서드(계층 간 데이터 변환)
-        return SocialLoginResponse.builder()
-                .accessToken(token.accessToken())
-                .accessTokenExpiresIn(token.accessTokenExpiresIn())
-                .status(status)
-                .build();
-    }
-
     public static SocialLoginResponse from(AuthResult authResult) {
         return SocialLoginResponse.builder()
                 .accessToken(authResult.authToken().accessToken())

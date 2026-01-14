@@ -41,16 +41,16 @@ public class SecurityConfig {
                 // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(securityProperties.getPermitAllPaths().toArray(String[]::new)).permitAll()
-                         // 공통 허용 경로 (로그인, 스웨거 등)
-                        .requestMatchers("/api/v1/auth/logout").authenticated()
+                         // 공통 허용 경로 (로그인 등)
                         .requestMatchers("/api/v1/auth/social-login/**", "/api/v1/auth/reissue").permitAll()
-
-
-                        // 크루 도메인 권한 분리 예시
-//                        .requestMatchers(HttpMethod.POST, "/api/v1/crews").hasAnyRole("MEMBER", "LEADER")
-//                        .requestMatchers(HttpMethod.PATCH, "/api/v1/crews/**").hasRole("LEADER")
-//                        .requestMatchers(HttpMethod.DELETE, "/api/v1/crews/**").hasRole("LEADER")
-                        .anyRequest().authenticated()
+                        // 사용자 인증 시 상태 상관없이 허용
+                        .requestMatchers("/api/v1/auth/logout").authenticated()
+                        // 약관 동의 API: PENDING_TERMS 상태만 접근 가능
+                        .requestMatchers("/api/v1/members/terms").hasAuthority("STATUS_PENDING_TERMS")
+                        // 온보딩 API: PENDING_ONBOARDING 상태만 접근 가능
+                        .requestMatchers("/api/v1/onboarding/**").hasAuthority("STATUS_PENDING_ONBOARDING")
+                        // 나머지 API: 정회원(ACTIVE) 상태만 접근 가능
+                        .anyRequest().hasAuthority("STATUS_ACTIVE")
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
