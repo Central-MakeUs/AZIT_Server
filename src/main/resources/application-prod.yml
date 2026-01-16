@@ -37,6 +37,7 @@ security:
     allowed-origins:
       - "https://api.azitcrew.com"
       - "https://azitcrew.com"
+      - "https://appleid.apple.com"
     allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     allowed-headers: ["*"]
     allow-credentials: true
