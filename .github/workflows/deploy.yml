@@ -88,7 +88,7 @@ jobs:
             echo "JWT_ACCESS_EXPIRATION=${{ secrets.JWT_ACCESS_EXPIRATION }}" >> .env
             echo "JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}" >> .env
             echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> .env
-            echo "APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}" >> .env
+            echo "APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}" >> .env
             echo "APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}" >> .env
             echo "APPLE_KEY_PATH=${{ secrets.APPLE_KEY_PATH }}" >> .env
 
