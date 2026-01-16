@@ -87,6 +87,10 @@ jobs:
             echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
             echo "JWT_ACCESS_EXPIRATION=${{ secrets.JWT_ACCESS_EXPIRATION }}" >> .env
             echo "JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}" >> .env
+            echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> .env
+            echo "APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}" >> .env
+            echo "APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}" >> .env
+            echo "APPLE_KEY_PATH=${{ secrets.APPLE_KEY_PATH }}" >> .env
 
             sudo docker compose pull
             sudo docker compose up -d

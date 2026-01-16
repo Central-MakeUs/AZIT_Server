@@ -9,5 +9,6 @@ public record SocialProfile(
         SocialProvider socialProvider, // KAKAO, APPLE
         String nickname,         // 필수
         String email,
-        String profileImageUrl
+        String profileImageUrl,
+        String refreshToken // 애플용 리프레시 토큰
 ) {}

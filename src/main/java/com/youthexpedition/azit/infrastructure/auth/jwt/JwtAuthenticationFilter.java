@@ -1,11 +1,13 @@
 package com.youthexpedition.azit.infrastructure.auth.jwt;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -38,7 +41,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 만료(EXPIRED_TOKEN) 또는 유효하지 않음(INVALID_TOKEN) 예외를 request에 저장
             // 이후 AuthenticationEntryPoint에서 값을 꺼내 처리
             request.setAttribute("exception", e.getErrorCode());
-        }
+        } catch (Exception e) {
+        // NPE 등 기타 예외 발생 시 로그를 남기고 유효하지 않은 토큰으로 처리
+        log.error("Authentication failed: ", e);
+        request.setAttribute("exception", AuthErrorCode.INVALID_TOKEN);
+    }
 
         filterChain.doFilter(request, response);
     }

@@ -38,3 +38,8 @@ out/
 
 ### yml files ###
 src/main/resources/application-local.yml
+
+### secret keys ###
+*.p8
+apple-keys/
+

@@ -44,11 +44,9 @@ public class SecurityConfig {
                          // 공통 허용 경로 (로그인 등)
                         .requestMatchers("/api/v1/auth/social-login/**", "/api/v1/auth/reissue").permitAll()
                         // 사용자 인증 시 상태 상관없이 허용
-                        .requestMatchers("/api/v1/auth/logout").authenticated()
-                        // 약관 동의 API: PENDING_TERMS 상태만 접근 가능
-                        .requestMatchers("/api/v1/members/terms").hasAuthority("STATUS_PENDING_TERMS")
-                        // 온보딩 API: PENDING_ONBOARDING 상태만 접근 가능
-                        .requestMatchers("/api/v1/onboarding/**").hasAuthority("STATUS_PENDING_ONBOARDING")
+                        .requestMatchers(
+                                "/api/v1/auth/logout", "/api/v1/members/terms", "/api/v1/onboarding/**"
+                        ).authenticated()
                         // 나머지 API: 정회원(ACTIVE) 상태만 접근 가능
                         .anyRequest().hasAuthority("STATUS_ACTIVE")
                 )
