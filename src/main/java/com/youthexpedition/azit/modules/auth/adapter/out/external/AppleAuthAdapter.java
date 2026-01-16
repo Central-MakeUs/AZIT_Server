@@ -12,7 +12,6 @@ import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort
 import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwsHeader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,13 +39,10 @@ public class AppleAuthAdapter implements SocialAuthPort {
         ApplePublicKeyResponse keys = appleFeignClient.getApplePublicKeys();
 
         // id_token 헤더에서 kid, alg 추출
-        JwsHeader header = appleJwtUtils.getHeader(command.idToken());
+        String kid = appleJwtUtils.getKidFromHeader(command.idToken());
 
         // 일치하는 공개키 찾기
-        ApplePublicKeyResponse.ApplePublicKey matchedKey = keys.getMatchedKey(
-                header.getKeyId(),
-                header.getAlgorithm()
-        );
+        ApplePublicKeyResponse.ApplePublicKey matchedKey = keys.getMatchedKey(kid, "RS256");
 
         // ID Token 서명 검증 및 정보 추출
         Claims claims = appleJwtUtils.verifyIdToken(command.idToken(), matchedKey);
@@ -73,6 +69,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
     private String parseNickname(String userJson) {
         // user 정보가 없는 경우 (재로그인 시)
         if (userJson == null || userJson.isBlank()) {
+            log.info("user 정보 없음, 재로그인한 유저");
             return "Apple User";
         }
 

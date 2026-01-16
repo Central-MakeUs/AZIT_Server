@@ -1,12 +1,14 @@
 package com.youthexpedition.azit.infrastructure.auth.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.ApplePublicKeyResponse;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +25,7 @@ import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AppleJwtUtils {
@@ -37,6 +40,8 @@ public class AppleJwtUtils {
 
     @Value("${oauth.apple.key-path}")
     private String keyPath;
+
+    private final ObjectMapper objectMapper;
 
     /**
      * Apple Client Secret (JWT) 생성
@@ -112,19 +117,24 @@ public class AppleJwtUtils {
                     .getPayload();
 
         } catch (Exception e) {
+            log.error("애플 ID 토큰 서명 검증 실패: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.INVALID_APPLE_ID_TOKEN);
         }
     }
 
     /**
-     * ID Token 헤더에서 kid, alg 추출을 위해 토큰 파싱 (서명 검증 전)
+     * ID Token 헤더에서 kid, alg 추출 (서명 검증 전)
      */
-    public JwsHeader getHeader(String idToken) {
+    public String getKidFromHeader(String idToken) {
         try {
-            return Jwts.parser()
-                    .build()
-                    .parseSignedClaims(idToken)
-                    .getHeader();
+            // JWT는 [header].[payload].[signature] 구조이므로 첫 번째 파트 추출
+            String headerPart = idToken.split("\\.")[0];
+
+            // Base64Url 디코딩 후 JSON 파싱
+            byte[] decodedBytes = Base64.getUrlDecoder().decode(headerPart);
+            JsonNode headerNode = objectMapper.readTree(decodedBytes);
+
+            return headerNode.get("kid").asText(); // kid 값만 반환
         } catch (Exception e) {
             throw new BusinessException(AuthErrorCode.INVALID_APPLE_ID_TOKEN);
         }
