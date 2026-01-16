@@ -89,6 +89,7 @@ public class AppleJwtUtils {
 
             return keyFactory.generatePrivate(keySpec);
         } catch (Exception e) {
+            log.error("애플 시크릿 키 생성 실패: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.APPLE_CLIENT_SECRET_CREATION_FAILED);
         }
     }
@@ -136,6 +137,7 @@ public class AppleJwtUtils {
 
             return headerNode.get("kid").asText(); // kid 값만 반환
         } catch (Exception e) {
+            log.error("애플 Kid 추출 실패: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.INVALID_APPLE_ID_TOKEN);
         }
     }

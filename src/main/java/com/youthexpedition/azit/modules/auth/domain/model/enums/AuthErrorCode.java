@@ -18,7 +18,7 @@ public enum AuthErrorCode implements BaseErrorCode {
     // 애플 소셜 로그인
     INVALID_APPLE_ID_TOKEN("INVALID_APPLE_ID_TOKEN", "애플 ID 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED),
     APPLE_PUBLIC_KEY_NOT_FOUND("APPLE_PUBLIC_KEY_NOT_FOUND", "유효한 애플 공개키를 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED),
-    APPLE_CLIENT_SECRET_CREATION_FAILED("APPLE_CLIENT_SECRET_FAILED", "애플 클라이언트 시크릿 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    APPLE_CLIENT_SECRET_CREATION_FAILED("APPLE_CLIENT_SECRET_CREATION_FAILED", "애플 클라이언트 시크릿 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // 토큰
     TOKEN_REUSE_DETECTED("TOKEN_REUSE_DETECTED", "토큰 재사용이 감지되었습니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED),
