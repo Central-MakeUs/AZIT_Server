@@ -1,7 +1,8 @@
 package com.youthexpedition.azit.modules.auth.adapter.out.persistence;
 
-import com.youthexpedition.azit.modules.auth.application.port.out.RefreshTokenPort;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
-public class RedisRefreshTokenAdapter implements RefreshTokenPort {
+public class RedisTokenAdapter implements TokenPort {
     private final StringRedisTemplate redisTemplate;
     private static final String RT_PREFIX = "RT:";
 

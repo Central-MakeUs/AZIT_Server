@@ -6,6 +6,7 @@ import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.KakaoAut
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.KakaoTokenResponse;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.KakaoUserInfoResponse;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
+import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialRevokeCommand;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
@@ -30,6 +31,11 @@ public class KakaoAuthAdapter implements SocialAuthPort {
     private String redirectUri;
     @Value("${oauth.kakao.client-secret}")
     private String clientSecret;
+    @Value("${oauth.kakao.admin-key}")
+    private String adminKey;
+
+    private static final String TARGET_ID_TYPE = "user_id";
+    private static final String AUTHORIZATION_HEADER = "KakaoAK ";
 
     @Override
     public SocialProfile getSocialProfile(SocialLoginCommand command) {
@@ -62,6 +68,23 @@ public class KakaoAuthAdapter implements SocialAuthPort {
             // 기타 통신 오류
             log.error("카카오 API 호출 중 오류 발생: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.SOCIAL_AUTHENTICATION_FAILED);
+        }
+    }
+
+    @Override
+    public void revoke(SocialRevokeCommand command) {
+        String socialProviderId = command.socialProviderId();
+        if (socialProviderId == null || socialProviderId.isBlank()) {
+            log.warn("카카오 연동 해제를 위한 provider ID가 없습니다.");
+            return;
+        }
+
+        try {
+            kakaoApiFeignClient.unlink(AUTHORIZATION_HEADER + adminKey, TARGET_ID_TYPE, Long.parseLong(socialProviderId));
+            log.info("카카오 연동 해제 성공");
+        } catch (Exception e) {
+            log.error("카카오 연동 해제 실패: {}", e.getMessage());
+            throw new BusinessException(AuthErrorCode.KAKAO_REVOKE_FAILED);
         }
     }
 

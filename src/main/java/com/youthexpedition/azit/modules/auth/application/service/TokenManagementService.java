@@ -3,7 +3,7 @@ package com.youthexpedition.azit.modules.auth.application.service;
 import com.youthexpedition.azit.infrastructure.auth.jwt.JwtProvider;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.in.TokenUseCase;
-import com.youthexpedition.azit.modules.auth.application.port.out.RefreshTokenPort;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TokenManagementService implements TokenUseCase {
     private final LoadMemberPort loadMemberPort;
-    private final RefreshTokenPort refreshTokenPort;
+    private final TokenPort tokenPort;
     private final JwtProvider jwtProvider;
 
     @Override
@@ -29,11 +29,11 @@ public class TokenManagementService implements TokenUseCase {
         Long memberId = jwtProvider.extractMemberId(refreshToken);
 
         // Redis의 RT와 비교
-        String savedRT = refreshTokenPort.findByMemberId(memberId)
+        String savedRT = tokenPort.findByMemberId(memberId)
                 .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED));
 
         if (!savedRT.equals(refreshToken)) {
-            refreshTokenPort.deleteByMemberId(memberId);
+            tokenPort.deleteByMemberId(memberId);
             throw new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED);
         }
 
@@ -44,7 +44,7 @@ public class TokenManagementService implements TokenUseCase {
         String newAT = jwtProvider.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
         String newRT = jwtProvider.generateRefreshToken(member.getId());
 
-        refreshTokenPort.save(member.getId(), newRT, jwtProvider.getRefreshTokenExpirationSeconds());
+        tokenPort.save(member.getId(), newRT, jwtProvider.getRefreshTokenExpirationSeconds());
 
         AuthToken token = AuthToken.builder()
                 .accessToken(newAT)
@@ -57,6 +57,6 @@ public class TokenManagementService implements TokenUseCase {
 
     @Override
     public void logout(Long memberId) {
-        refreshTokenPort.deleteByMemberId(memberId);
+        tokenPort.deleteByMemberId(memberId);
     }
 }

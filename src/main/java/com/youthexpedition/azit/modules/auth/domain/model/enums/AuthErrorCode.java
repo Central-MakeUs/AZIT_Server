@@ -20,6 +20,10 @@ public enum AuthErrorCode implements BaseErrorCode {
     APPLE_PUBLIC_KEY_NOT_FOUND("APPLE_PUBLIC_KEY_NOT_FOUND", "유효한 애플 공개키를 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED),
     APPLE_CLIENT_SECRET_CREATION_FAILED("APPLE_CLIENT_SECRET_CREATION_FAILED", "애플 클라이언트 시크릿 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    // 소셜 연동 해제
+    KAKAO_REVOKE_FAILED("KAKAO_REVOKE_FAILED", "카카오 계정 연동 해제에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    APPLE_REVOKE_FAILED("APPLE_REVOKE_FAILED", "애플 계정 연동 해제에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
     // 토큰
     TOKEN_REUSE_DETECTED("TOKEN_REUSE_DETECTED", "토큰 재사용이 감지되었습니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED),
     EXPIRED_TOKEN("EXPIRED_TOKEN", "만료된 토큰입니다.", HttpStatus.UNAUTHORIZED),
