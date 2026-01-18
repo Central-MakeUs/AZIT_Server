@@ -1,9 +1,11 @@
 package com.youthexpedition.azit.infrastructure.auth.jwt;
 
+import com.youthexpedition.azit.infrastructure.auth.util.TokenUtil;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenProviderPort;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,16 +29,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final TokenProviderPort tokenProviderPort;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain filterChain)
             throws ServletException, IOException {
 
         // 헤더에서 accessToken 추출
-        String accessToken = resolveToken(request);
+        String authorizationHeader = request.getHeader("Authorization");
+
+        // 헤더가 없는 경우 통과
+        if (!StringUtils.hasText(authorizationHeader)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // accessToken 유효성 검증 및 인증 처리
         try {
+            String accessToken = TokenUtil.extractToken(authorizationHeader);
             // 토큰이 있고 유효한지 검증
-            if (StringUtils.hasText(accessToken) && tokenProviderPort.validateToken(accessToken)) {
+            if (tokenProviderPort.validateToken(accessToken)) {
                 // 블랙리스트에 포함된 토큰인지 확인
                 if (tokenPort.isBlacklisted(accessToken)) {
                     throw new BusinessException(AuthErrorCode.BLACKLISTED_TOKEN);
@@ -56,13 +65,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
         filterChain.doFilter(request, response);
-    }
-
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7); // "Bearer " 이후의 문자열만 반환
-        }
-        return null;
     }
 }

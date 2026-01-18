@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.auth.adapter.in.web;
 
 import com.youthexpedition.azit.infrastructure.auth.util.CookieUtil;
+import com.youthexpedition.azit.infrastructure.auth.util.TokenUtil;
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
@@ -73,7 +74,7 @@ public class AuthController implements AuthControllerDocs {
     @PostMapping("/logout")
     public CommonResponse<Void> logout(@CurrentMemberId Long memberId, HttpServletResponse response,
                                        @RequestHeader("Authorization") String authorizationHeader) {
-        String accessToken = authorizationHeader.substring(7); // Bearer 제거
+        String accessToken = TokenUtil.extractToken(authorizationHeader);
         tokenUseCase.logout(memberId, accessToken);
         cookieUtil.deleteRefreshTokenCookie(response);
 

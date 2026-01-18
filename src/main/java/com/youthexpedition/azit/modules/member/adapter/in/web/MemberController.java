@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.member.adapter.in.web;
 
+import com.youthexpedition.azit.infrastructure.auth.util.TokenUtil;
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
@@ -25,7 +26,7 @@ public class MemberController implements MemberControllerDocs {
     @PostMapping("/me/withdraw")
     public CommonResponse<Void> withdraw(
             @CurrentMemberId Long memberId, @RequestHeader("Authorization") String authorizationHeader) {
-        String accessToken = authorizationHeader.substring(7); // Bearer 제거
+        String accessToken = TokenUtil.extractToken(authorizationHeader);
         memberUseCase.withdraw(memberId, accessToken);
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
