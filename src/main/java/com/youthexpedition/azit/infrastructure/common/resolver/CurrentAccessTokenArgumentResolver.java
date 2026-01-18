@@ -1,8 +1,11 @@
 package com.youthexpedition.azit.infrastructure.common.resolver;
 
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentAccessToken;
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import jakarta.annotation.Nonnull;
 import org.springframework.core.MethodParameter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -24,6 +27,10 @@ public class CurrentAccessTokenArgumentResolver implements HandlerMethodArgument
                                   @Nonnull NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
 
         // JwtProvider에서 UsernamePasswordAuthenticationToken 생성 시 두 번째 인자(credentials)로 토큰을 넣어주었으므로 이를 꺼냄
-        return SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            throw new BusinessException(AuthErrorCode.UNAUTHORIZED);
+        }
+        return authentication.getCredentials();
     }
 }
