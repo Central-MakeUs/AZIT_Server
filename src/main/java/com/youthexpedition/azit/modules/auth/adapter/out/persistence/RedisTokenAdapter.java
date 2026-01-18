@@ -20,7 +20,7 @@ public class RedisTokenAdapter implements TokenPort {
 
     @Override
     public void save(Long memberId, String refreshToken, long duration) {
-        redisTemplate.opsForValue().set("RT:" + memberId, refreshToken, duration, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(REFRESH_TOKEN_PREFIX + memberId, refreshToken, duration, TimeUnit.SECONDS);
     }
 
     @Override

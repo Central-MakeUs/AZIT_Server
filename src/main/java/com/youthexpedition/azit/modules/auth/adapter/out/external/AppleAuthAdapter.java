@@ -99,7 +99,6 @@ public class AppleAuthAdapter implements SocialAuthPort {
         }
 
         String clientSecret = appleJwtUtils.createClientSecret();
-        System.out.println("clientSecret: " + clientSecret);
         AppleTokenResponse tokenResponse = appleFeignClient.getToken(
                 clientId, clientSecret, authorizationCode, GRANT_TYPE_AUTHORIZATION_CODE, redirectUri);
 

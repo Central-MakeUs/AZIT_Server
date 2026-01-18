@@ -36,6 +36,7 @@ public class MemberService implements MemberUseCase {
         saveMemberPort.save(member);
     }
 
+    @Override
     @Transactional
     public void withdraw(Long memberId, String accessToken) {
         Member member = loadMemberPort.findById(memberId)
