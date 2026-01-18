@@ -2,6 +2,7 @@ package com.youthexpedition.azit.modules.auth.application.port.out;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
+import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialRevokeCommand;
 import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
@@ -21,6 +22,11 @@ public class SocialAuthComposite implements SocialAuthPort {
     public SocialProfile getSocialProfile(SocialLoginCommand command) {
         return getAdapter(command.socialProvider())
                 .getSocialProfile(command);
+    }
+
+    @Override
+    public void revoke(SocialRevokeCommand command) {
+        getAdapter(command.provider()).revoke(command);
     }
 
     @Override

@@ -1,0 +1,50 @@
+package com.youthexpedition.azit.modules.auth.adapter.out.persistence;
+
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenProviderPort;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+@Component
+@RequiredArgsConstructor
+public class RedisTokenAdapter implements TokenPort {
+    private final StringRedisTemplate redisTemplate;
+    private final TokenProviderPort tokenProviderPort;
+
+    private static final String REFRESH_TOKEN_PREFIX = "RT:";
+    private static final String BLACKLIST_PREFIX = "BL:";
+
+    @Override
+    public void save(Long memberId, String refreshToken, long duration) {
+        redisTemplate.opsForValue().set(REFRESH_TOKEN_PREFIX + memberId, refreshToken, duration, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public Optional<String> findByMemberId(Long memberId) {
+        String token = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + memberId);
+        return Optional.ofNullable(token);
+    }
+
+    @Override
+    public void deleteByMemberId(Long memberId) {
+        redisTemplate.delete(REFRESH_TOKEN_PREFIX + memberId);
+    }
+
+    @Override
+    public void addToBlacklist(String accessToken, String reason) {
+        long remainingTimeMillis = tokenProviderPort.getRemainingExpirationMilliseconds(accessToken);
+        if (remainingTimeMillis > 0) {
+            redisTemplate.opsForValue().set(
+                    BLACKLIST_PREFIX + accessToken, reason, remainingTimeMillis, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    @Override
+    public boolean isBlacklisted(String accessToken) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + accessToken));
+    }
+}

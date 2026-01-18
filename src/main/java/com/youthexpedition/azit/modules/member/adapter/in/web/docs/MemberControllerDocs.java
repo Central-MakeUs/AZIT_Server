@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @Tag(name = "Member" , description = "회원 API")
 public interface MemberControllerDocs {
@@ -23,8 +24,15 @@ public interface MemberControllerDocs {
     @ApiErrorCodeExamples({
             "MEMBER_NOT_FOUND",
             "REQUIRED_TERMS_NOT_AGREED", // 필수 약관 중 하나라도 동의하지 않은 경우
-            "INVALID_MEMBER_STATUS"      // 이미 약관 동의를 완료했거나 탈퇴한 유저인 경우
+            "INVALID_MEMBER_STATUS",      // 이미 약관 동의를 완료했거나 탈퇴한 유저인 경우
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> agreeToTerms(@CurrentMemberId Long memberId, @Valid @RequestBody AgreeToTermsRequest request);
 
+    @Operation(summary = "회원 탈퇴", description = "소셜 연동 해제 및 서비스 탈퇴를 진행합니다.")
+    @ApiErrorCodeExamples({
+            "MEMBER_ALREADY_WITHDRAWN", "APPLE_REVOKE_FAILED",  "KAKAO_REVOKE_FAILED",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> withdraw(@CurrentMemberId Long memberId, @RequestHeader("Authorization") String authorizationHeader);
 }

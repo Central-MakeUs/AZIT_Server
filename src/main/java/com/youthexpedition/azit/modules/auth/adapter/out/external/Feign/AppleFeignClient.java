@@ -23,4 +23,13 @@ public interface AppleFeignClient {
     // 공개키 목록 조회
     @GetMapping("/auth/keys")
     ApplePublicKeyResponse getApplePublicKeys();
+
+    // 연동 해제
+    @PostMapping(value = "/auth/revoke", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    void revoke(
+            @RequestParam("client_id") String clientId,
+            @RequestParam("client_secret") String clientSecret,
+            @RequestParam("token") String token,
+            @RequestParam("token_type_hint") String tokenTypeHint // "refresh_token"
+    );
 }

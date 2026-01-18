@@ -3,7 +3,7 @@ package com.youthexpedition.azit.modules.auth.application.service;
 import com.youthexpedition.azit.infrastructure.auth.jwt.JwtProvider;
 import com.youthexpedition.azit.modules.auth.application.port.in.SocialLoginUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
-import com.youthexpedition.azit.modules.auth.application.port.out.RefreshTokenPort;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
@@ -22,7 +22,7 @@ public class SocialLoginService implements SocialLoginUseCase {
     private final SocialAuthPort socialAuthPort;
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
-    private final RefreshTokenPort refreshTokenPort;
+    private final TokenPort tokenPort;
     private final JwtProvider jwtProvider;
 
     @Override
@@ -65,6 +65,6 @@ public class SocialLoginService implements SocialLoginUseCase {
     }
 
     private void saveRefreshToken(Long memberId, String refreshToken) {
-        refreshTokenPort.save(memberId, refreshToken, jwtProvider.getRefreshTokenExpirationSeconds());
+        tokenPort.save(memberId, refreshToken, jwtProvider.getRefreshTokenExpirationSeconds());
     }
 }

@@ -3,13 +3,16 @@ package com.youthexpedition.azit.modules.auth.adapter.out.external;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youthexpedition.azit.infrastructure.auth.util.AppleJwtUtils;
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.ApplePublicKeyResponse;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.AppleUserInfoResponse;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.AppleFeignClient;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.AppleTokenResponse;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
+import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialRevokeCommand;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
+import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +35,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
     private String redirectUri;
 
     private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
+    private static final String TOKEN_TYPE_HINT = "refresh_token";
 
     @Override
     public SocialProfile getSocialProfile(SocialLoginCommand command) {
@@ -51,7 +55,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
         String email = claims.get("email", String.class);
 
         // 인가 코드로 리프레시 토큰 요청
-        String appleRefreshToken = fetchAppleRefreshToken(command.authorizationCode());
+        String refreshToken = fetchRefreshToken(command.authorizationCode());
 
         // 소셜 프로필 생성
         return SocialProfile.builder()
@@ -59,7 +63,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
                 .socialProviderId(claims.getSubject()) // sub 값
                 .email(email)
                 .nickname(nickname)
-                .refreshToken(appleRefreshToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -89,7 +93,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
         return "Apple User";
     }
 
-    private String fetchAppleRefreshToken(String authorizationCode) {
+    private String fetchRefreshToken(String authorizationCode) {
         if (authorizationCode == null || authorizationCode.isBlank()) {
             return null;
         }
@@ -99,6 +103,26 @@ public class AppleAuthAdapter implements SocialAuthPort {
                 clientId, clientSecret, authorizationCode, GRANT_TYPE_AUTHORIZATION_CODE, redirectUri);
 
         return tokenResponse.refreshToken();
+    }
+
+    @Override
+    public void revoke(SocialRevokeCommand command) {
+        String refreshToken = command.refreshToken();
+        if (refreshToken == null || refreshToken.isBlank()) {
+            log.warn("애플 연동 해제를 위한 리프레시 토큰이 없습니다.");
+            return;
+        }
+
+        // client_secret 생성
+        String clientSecret = appleJwtUtils.createClientSecret();
+        try {
+            // 애플 서버에 연동 해제 요청
+            appleFeignClient.revoke(clientId, clientSecret, refreshToken, TOKEN_TYPE_HINT);
+            log.info("애플 연동 해제 성공");
+        } catch (Exception e) {
+            log.error("애플 연동 해제 실패: {}", e.getMessage());
+            throw new BusinessException(AuthErrorCode.APPLE_REVOKE_FAILED);
+        }
     }
 
     @Override

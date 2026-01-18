@@ -1,9 +1,9 @@
 package com.youthexpedition.azit.modules.auth.application.service;
 
-import com.youthexpedition.azit.infrastructure.auth.jwt.JwtProvider;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.in.TokenUseCase;
-import com.youthexpedition.azit.modules.auth.application.port.out.RefreshTokenPort;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenProviderPort;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
@@ -19,21 +19,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TokenManagementService implements TokenUseCase {
     private final LoadMemberPort loadMemberPort;
-    private final RefreshTokenPort refreshTokenPort;
-    private final JwtProvider jwtProvider;
+    private final TokenPort tokenPort;
+    private final TokenProviderPort tokenProviderPort;
+
+    private static final String BLACKLIST_REASON_LOGOUT = "logout";
 
     @Override
     public AuthResult reissue(String refreshToken) {
         // 검증 및 memberId 추출
-        jwtProvider.validateToken(refreshToken);
-        Long memberId = jwtProvider.extractMemberId(refreshToken);
+        tokenProviderPort.validateToken(refreshToken);
+        Long memberId = tokenProviderPort.extractMemberId(refreshToken);
 
         // Redis의 RT와 비교
-        String savedRT = refreshTokenPort.findByMemberId(memberId)
+        String savedRT = tokenPort.findByMemberId(memberId)
                 .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED));
 
         if (!savedRT.equals(refreshToken)) {
-            refreshTokenPort.deleteByMemberId(memberId);
+            tokenPort.deleteByMemberId(memberId);
             throw new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED);
         }
 
@@ -41,22 +43,23 @@ public class TokenManagementService implements TokenUseCase {
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        String newAT = jwtProvider.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
-        String newRT = jwtProvider.generateRefreshToken(member.getId());
+        String newAccessToken = tokenProviderPort.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
+        String newRefreshToken = tokenProviderPort.generateRefreshToken(member.getId());
 
-        refreshTokenPort.save(member.getId(), newRT, jwtProvider.getRefreshTokenExpirationSeconds());
+        tokenPort.save(member.getId(), newRefreshToken, tokenProviderPort.getRefreshTokenExpirationSeconds());
 
         AuthToken token = AuthToken.builder()
-                .accessToken(newAT)
-                .refreshToken(newRT)
-                .accessTokenExpiresIn(jwtProvider.getAccessTokenExpirationSeconds())
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .accessTokenExpiresIn(tokenProviderPort.getAccessTokenExpirationSeconds())
                 .build();
 
         return new AuthResult(token, member.getStatus());
     }
 
     @Override
-    public void logout(Long memberId) {
-        refreshTokenPort.deleteByMemberId(memberId);
+    public void logout(Long memberId, String accessToken) {
+        tokenPort.deleteByMemberId(memberId);
+        tokenPort.addToBlacklist(accessToken, BLACKLIST_REASON_LOGOUT); // 블랙리스트에 추가
     }
 }

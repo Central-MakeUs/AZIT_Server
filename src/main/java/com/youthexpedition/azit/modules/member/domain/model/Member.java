@@ -71,4 +71,15 @@ public class Member {
             this.updatedAt = LocalDateTime.now();
         }
     }
+
+    // 탈퇴 상태로 변경
+    public void withdraw() {
+        if (this.status == MemberStatus.WITHDRAWN) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN); // 이미 탈퇴한 경우 예외 처리
+        }
+
+        this.status = MemberStatus.WITHDRAWN;
+        this.appleRefreshToken = null;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

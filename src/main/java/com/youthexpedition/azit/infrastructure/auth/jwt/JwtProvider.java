@@ -2,6 +2,7 @@ package com.youthexpedition.azit.infrastructure.auth.jwt;
 
 import com.youthexpedition.azit.infrastructure.auth.model.MemberDetails;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenProviderPort;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberRole;
@@ -28,7 +29,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class JwtProvider {
+public class JwtProvider implements TokenProviderPort {
 
     @Getter
     private final long accessTokenExpirationSeconds;
@@ -56,6 +57,7 @@ public class JwtProvider {
     /**
      * Access Token 생성
      */
+    @Override
     public String generateAccessToken(Long memberId, MemberRole role, MemberStatus status) {
         Instant now = Instant.now();
         Instant validity = now.plusSeconds(accessTokenExpirationSeconds);
@@ -73,6 +75,7 @@ public class JwtProvider {
     /**
      * Refresh Token 생성
      */
+    @Override
     public String generateRefreshToken(Long memberId) {
         Instant now = Instant.now();
         Instant validity = now.plusSeconds(refreshTokenExpirationSeconds);
@@ -88,6 +91,7 @@ public class JwtProvider {
     /**
      * 토큰에서 인증 객체(Authentication) 추출
      */
+    @Override
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
         Long memberId = Long.parseLong(claims.getSubject());
@@ -112,6 +116,7 @@ public class JwtProvider {
     }
 
     // 토큰 유효성 검사
+    @Override
     public boolean validateToken(String token) {
         try {
             Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
@@ -125,8 +130,21 @@ public class JwtProvider {
         }
     }
 
+    @Override
     public Long extractMemberId(String token) {
         return Long.parseLong(parseClaims(token).getSubject());
+    }
+
+    // 블랙리스트 추가를 위해 남은 액세스 토큰 시간을 계산하는 메서드
+    @Override
+    public long getRemainingExpirationMilliseconds(String token) {
+        try {
+            Claims claims = parseClaims(token);
+            Date expiration = claims.getExpiration();
+            return Math.max(0, expiration.getTime() - System.currentTimeMillis());
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private Claims parseClaims(String token) {
