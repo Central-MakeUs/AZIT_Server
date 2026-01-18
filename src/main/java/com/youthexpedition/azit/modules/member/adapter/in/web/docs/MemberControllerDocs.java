@@ -27,4 +27,9 @@ public interface MemberControllerDocs {
     })
     CommonResponse<Void> agreeToTerms(@CurrentMemberId Long memberId, @Valid @RequestBody AgreeToTermsRequest request);
 
+    @Operation(summary = "회원 탈퇴", description = "소셜 연동 해제 및 서비스 탈퇴를 진행합니다.")
+    @ApiErrorCodeExamples({
+            "MEMBER_ALREADY_WITHDRAWN", "APPLE_REVOKE_FAILED",  "KAKAO_REVOKE_FAILED"
+    })
+    CommonResponse<Void> withdraw(@CurrentMemberId Long memberId);
 }
