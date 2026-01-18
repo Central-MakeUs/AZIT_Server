@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.auth.adapter.in.web.docs;
 
+import com.youthexpedition.azit.infrastructure.common.annotation.CurrentAccessToken;
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
@@ -13,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
@@ -41,9 +41,13 @@ public interface AuthControllerDocs {
     })
     CommonResponse<SocialLoginResponse> reissue(HttpServletRequest request, HttpServletResponse response);
 
-    @Operation(summary = "로그아웃", description = "현재 사용자의 세션을 종료하고 리프레시 토큰 쿠키를 제거합니다.")
+    @Operation(summary = "로그아웃", description = """
+            현재 사용자의 세션을 종료하고 리프레시 토큰 쿠키를 제거합니다. <br>
+            accessToken 파라미터는 무시하시고 기존대로 헤더에 액세스 토큰 넣어서 요청 보내시면 됩니다.
+            """
+    )
     @ApiErrorCodeExamples({
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> logout(@CurrentMemberId Long memberId, HttpServletResponse response, @RequestHeader("Authorization") String authorizationHeader);
+    CommonResponse<Void> logout(@CurrentMemberId Long memberId, @CurrentAccessToken String accessToken, HttpServletResponse response);
 }

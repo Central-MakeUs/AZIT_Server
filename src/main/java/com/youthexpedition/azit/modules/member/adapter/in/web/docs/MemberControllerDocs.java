@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.member.adapter.in.web.docs;
 
+import com.youthexpedition.azit.infrastructure.common.annotation.CurrentAccessToken;
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
@@ -8,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 @Tag(name = "Member" , description = "회원 API")
 public interface MemberControllerDocs {
@@ -29,10 +29,14 @@ public interface MemberControllerDocs {
     })
     CommonResponse<Void> agreeToTerms(@CurrentMemberId Long memberId, @Valid @RequestBody AgreeToTermsRequest request);
 
-    @Operation(summary = "회원 탈퇴", description = "소셜 연동 해제 및 서비스 탈퇴를 진행합니다.")
+    @Operation(summary = "회원 탈퇴", description = """
+            소셜 연동 해제 및 서비스 탈퇴를 진행합니다. <br>
+            accessToken 파라미터는 무시하시고 기존대로 헤더에 액세스 토큰 넣어서 요청 보내시면 됩니다.
+            """
+    )
     @ApiErrorCodeExamples({
             "MEMBER_ALREADY_WITHDRAWN", "APPLE_REVOKE_FAILED",  "KAKAO_REVOKE_FAILED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> withdraw(@CurrentMemberId Long memberId, @RequestHeader("Authorization") String authorizationHeader);
+    CommonResponse<Void> withdraw(@CurrentMemberId Long memberId, @CurrentAccessToken String accessToken);
 }
