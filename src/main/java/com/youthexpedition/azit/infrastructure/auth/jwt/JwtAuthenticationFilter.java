@@ -2,6 +2,7 @@ package com.youthexpedition.azit.infrastructure.auth.jwt;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenProviderPort;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,7 +23,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtProvider jwtProvider;
+    private final TokenPort tokenPort;
+    private final TokenProviderPort tokenProviderPort;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -34,8 +36,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // accessToken 유효성 검증 및 인증 처리
         try {
             // 토큰이 있고 유효한지 검증
-            if (StringUtils.hasText(accessToken) && jwtProvider.validateToken(accessToken)) {
-                Authentication authentication = jwtProvider.getAuthentication(accessToken);
+            if (StringUtils.hasText(accessToken) && tokenProviderPort.validateToken(accessToken)) {
+                // 블랙리스트에 포함된 토큰인지 확인
+                if (tokenPort.isBlacklisted(accessToken)) {
+                    throw new BusinessException(AuthErrorCode.BLACKLISTED_TOKEN);
+                }
+
+                Authentication authentication = tokenProviderPort.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (BusinessException e) {

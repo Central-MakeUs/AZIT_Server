@@ -23,6 +23,8 @@ public class MemberService implements MemberUseCase {
     private final SocialAuthPort socialAuthPort;
     private final TokenPort tokenPort;
 
+    private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
+
     @Override
     public void agreeToTerms(Long memberId, AgreeToTermsCommand command) {
         command.validateRequired(); // 필수 약관 동의 여부 검증
@@ -35,7 +37,7 @@ public class MemberService implements MemberUseCase {
     }
 
     @Transactional
-    public void withdraw(Long memberId) {
+    public void withdraw(Long memberId, String accessToken) {
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
@@ -44,6 +46,7 @@ public class MemberService implements MemberUseCase {
 
         member.withdraw();
         tokenPort.deleteByMemberId(memberId); // 리프레시 토큰 삭제
+        tokenPort.addToBlacklist(accessToken, BLACKLIST_REASON_WITHDRAWN); // 블랙리스트에 액세스 토큰 추가
         saveMemberPort.save(member);
     }
 }

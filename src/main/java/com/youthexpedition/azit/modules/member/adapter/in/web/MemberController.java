@@ -8,10 +8,7 @@ import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRe
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/members")
@@ -26,8 +23,10 @@ public class MemberController implements MemberControllerDocs {
     }
 
     @PostMapping("/me/withdraw")
-    public CommonResponse<Void> withdraw(@CurrentMemberId Long memberId) {
-        memberUseCase.withdraw(memberId);
+    public CommonResponse<Void> withdraw(
+            @CurrentMemberId Long memberId, @RequestHeader("Authorization") String authorizationHeader) {
+        String accessToken = authorizationHeader.substring(7); // Bearer 제거
+        memberUseCase.withdraw(memberId, accessToken);
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 }

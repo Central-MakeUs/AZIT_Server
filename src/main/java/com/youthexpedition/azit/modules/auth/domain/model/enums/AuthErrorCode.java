@@ -27,7 +27,8 @@ public enum AuthErrorCode implements BaseErrorCode {
     // 토큰
     TOKEN_REUSE_DETECTED("TOKEN_REUSE_DETECTED", "토큰 재사용이 감지되었습니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED),
     EXPIRED_TOKEN("EXPIRED_TOKEN", "만료된 토큰입니다.", HttpStatus.UNAUTHORIZED),
-    INVALID_TOKEN("INVALID_TOKEN", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
+    INVALID_TOKEN("INVALID_TOKEN", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED),
+    BLACKLISTED_TOKEN("BLACKLISTED_TOKEN", "사용이 중지된 토큰입니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED);
 
     private final String code;
     private final String message;

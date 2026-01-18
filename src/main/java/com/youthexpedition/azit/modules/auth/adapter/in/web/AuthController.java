@@ -71,8 +71,10 @@ public class AuthController implements AuthControllerDocs {
     }
 
     @PostMapping("/logout")
-    public CommonResponse<Void> logout(@CurrentMemberId Long memberId, HttpServletResponse response) {
-        tokenUseCase.logout(memberId);
+    public CommonResponse<Void> logout(@CurrentMemberId Long memberId, HttpServletResponse response,
+                                       @RequestHeader("Authorization") String authorizationHeader) {
+        String accessToken = authorizationHeader.substring(7); // Bearer 제거
+        tokenUseCase.logout(memberId, accessToken);
         cookieUtil.deleteRefreshTokenCookie(response);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);

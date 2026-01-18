@@ -2,6 +2,7 @@ package com.youthexpedition.azit.infrastructure.auth.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youthexpedition.azit.infrastructure.common.response.CommonErrorResponse;
+import com.youthexpedition.azit.infrastructure.common.response.code.BaseErrorCode;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +27,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             throws IOException, ServletException {
 
         // 필터에서 넘겨준 커스텀 에러 코드가 있는지 확인
-        AuthErrorCode errorCode = (AuthErrorCode) request.getAttribute("exception");
+        BaseErrorCode errorCode = (BaseErrorCode) request.getAttribute("exception");
 
         // 별도 설정된 에러가 없다면 기본 UNAUTHORIZED 사용
         if (errorCode == null) {
