@@ -12,7 +12,7 @@ public class TokenUtil {
 
     public static String extractToken(String authorizationHeader) {
         if (StringUtils.hasText(authorizationHeader) && authorizationHeader.startsWith(BEARER_PREFIX)) {
-            return authorizationHeader.substring(BEARER_PREFIX.length());
+            return authorizationHeader.substring(BEARER_PREFIX.length()).trim();
         }
 
         // 헤더가 비어있거나 Bearer 형식이 아닐 경우 예외 발생

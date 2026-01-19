@@ -32,7 +32,7 @@ public class MemberService implements MemberUseCase {
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        member.completeTermsAgreement(command.marketingTermsAgreed()); // 멤버 상태 업데이트 (약관 동의)
+        member.completeTermsAgreement(command.marketingTermsAgreed(), command.notificationTermsAgreed()); // 멤버 상태 업데이트 (약관 동의)
         saveMemberPort.save(member);
     }
 
