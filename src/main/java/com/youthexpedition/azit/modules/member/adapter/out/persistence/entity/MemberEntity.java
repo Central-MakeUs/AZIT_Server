@@ -34,6 +34,10 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name = "email", length = 255)
     private String email;
 
+    @Builder.Default
+    @Column(name = "is_email_sharing_enabled", nullable = false)
+    private boolean isEmailSharingEnabled = true;
+
     @Column(name = "profile_image_url", length = 255)
     private String profileImageUrl;
 

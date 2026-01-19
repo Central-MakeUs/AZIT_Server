@@ -7,6 +7,7 @@ import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.ApplePublicKeyResponse;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.AppleUserInfoResponse;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.AppleFeignClient;
+import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.AppleNotificationPayload;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.AppleTokenResponse;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialRevokeCommand;
@@ -36,6 +37,8 @@ public class AppleAuthAdapter implements SocialAuthPort {
 
     private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
     private static final String TOKEN_TYPE_HINT = "refresh_token";
+    private static final String APPLE_KEY_ALGORITHM = "RS256";
+    private static final String APPLE_USER_NAME = "Apple User";
 
     @Override
     public SocialProfile getSocialProfile(SocialLoginCommand command) {
@@ -46,13 +49,15 @@ public class AppleAuthAdapter implements SocialAuthPort {
         String kid = appleJwtUtils.getKidFromHeader(command.idToken());
 
         // 일치하는 공개키 찾기
-        ApplePublicKeyResponse.ApplePublicKey matchedKey = keys.getMatchedKey(kid, "RS256");
+        ApplePublicKeyResponse.ApplePublicKey matchedKey = keys.getMatchedKey(kid, APPLE_KEY_ALGORITHM);
 
         // ID Token 서명 검증 및 정보 추출
         Claims claims = appleJwtUtils.verifyIdToken(command.idToken(), matchedKey);
 
         String nickname = parseNickname(command.user());
         String email = claims.get("email", String.class);
+        // 이메일 정보가 존재한다면 사용을 허용한 것으로 간주
+        boolean isEmailSharingEnabled = (email != null);
 
         // 인가 코드로 리프레시 토큰 요청
         String refreshToken = fetchRefreshToken(command.authorizationCode());
@@ -62,6 +67,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
                 .socialProvider(SocialProvider.APPLE)
                 .socialProviderId(claims.getSubject()) // sub 값
                 .email(email)
+                .isEmailSharingEnabled(isEmailSharingEnabled)
                 .nickname(nickname)
                 .refreshToken(refreshToken)
                 .build();
@@ -74,7 +80,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
         // user 정보가 없는 경우 (재로그인 시)
         if (userJson == null || userJson.isBlank()) {
             log.info("user 정보 없음, 재로그인한 유저");
-            return "Apple User";
+            return APPLE_USER_NAME;
         }
 
         try {
@@ -87,10 +93,10 @@ public class AppleAuthAdapter implements SocialAuthPort {
             }
         } catch (JsonProcessingException e) {
             // 파싱 실패 시 기본값 반환
-            return "Apple User";
+            return APPLE_USER_NAME;
         }
 
-        return "Apple User";
+        return APPLE_USER_NAME;
     }
 
     private String fetchRefreshToken(String authorizationCode) {
@@ -122,6 +128,37 @@ public class AppleAuthAdapter implements SocialAuthPort {
         } catch (Exception e) {
             log.error("애플 연동 해제 실패: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.APPLE_REVOKE_FAILED);
+        }
+    }
+
+    public AppleNotificationPayload.Event parseNotification(String payload) {
+        try {
+            // 헤더에서 kid 추출 및 공개키 매칭
+            String kid = appleJwtUtils.getKidFromHeader(payload);
+            ApplePublicKeyResponse keys = appleFeignClient.getApplePublicKeys();
+            ApplePublicKeyResponse.ApplePublicKey matchedKey = keys.getMatchedKey(kid, APPLE_KEY_ALGORITHM);
+
+            // 서명 검증 및 페이로드 추출
+            Claims claims = appleJwtUtils.verifyIdToken(payload, matchedKey);
+
+            // events 클레임 파싱
+            Object eventsObj = claims.get("events");
+            String eventsJson;
+
+            // 타입에 따라 처리
+            if (eventsObj instanceof String) {
+                // 이미 문자열이라면 그대로 사용 (Apple S2S v2 기본값)
+                eventsJson = (String) eventsObj;
+            } else {
+                // 객체 형태일 경우 JSON 문자열로 변환
+                eventsJson = objectMapper.writeValueAsString(eventsObj);
+            }
+
+            return objectMapper.readValue(eventsJson, AppleNotificationPayload.Event.class);
+
+        } catch (Exception e) {
+            log.error("애플 알림 내용 파싱 실패: {}", e.getMessage());
+            throw new BusinessException(AuthErrorCode.INVALID_APPLE_ID_TOKEN);
         }
     }
 

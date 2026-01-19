@@ -7,8 +7,9 @@ import lombok.Builder;
 public record SocialProfile(
         String socialProviderId,
         SocialProvider socialProvider, // KAKAO, APPLE
-        String nickname,         // 필수
+        String nickname,
         String email,
         String profileImageUrl,
-        String refreshToken // 애플용 리프레시 토큰
+        String refreshToken, // 애플용 리프레시 토큰
+        boolean isEmailSharingEnabled // 이메일 공유 여부
 ) {}

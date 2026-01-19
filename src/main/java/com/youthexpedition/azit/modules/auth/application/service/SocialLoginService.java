@@ -53,6 +53,7 @@ public class SocialLoginService implements SocialLoginUseCase {
                         profile.socialProviderId(),
                         profile.nickname(),
                         profile.email(),
+                        profile.isEmailSharingEnabled(),
                         profile.profileImageUrl()
                 ));
 
