@@ -20,6 +20,7 @@ public class Member {
     private final String socialProviderId;
     private String nickname;
     private String email;
+    private boolean isEmailSharingEnabled;
     private String profileImageUrl;
     // 애플 리프레시 토큰
     private String appleRefreshToken;
@@ -35,12 +36,13 @@ public class Member {
     private LocalDateTime updatedAt;
 
     public static Member create(SocialProvider provider, String socialProviderId,
-                                String nickname, String email, String profileImageUrl) {
+                                String nickname, String email, boolean isEmailSharingEnabled, String profileImageUrl) {
         return Member.builder()
                 .socialProvider(provider)
                 .socialProviderId(socialProviderId)
                 .nickname(nickname)
                 .email(email)
+                .isEmailSharingEnabled(isEmailSharingEnabled)
                 .profileImageUrl(profileImageUrl)
                 .status(MemberStatus.PENDING_TERMS)
                 .role(MemberRole.MEMBER)
@@ -77,6 +79,11 @@ public class Member {
             this.appleRefreshToken = appleRefreshToken;
             this.updatedAt = LocalDateTime.now();
         }
+    }
+
+    public void updateEmailSharingStatus(boolean isEnabled) {
+        this.isEmailSharingEnabled = isEnabled;
+        this.updatedAt = LocalDateTime.now();
     }
 
     // 탈퇴 상태로 변경

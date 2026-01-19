@@ -10,6 +10,7 @@ import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPo
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
+import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,27 @@ public class MemberService implements MemberUseCase {
         member.withdraw();
         tokenPort.deleteByMemberId(memberId); // 리프레시 토큰 삭제
         tokenPort.addToBlacklist(accessToken, BLACKLIST_REASON_WITHDRAWN); // 블랙리스트에 액세스 토큰 추가
+        saveMemberPort.save(member);
+    }
+
+    @Override
+    @Transactional
+    public void withdrawBySocialInfo(String socialProviderId, SocialProvider socialProvider) {
+        Member member = loadMemberPort.findBySocialInfo(socialProvider, socialProviderId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        member.withdraw();
+        tokenPort.deleteByMemberId(member.getId()); // 리프레시 토큰 삭제
+        saveMemberPort.save(member);
+    }
+
+    @Override
+    @Transactional
+    public void updateEmailSharingStatus(String socialProviderId, SocialProvider socialProvider, boolean isEnabled) {
+        Member member = loadMemberPort.findBySocialInfo(socialProvider, socialProviderId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        member.updateEmailSharingStatus(isEnabled);
         saveMemberPort.save(member);
     }
 }

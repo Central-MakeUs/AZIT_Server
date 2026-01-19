@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(securityProperties.getPermitAllPaths().toArray(String[]::new)).permitAll()
                          // 공통 허용 경로 (로그인 등)
-                        .requestMatchers("/api/v1/auth/social-login/**", "/api/v1/auth/reissue").permitAll()
+                        .requestMatchers("/api/v1/auth/social-login/**", "/api/v1/auth/reissue", "/api/v1/auth/apple/notification").permitAll()
                         // 사용자 인증 시 상태 상관없이 허용
                         .requestMatchers(
                                 "/api/v1/auth/logout", "/api/v1/members/**"

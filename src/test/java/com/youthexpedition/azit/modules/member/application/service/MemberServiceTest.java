@@ -6,6 +6,7 @@ import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import org.junit.jupiter.api.DisplayName;
@@ -18,8 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -46,7 +46,7 @@ class MemberServiceTest {
 
         private final Long memberId = 1L;
         private final String accessToken = "testAccessToken";
-        private final Member member = Member.create(SocialProvider.KAKAO, "socialId", "test@example.com", "password", "nickname");
+        private final Member member = Member.create(SocialProvider.KAKAO, "socialId", "test@example.com", "password", true, "nickname");
 
         @Test
         @DisplayName("성공")
@@ -124,6 +124,50 @@ class MemberServiceTest {
             verify(socialAuthPort, times(1)).revoke(any());
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, never()).addToBlacklist(anyString(), anyString());
+            verify(saveMemberPort, never()).save(any(Member.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("약관 동의")
+    class AgreeToTerms {
+
+        private final Long memberId = 1L;
+        private final Member member = Member.create(SocialProvider.KAKAO, "socialId", "test@example.com", "password", true, "nickname");
+
+        @Test
+        @DisplayName("성공")
+        void agreeToTerms_success() {
+            // given
+            AgreeToTermsCommand command = new AgreeToTermsCommand(true, true, true, true, true, true);
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.agreeToTerms(memberId, command);
+
+            // then
+            verify(loadMemberPort, times(1)).findById(memberId);
+            verify(saveMemberPort, times(1)).save(member);
+            assertTrue(member.isMarketingTermsAgreed());
+            assertTrue(member.isNotificationAgreed());
+            assertNotNull(member.getEssentialTermsAgreedAt());
+        }
+
+        @Test
+        @DisplayName("실패 - 필수 약관 미동의")
+        void agreeToTerms_fail_requiredTermsNotAgreed() {
+            // given
+            // 서비스 이용약관(serviceTermsAgreed)을 false로 설정
+            AgreeToTermsCommand command = new AgreeToTermsCommand(false, true, true, true, false, false);
+
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class, () ->
+                    memberService.agreeToTerms(memberId, command)
+            );
+
+            assertEquals(MemberErrorCode.REQUIRED_TERMS_NOT_AGREED, exception.getErrorCode());
+            verify(loadMemberPort, never()).findById(anyLong());
             verify(saveMemberPort, never()).save(any(Member.class));
         }
     }

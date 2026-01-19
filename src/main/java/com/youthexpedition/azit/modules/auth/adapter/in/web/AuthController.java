@@ -6,8 +6,10 @@ import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.docs.AuthControllerDocs;
+import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.AppleNotificationRequest;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginRequest;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginResponse;
+import com.youthexpedition.azit.modules.auth.application.port.in.AppleNotificationUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.SocialLoginUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.TokenUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
@@ -29,6 +31,7 @@ import java.io.IOException;
 public class AuthController implements AuthControllerDocs {
 
     private final SocialLoginUseCase socialLoginUseCase;
+    private final AppleNotificationUseCase appleNotificationUseCase;
     private final TokenUseCase tokenUseCase;
     private final CookieUtil cookieUtil;
 
@@ -75,6 +78,13 @@ public class AuthController implements AuthControllerDocs {
     public CommonResponse<Void> logout(@CurrentMemberId Long memberId, @CurrentAccessToken String accessToken, HttpServletResponse response) {
         tokenUseCase.logout(memberId, accessToken);
         cookieUtil.deleteRefreshTokenCookie(response);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @PostMapping("/apple/notification")
+    public CommonResponse<Void> receiveAppleNotification(@Valid @RequestBody AppleNotificationRequest request) {
+        appleNotificationUseCase.handleNotification(request.payload());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }

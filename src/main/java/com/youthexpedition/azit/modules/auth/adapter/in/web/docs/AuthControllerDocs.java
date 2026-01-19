@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.annotation.CurrentAccessTo
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
+import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.AppleNotificationRequest;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginRequest;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginResponse;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
@@ -27,7 +28,7 @@ public interface AuthControllerDocs {
     })
     CommonResponse<SocialLoginResponse> socialLogin(@PathVariable SocialProvider provider, @Valid @RequestBody SocialLoginRequest request, HttpServletResponse response);
 
-    @Operation(summary = "애플 소셜 로그인(백엔드용)", description = "애플 전용 로그인 콜백 엔드포인트입니다. id_token을 검증하여 로그인을 처리합니다."
+    @Operation(summary = "애플 소셜 로그인 - 백엔드용", description = "애플 전용 로그인 콜백 엔드포인트입니다. id_token을 검증하여 로그인을 처리합니다."
     )
     @ApiErrorCodeExamples({
             "INVALID_APPLE_ID_TOKEN", "APPLE_PUBLIC_KEY_NOT_FOUND", "APPLE_CLIENT_SECRET_CREATION_FAILED"
@@ -50,4 +51,15 @@ public interface AuthControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> logout(@CurrentMemberId Long memberId, @CurrentAccessToken String accessToken, HttpServletResponse response);
+
+    @Operation(
+            summary = "애플 서버 알림 수신 (S2S) - 백엔드용",
+            description = """
+        Apple ID 사용자가 앱 연동 해제, 계정 삭제, 이메일 공유 활성화/비활성화를 수행했을 때 Apple 서버에서 보내는 알림을 수신하여 비즈니스 로직(탈퇴 처리 등)을 동기화합니다.
+        """
+    )
+    @ApiErrorCodeExamples({
+            "INVALID_APPLE_ID_TOKEN", "APPLE_PUBLIC_KEY_NOT_FOUND"
+    })
+    CommonResponse<Void> receiveAppleNotification(@Valid @RequestBody AppleNotificationRequest request);
 }
