@@ -61,4 +61,10 @@ public class MemberEntity extends BaseTimeEntity {
 
     @Column(name = "marketing_terms_agreed_at")
     private LocalDateTime marketingTermsAgreedAt; // 마케팅 동의 시점
+
+    @Column(name = "is_notification_agreed", nullable = false)
+    private boolean isNotificationAgreed; // 알림 수신 동의 여부
+
+    @Column(name = "notification_agreed_at")
+    private LocalDateTime notificationAgreedAt; // 알림 수신 동의 시점
 }

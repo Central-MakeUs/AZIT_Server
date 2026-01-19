@@ -8,11 +8,12 @@ public record AgreeToTermsCommand(
         boolean privacyPolicyAgreed,     // 개인정보 처리방침 (필수)
         boolean locationServiceAgreed,   // 위치기반 서비스 이용약관 (필수)
         boolean thirdPartyInfoAgreed,    // 제3자 정보제공 동의 (필수)
-        boolean marketingTermsAgreed     // 마케팅 정보 수신 동의 (선택)
+        boolean marketingTermsAgreed,     // 마케팅 정보 수신 동의 (선택)
+        boolean notificationTermsAgreed   // 알림 수신 동의 (선택)
 ) {
     public static AgreeToTermsCommand of(
-            boolean service, boolean privacy, boolean location, boolean thirdParty, boolean marketing) {
-        return new AgreeToTermsCommand(service, privacy, location, thirdParty, marketing);
+            boolean service, boolean privacy, boolean location, boolean thirdParty, boolean marketing, boolean notification) {
+        return new AgreeToTermsCommand(service, privacy, location, thirdParty, marketing, notification);
     }
 
     // 모든 필수 약관에 동의했는지 검증

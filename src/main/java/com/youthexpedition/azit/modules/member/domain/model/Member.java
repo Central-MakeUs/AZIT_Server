@@ -29,6 +29,8 @@ public class Member {
     private LocalDateTime essentialTermsAgreedAt; // 필수 약관(전체) 동의 시점
     private boolean isMarketingTermsAgreed; // 마케팅 동의 여부
     private LocalDateTime marketingTermsAgreedAt; // 마케팅 동의 시점
+    private boolean isNotificationAgreed; // 알림 동의 여부
+    private LocalDateTime notificationAgreedAt; // 알림 동의 시점
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -49,7 +51,7 @@ public class Member {
     }
 
     // 약관 동의 시 멤버 상태 업데이트
-    public void completeTermsAgreement(boolean marketingAgreed) {
+    public void completeTermsAgreement(boolean marketingAgreed, boolean notificationAgreed) {
         if (this.status != MemberStatus.PENDING_TERMS) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
@@ -58,6 +60,11 @@ public class Member {
         this.isMarketingTermsAgreed = marketingAgreed;
         if (marketingAgreed) {
             this.marketingTermsAgreedAt = LocalDateTime.now();
+        }
+
+        this.isNotificationAgreed = notificationAgreed;
+        if (notificationAgreed) {
+            this.notificationAgreedAt = LocalDateTime.now();
         }
 
         this.status = MemberStatus.PENDING_ONBOARDING; // 약관 완료 후 온보딩 대기 상태로 변경

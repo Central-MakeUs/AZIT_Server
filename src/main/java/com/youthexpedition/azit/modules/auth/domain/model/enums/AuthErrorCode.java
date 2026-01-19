@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum AuthErrorCode implements BaseErrorCode {
-    UNAUTHORIZED("AUTH_UNAUTHORIZED", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED("UNAUTHORIZED", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
 
     // 소셜 로그인
     INVALID_SOCIAL_CODE("INVALID_SOCIAL_CODE", "잘못된 소셜 인가 코드입니다.", HttpStatus.BAD_REQUEST),

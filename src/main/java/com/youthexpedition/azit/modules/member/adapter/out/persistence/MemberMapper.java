@@ -23,6 +23,8 @@ public class MemberMapper {
                 .essentialTermsAgreedAt(entity.getEssentialTermsAgreedAt())
                 .isMarketingTermsAgreed(entity.isMarketingTermsAgreed())
                 .marketingTermsAgreedAt(entity.getMarketingTermsAgreedAt())
+                .isNotificationAgreed(entity.isNotificationAgreed())
+                .notificationAgreedAt(entity.getNotificationAgreedAt())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -43,6 +45,8 @@ public class MemberMapper {
                 .essentialTermsAgreedAt(member.getEssentialTermsAgreedAt())
                 .isMarketingTermsAgreed(member.isMarketingTermsAgreed())
                 .marketingTermsAgreedAt(member.getMarketingTermsAgreedAt())
+                .isNotificationAgreed(member.isNotificationAgreed())
+                .notificationAgreedAt(member.getNotificationAgreedAt())
                 .build();
     }
 }

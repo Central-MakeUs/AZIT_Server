@@ -23,7 +23,11 @@ public record AgreeToTermsRequest(
 
         @Schema(description = "마케팅 정보 수신 동의 여부 (선택)")
         @NotNull(message = "마케팅 정보 수신 동의 여부는 필수입니다.")
-        Boolean marketingTermsAgreed
+        Boolean marketingTermsAgreed,
+
+        @Schema(description = "알림 수신 동의 여부 (선택)")
+        @NotNull(message = "알림 수신 동의 여부는 필수입니다.")
+        Boolean notificationTermsAgreed
 ) {
     public AgreeToTermsCommand toCommand() {
         return AgreeToTermsCommand.of(
@@ -31,7 +35,8 @@ public record AgreeToTermsRequest(
                 privacyPolicyAgreed,
                 locationServiceAgreed,
                 thirdPartyInfoAgreed,
-                marketingTermsAgreed
+                marketingTermsAgreed,
+                notificationTermsAgreed
         );
     }
 }
