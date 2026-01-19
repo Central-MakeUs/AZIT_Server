@@ -53,10 +53,8 @@ public class KakaoAuthAdapter implements SocialAuthPort {
 
             String profileImageUrl = Boolean.TRUE.equals(profile.isDefaultImage()) ? null : profile.profileImageUrl();
             String email = Boolean.TRUE.equals(account.hasEmail()) ? account.email() : null;
-            log.info("email: {}", email);
             // 이메일 값이 존재하면 동의(true), null이면 미동의(false)
             boolean isEmailSharingEnabled = (email != null);
-            log.info("isEmailSharingEnabled: {}", isEmailSharingEnabled);
 
             return SocialProfile.builder()
                     .socialProviderId(userInfo.id().toString())
