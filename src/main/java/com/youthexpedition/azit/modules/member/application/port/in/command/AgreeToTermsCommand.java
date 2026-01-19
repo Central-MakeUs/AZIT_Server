@@ -12,8 +12,10 @@ public record AgreeToTermsCommand(
         boolean notificationTermsAgreed   // 알림 수신 동의 (선택)
 ) {
     public static AgreeToTermsCommand of(
-            boolean service, boolean privacy, boolean location, boolean thirdParty, boolean marketing, boolean notification) {
-        return new AgreeToTermsCommand(service, privacy, location, thirdParty, marketing, notification);
+            boolean serviceTermsAgreed, boolean privacyPolicyAgreed, boolean locationServiceAgreed,
+            boolean thirdPartyInfoAgreed, boolean marketingTermsAgreed, boolean notificationTermsAgreed) {
+        return new AgreeToTermsCommand(
+                serviceTermsAgreed, privacyPolicyAgreed, locationServiceAgreed, thirdPartyInfoAgreed, marketingTermsAgreed, notificationTermsAgreed);
     }
 
     // 모든 필수 약관에 동의했는지 검증
