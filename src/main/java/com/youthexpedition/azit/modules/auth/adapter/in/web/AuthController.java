@@ -32,7 +32,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthController implements AuthControllerDocs {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final SocialLoginUseCase socialLoginUseCase;
     private final AppleNotificationUseCase appleNotificationUseCase;
     private final TokenUseCase tokenUseCase;
