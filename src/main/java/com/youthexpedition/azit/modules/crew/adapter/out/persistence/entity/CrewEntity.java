@@ -25,7 +25,8 @@ public class CrewEntity extends BaseTimeEntity {
     @Column(nullable = false, length = 30)
     private CrewCategory category;
 
-    @Column(nullable = false, length = 100)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
     private Region region;
 
     @Column(name = "profile_image_url", length = 255)
