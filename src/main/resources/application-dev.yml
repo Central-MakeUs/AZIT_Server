@@ -37,7 +37,7 @@ security:
     allowed-origins:
       - "https://dev-api.azitcrew.com"
       - "https://dev.azitcrew.com"
-      - "http://localhost:3000"
+      - "http://localhost:5173"
       - "https://appleid.apple.com"
     allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     allowed-headers: ["*"]
