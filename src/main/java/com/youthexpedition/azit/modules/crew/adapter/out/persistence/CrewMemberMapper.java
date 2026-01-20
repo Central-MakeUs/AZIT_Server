@@ -1,8 +1,6 @@
 package com.youthexpedition.azit.modules.crew.adapter.out.persistence;
 
-import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewEntity;
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewMemberEntity;
-import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import org.springframework.stereotype.Component;
 

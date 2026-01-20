@@ -2,7 +2,6 @@ package com.youthexpedition.azit.modules.crew.adapter.out.persistence;
 
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewMemberEntity;
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository.CrewMemberRepository;
-import com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository.CrewRepository;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
