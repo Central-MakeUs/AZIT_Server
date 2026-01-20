@@ -35,9 +35,6 @@ public class AuthController implements AuthControllerDocs {
     private final TokenUseCase tokenUseCase;
     private final CookieUtil cookieUtil;
 
-    @Value("${oauth.apple.success-redirect-uri}")
-    private String appleSuccessRedirectUri;
-
     @PostMapping("/social-login/{provider}")
     public CommonResponse<SocialLoginResponse> socialLogin(@PathVariable SocialProvider provider,
                                                            @Valid @RequestBody SocialLoginRequest request, HttpServletResponse response) {
@@ -53,14 +50,15 @@ public class AuthController implements AuthControllerDocs {
     // 애플 로그인 전용
     @PostMapping(value = "/social-login/apple", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public void appleLogin(@RequestParam("code") String code, @RequestParam("id_token") String idToken,
-                           @RequestParam(value = "user", required = false) String user, HttpServletResponse response) throws IOException {
+                           @RequestParam(value = "user", required = false) String user,
+                           @RequestParam(value = "state", required = false) String state, HttpServletResponse response) throws IOException {
         SocialLoginCommand command = SocialLoginCommand.of(SocialProvider.APPLE, code, idToken, user);
         AuthResult authResult = socialLoginUseCase.login(command);
 
         cookieUtil.setRefreshTokenCookie(response, authResult.authToken().refreshToken());
 
         // 프론트 페이지로 리다이렉트
-        response.sendRedirect(appleSuccessRedirectUri);
+        response.sendRedirect(state);
     }
 
     @PostMapping("/reissue")

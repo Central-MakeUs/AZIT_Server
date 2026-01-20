@@ -34,7 +34,8 @@ public interface AuthControllerDocs {
             "INVALID_APPLE_ID_TOKEN", "APPLE_PUBLIC_KEY_NOT_FOUND", "APPLE_CLIENT_SECRET_CREATION_FAILED"
     })
     void appleLogin(@RequestParam("code") String code, @RequestParam("id_token") String idToken,
-                    @RequestParam(value = "user", required = false) String user, HttpServletResponse response) throws IOException;
+                    @RequestParam(value = "user", required = false) String user,
+                    @RequestParam(value = "state", required = false) String state, HttpServletResponse response) throws IOException;
 
     @Operation(summary = "토큰 재발급", description = "쿠키에 저장된 Refresh Token을 사용하여 Access Token을 갱신합니다. (RTR 방식 적용)")
     @ApiErrorCodeExamples({
