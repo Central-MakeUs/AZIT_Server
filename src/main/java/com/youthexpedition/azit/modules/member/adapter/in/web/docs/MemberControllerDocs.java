@@ -24,7 +24,6 @@ public interface MemberControllerDocs {
     @ApiErrorCodeExamples({
             "MEMBER_NOT_FOUND",
             "REQUIRED_TERMS_NOT_AGREED", // 필수 약관 중 하나라도 동의하지 않은 경우
-            "INVALID_MEMBER_STATUS",      // 이미 약관 동의를 완료했거나 탈퇴한 유저인 경우
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> agreeToTerms(@CurrentMemberId Long memberId, @Valid @RequestBody AgreeToTermsRequest request);

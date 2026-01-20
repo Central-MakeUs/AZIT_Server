@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.member.domain.model;
 
+import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberRole;
@@ -54,10 +55,6 @@ public class Member {
 
     // 약관 동의 시 멤버 상태 업데이트
     public void completeTermsAgreement(boolean marketingAgreed, boolean notificationAgreed) {
-        if (this.status != MemberStatus.PENDING_TERMS) {
-            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
-        }
-
         this.essentialTermsAgreedAt = LocalDateTime.now();
         this.isMarketingTermsAgreed = marketingAgreed;
         if (marketingAgreed) {
