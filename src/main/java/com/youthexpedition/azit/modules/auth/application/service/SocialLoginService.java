@@ -11,6 +11,7 @@ import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +57,11 @@ public class SocialLoginService implements SocialLoginUseCase {
                         profile.isEmailSharingEnabled(),
                         profile.profileImageUrl()
                 ));
+
+        // 탈퇴한 회원인 경우 재활성화
+        if (member.getStatus() == MemberStatus.WITHDRAWN) {
+            member.reactivate();
+        }
 
         // 애플 리프레시 토큰이 존재하는 경우 최신값으로 업데이트
         if (profile.refreshToken() != null) {

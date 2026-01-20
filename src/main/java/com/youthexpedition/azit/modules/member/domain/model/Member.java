@@ -96,4 +96,13 @@ public class Member {
         this.appleRefreshToken = null;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void reactivate() {
+        if (this.status != MemberStatus.WITHDRAWN) {
+            return; // 탈퇴 상태가 아니면 패스
+        }
+
+        this.status = MemberStatus.ACTIVE;
+        this.updatedAt = LocalDateTime.now();
+    }
 }
