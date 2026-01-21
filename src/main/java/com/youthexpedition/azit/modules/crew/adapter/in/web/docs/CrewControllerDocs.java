@@ -6,9 +6,11 @@ import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExampl
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Crew" , description = "크루 API")
@@ -50,4 +52,21 @@ public interface CrewControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN" // 인증 관련 에러
     })
     CommonResponse<Void> joinCrew(@CurrentMemberId Long memberId, @Valid @RequestBody JoinCrewRequest request);
+
+
+    @Operation(
+            summary = "초대 코드로 크루 정보 조회",
+            description = """
+            입력한 6자리 초대 코드가 유효한지 확인하고, 해당 크루의 요약 정보를 반환합니다. <br>
+            사용자가 가입 신청을 하기 전, 크루 정보를 미리 확인할 때 사용합니다. <br><br>
+            
+            **[제약 사항]** <br>
+            * 존재하지 않거나 잘못된 초대 코드일 경우 **CREW_NOT_FOUND** 오류가 발생합니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<CrewInvitationResponse> getCrewByInvitation(@PathVariable String invitationCode);
 }
