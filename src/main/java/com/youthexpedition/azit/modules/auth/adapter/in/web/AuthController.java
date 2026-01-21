@@ -8,7 +8,7 @@ import com.youthexpedition.azit.infrastructure.common.response.code.CommonSucces
 import com.youthexpedition.azit.modules.auth.adapter.in.web.docs.AuthControllerDocs;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.AppleNotificationRequest;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginRequest;
-import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginResponse;
+import com.youthexpedition.azit.modules.auth.application.port.in.dto.SocialLoginResponse;
 import com.youthexpedition.azit.modules.auth.application.port.in.AppleNotificationUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.SocialLoginUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.TokenUseCase;
@@ -19,7 +19,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 

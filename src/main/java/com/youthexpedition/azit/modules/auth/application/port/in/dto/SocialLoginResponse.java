@@ -1,7 +1,6 @@
-package com.youthexpedition.azit.modules.auth.adapter.in.web.dto;
+package com.youthexpedition.azit.modules.auth.application.port.in.dto;
 
 import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
-import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

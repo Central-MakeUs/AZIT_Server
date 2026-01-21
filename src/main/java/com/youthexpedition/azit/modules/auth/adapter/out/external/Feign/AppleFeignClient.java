@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.modules.auth.adapter.out.external.Feign;
 
-import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.ApplePublicKeyResponse;
+import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.ApplePublicKeyResponse;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.AppleTokenResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;

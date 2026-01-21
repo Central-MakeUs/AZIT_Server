@@ -6,7 +6,7 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.AppleNotificationRequest;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginRequest;
-import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginResponse;
+import com.youthexpedition.azit.modules.auth.application.port.in.dto.SocialLoginResponse;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

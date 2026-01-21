@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.auth.adapter.out.external.dto;
+package com.youthexpedition.azit.modules.auth.adapter.in.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.auth.adapter.in.web.dto;
+package com.youthexpedition.azit.modules.auth.adapter.out.external.dto;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;

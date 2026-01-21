@@ -3,7 +3,7 @@ package com.youthexpedition.azit.infrastructure.auth.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.ApplePublicKeyResponse;
+import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.ApplePublicKeyResponse;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
