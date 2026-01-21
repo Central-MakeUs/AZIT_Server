@@ -57,11 +57,17 @@ public class CrewService implements CrewUseCase {
 
     // 초대 코드 중복 방어
     private String generateUniqueInvitationCode() {
-        String invitationCode;
-        do {
-            invitationCode = Crew.generateRandomCode();
-        } while (loadCrewPort.existsByInvitationCode(invitationCode)); // DB에 이미 있는지 확인
-        return invitationCode;
+        final int MAX_RETRIES = 10; // 최대 재시도 횟수 제한
+
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            String invitationCode = Crew.generateRandomCode();
+
+            // DB 조회하여 중복 여부 확인
+            if (!loadCrewPort.existsByInvitationCode(invitationCode)) {
+                return invitationCode;
+            }
+        }
+        throw new BusinessException(CrewErrorCode.INVITATION_CODE_GENERATION_FAILED);
     }
 
     @Override
@@ -86,7 +92,7 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
         // 멤버 수 조회
-        long memberCount = loadCrewMemberPort.countByCrewIdAndStatus(crew.getId());
+        long memberCount = loadCrewMemberPort.countJoinedMembersByCrewId(crew.getId());
 
         return CrewInvitationResponse.of(crew, memberCount);
     }

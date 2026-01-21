@@ -28,7 +28,7 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
-    public long countByCrewIdAndStatus(Long crewId) {
+    public long countJoinedMembersByCrewId(Long crewId) {
         return crewMemberRepository.countByCrewIdAndStatus(crewId, CrewMemberStatus.JOINED);
     }
 }
