@@ -5,14 +5,12 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.docs.CrewControllerDocs;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/crews")
@@ -25,5 +23,12 @@ public class CrewController implements CrewControllerDocs {
         CreateCrewResponse response = crewUseCase.createCrew(request.toCommand(memberId));
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @PostMapping("/join")
+    public CommonResponse<Void> joinCrew(@CurrentMemberId Long memberId, @Valid @RequestBody JoinCrewRequest request) {
+        crewUseCase.joinCrew(request.toCommand(memberId));
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 }

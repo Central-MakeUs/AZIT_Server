@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // 인증 실패 시 처리를 위한 EntryPoint 설정
+                // 인증 실패 시 처리를 위한 핸들러 설정
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 401: 인증 실패
                         .accessDeniedHandler(jwtAccessDeniedHandler)           // 403: 권한 부족 (인가 실패) 처리

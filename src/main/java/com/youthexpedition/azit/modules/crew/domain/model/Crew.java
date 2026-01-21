@@ -45,8 +45,4 @@ public class Crew {
         return sb.toString();
     }
 
-    // 초대 코드 검증
-    public boolean verifyInvitationCode(String code) {
-        return this.invitationCode.equals(code);
-    }
 }

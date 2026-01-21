@@ -8,6 +8,8 @@ import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class CrewPersistenceAdapter implements LoadCrewPort, SaveCrewPort {
@@ -19,5 +21,15 @@ public class CrewPersistenceAdapter implements LoadCrewPort, SaveCrewPort {
         CrewEntity entity = crewMapper.toEntity(crew);
         CrewEntity savedEntity = crewRepository.save(entity);
         return crewMapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<Crew> findById(Long id) {
+        return crewRepository.findById(id).map(crewMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Crew> findByInvitationCode(String invitationCode) {
+        return crewRepository.findByInvitationCode(invitationCode).map(crewMapper::toDomain);
     }
 }
