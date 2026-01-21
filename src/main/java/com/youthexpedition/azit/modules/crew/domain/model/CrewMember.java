@@ -16,5 +16,34 @@ public class CrewMember {
     private final Long memberId;
     private CrewMemberRole role;
     private CrewMemberStatus status;
-    private String joiningAnswer;
+
+    // 리더 등록
+    public static CrewMember createAsLeader(Long crewId, Long memberId) {
+        return CrewMember.builder()
+                .crewId(crewId)
+                .memberId(memberId)
+                .role(CrewMemberRole.LEADER)
+                .status(CrewMemberStatus.JOINED)
+                .build();
+    }
+
+    // 멤버 등록
+    public static CrewMember createAsMember(Long crewId, Long memberId) {
+        return CrewMember.builder()
+                .crewId(crewId)
+                .memberId(memberId)
+                .role(CrewMemberRole.MEMBER)
+                .status(CrewMemberStatus.REQUESTED)
+                .build();
+    }
+
+    // 가입 승인
+    public void approve() {
+        this.status = CrewMemberStatus.JOINED;
+    }
+
+    // 가입 거절
+    public void reject() {
+        this.status = CrewMemberStatus.REJECTED;
+    }
 }

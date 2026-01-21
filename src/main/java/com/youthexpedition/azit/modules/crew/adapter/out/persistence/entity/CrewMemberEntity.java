@@ -1,14 +1,13 @@
 package com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity;
 
 import com.youthexpedition.azit.infrastructure.common.entity.BaseTimeEntity;
-import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewCategory;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "crews_members")
+@Table(name = "crew_members")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

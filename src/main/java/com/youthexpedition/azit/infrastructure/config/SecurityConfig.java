@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.infrastructure.config;
 
+import com.youthexpedition.azit.infrastructure.auth.exception.JwtAccessDeniedHandler;
 import com.youthexpedition.azit.infrastructure.auth.exception.JwtAuthenticationEntryPoint;
 import com.youthexpedition.azit.infrastructure.auth.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,8 @@ public class SecurityConfig {
 
     private final SecurityProperties securityProperties;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint; // 에러 핸들러
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,14 +37,26 @@ public class SecurityConfig {
                 )
                 // 인증 실패 시 처리를 위한 EntryPoint 설정
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 401: 인증 실패
+                        .accessDeniedHandler(jwtAccessDeniedHandler)           // 403: 권한 부족 (인가 실패) 처리
                 )
 
                 // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(securityProperties.getPermitAllPaths().toArray(String[]::new)).permitAll()
                          // 공통 허용 경로 (로그인 등)
-                        .requestMatchers("/api/v1/auth/social-login/**", "/api/v1/auth/reissue", "/api/v1/auth/apple/notification").permitAll()
+                        .requestMatchers("/api/v1/auth/social-login/**",
+                                "/api/v1/auth/reissue",
+                                "/api/v1/auth/apple/notification"
+                        ).permitAll()
+
+                        // 약관 동의는 약관 동의 대기 상태 회원만 가능
+                        .requestMatchers("/api/v1/members/terms").hasAnyAuthority("STATUS_PENDING_TERMS")
+
+                        // 크루 생성 및 가입은 온보딩 대기 또는 정회원만 가능
+                        .requestMatchers("/api/v1/crews").hasAnyAuthority("STATUS_PENDING_ONBOARDING", "STATUS_ACTIVE")
+                        .requestMatchers("/api/v1/crews/join").hasAnyAuthority("STATUS_PENDING_ONBOARDING", "STATUS_ACTIVE")
+
                         // 사용자 인증 시 상태 상관없이 허용
                         .requestMatchers(
                                 "/api/v1/auth/logout", "/api/v1/members/**"
