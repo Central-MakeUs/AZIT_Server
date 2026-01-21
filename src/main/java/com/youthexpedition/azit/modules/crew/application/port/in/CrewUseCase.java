@@ -1,7 +1,8 @@
 package com.youthexpedition.azit.modules.crew.application.port.in;
 
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 
 public interface CrewUseCase {
-    String createCrew(CreateCrewCommand command);
+    CreateCrewResponse createCrew(CreateCrewCommand command);
 }

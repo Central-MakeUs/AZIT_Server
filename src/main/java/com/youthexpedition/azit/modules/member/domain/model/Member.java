@@ -82,6 +82,14 @@ public class Member {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // 온보딩 완료했을 경우(크루 생성 및 크루 가입) ACTIVE 처리
+    public void completeOnboarding() {
+        if (this.status == MemberStatus.PENDING_ONBOARDING) {
+            this.status = MemberStatus.ACTIVE;
+            this.updatedAt = LocalDateTime.now();
+        }
+    }
+
     // 탈퇴 상태로 변경
     public void withdraw() {
         if (this.status == MemberStatus.WITHDRAWN) {
@@ -93,6 +101,7 @@ public class Member {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // 탈퇴 상태에서 재로그인 할 경우 ACTIVE 처리
     public void reactivate() {
         if (this.status != MemberStatus.WITHDRAWN) {
             return; // 탈퇴 상태가 아니면 패스

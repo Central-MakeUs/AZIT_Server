@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,5 +31,5 @@ public interface CrewControllerDocs {
     @ApiErrorCodeExamples({
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN" // 인증 관련 에러
     })
-    CommonResponse<String> createCrew(@CurrentMemberId Long memberId, @Valid @RequestBody CreateCrewRequest request);
+    CommonResponse<CreateCrewResponse> createCrew(@CurrentMemberId Long memberId, @Valid @RequestBody CreateCrewRequest request);
 }

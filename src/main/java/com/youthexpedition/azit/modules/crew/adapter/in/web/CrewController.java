@@ -6,6 +6,7 @@ import com.youthexpedition.azit.infrastructure.common.response.code.CommonSucces
 import com.youthexpedition.azit.modules.crew.adapter.in.web.docs.CrewControllerDocs;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,9 +21,9 @@ public class CrewController implements CrewControllerDocs {
     private final CrewUseCase crewUseCase;
 
     @PostMapping
-    public CommonResponse<String> createCrew(@CurrentMemberId Long memberId, @Valid @RequestBody CreateCrewRequest request) {
-        String invitationCode = crewUseCase.createCrew(request.toCommand(memberId));
+    public CommonResponse<CreateCrewResponse> createCrew(@CurrentMemberId Long memberId, @Valid @RequestBody CreateCrewRequest request) {
+        CreateCrewResponse response = crewUseCase.createCrew(request.toCommand(memberId));
 
-        return CommonResponse.of(CommonSuccessCode.SUCCESS, invitationCode);
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 }
