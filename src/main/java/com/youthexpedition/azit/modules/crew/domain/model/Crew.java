@@ -25,19 +25,19 @@ public class Crew {
     private static final int CODE_LENGTH = 6;
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public static Crew create(String name, CrewCategory category, Region region) {
+    public static Crew create(String name, CrewCategory category, Region region, String invitationCode) {
         return Crew.builder()
                 .name(name)
                 .category(category)
                 .region(region)
-                .invitationCode(generateRandomCode())
+                .invitationCode(invitationCode)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
     }
 
     // 랜덤 코드 생성
-    private static String generateRandomCode() {
+    public static String generateRandomCode() {
         StringBuilder sb = new StringBuilder(CODE_LENGTH);
         for (int i = 0; i < CODE_LENGTH; i++) {
             sb.append(CHARACTERS.charAt(RANDOM.nextInt(CHARACTERS.length())));

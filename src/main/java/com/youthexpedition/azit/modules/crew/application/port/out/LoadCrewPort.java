@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface LoadCrewPort {
     Optional<Crew> findById(Long id);
     Optional<Crew> findByInvitationCode(String invitationCode);
+    boolean existsByInvitationCode(String invitationCode);
 }

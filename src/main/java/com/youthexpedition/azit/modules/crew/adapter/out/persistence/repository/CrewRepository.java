@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
     Optional<CrewEntity> findByInvitationCode(String invitationCode);
+    boolean existsByInvitationCode(String invitationCode);
 }

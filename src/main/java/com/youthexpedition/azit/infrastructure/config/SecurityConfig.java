@@ -53,9 +53,12 @@ public class SecurityConfig {
                         // 약관 동의는 약관 동의 대기 상태 회원만 가능
                         .requestMatchers("/api/v1/members/terms").hasAnyAuthority("STATUS_PENDING_TERMS")
 
-                        // 크루 생성 및 가입은 온보딩 대기 또는 정회원만 가능
-                        .requestMatchers("/api/v1/crews").hasAnyAuthority("STATUS_PENDING_ONBOARDING", "STATUS_ACTIVE")
-                        .requestMatchers("/api/v1/crews/join").hasAnyAuthority("STATUS_PENDING_ONBOARDING", "STATUS_ACTIVE")
+                        // 온보딩 대기 또는 정회원만 가능
+                        .requestMatchers(
+                                "/api/v1/crews",
+                                "/api/v1/crews/join",
+                                "/api/v1/crews/invitation/**"
+                        ).hasAnyAuthority("STATUS_PENDING_ONBOARDING", "STATUS_ACTIVE")
 
                         // 사용자 인증 시 상태 상관없이 허용
                         .requestMatchers(
