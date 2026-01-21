@@ -1,27 +1,27 @@
 package com.youthexpedition.azit.infrastructure.auth.exception;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.youthexpedition.azit.infrastructure.common.response.CommonErrorResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.BaseErrorCode;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 // 401 Unauthorized 인증 실패 핸들러
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper;
+    private final SecurityErrorResponseSender responseSender;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
@@ -35,15 +35,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             errorCode = AuthErrorCode.UNAUTHORIZED;
         }
 
-        // 응답 헤더 설정
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setStatus(errorCode.getStatus().value());
-
-        CommonErrorResponse errorResponse = CommonErrorResponse.of(errorCode);
-
-        // JSON으로 변환하여 응답 바디에 쓰기
-        String jsonResponse = objectMapper.writeValueAsString(errorResponse);
-        response.getWriter().write(jsonResponse);
+        log.warn("인증 실패, Message: {}", authException.getMessage());
+        responseSender.send(request, response, errorCode);
     }
 }
