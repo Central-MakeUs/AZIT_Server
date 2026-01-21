@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonErrorRespon
 import com.youthexpedition.azit.infrastructure.common.response.code.BaseErrorCode;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.examples.Example;
@@ -40,7 +41,7 @@ public class ApiErrorCodeExampleCustomizer implements OperationCustomizer {
 
         // 검색 대상이 될 도메인별 에러 Enum 리스트
         List<Class<? extends BaseErrorCode>> errorCodeEnums = List.of(
-                 MemberErrorCode.class, AuthErrorCode.class
+                 MemberErrorCode.class, AuthErrorCode.class, CrewErrorCode.class
         );
 
         // 어노테이션에 명시된 에러 코드들을 찾아서 추가

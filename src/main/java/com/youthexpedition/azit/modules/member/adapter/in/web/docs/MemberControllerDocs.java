@@ -16,9 +16,11 @@ public interface MemberControllerDocs {
     @Operation(
             summary = "약관 동의",
             description = """
-            소셜 로그인 직후 'PENDING_TERMS' 상태인 회원이 필수 약관에 동의하는 단계입니다. <br>
-            성공 시 회원의 상태는 'PENDING_ONBOARDING'으로 변경되며, 이후 온보딩(크루 참여/생성)이 가능해집니다. <br>
-            PENDING_TERMS 상태의 회원만 약관 동의 API를 호출할 수 있으므로 다른 상태일 경우 INVALID_MEMBER_STATUS 오류가 발생합니다.
+            소셜 로그인 직후 '약관 동의 대기(PENDING_TERMS)' 상태인 회원이 필수 서비스 약관에 동의하는 단계입니다. <br><br>
+            
+            **[제약 사항]** <br>
+            * '약관 동의 대기(PENDING_TERMS)' 상태의 회원만 호출 가능합니다. (INVALID_MEMBER_STATUS)
+            * 필수 약관 중 하나라도 누락될 경우 가입이 진행되지 않습니다. (REQUIRED_TERMS_NOT_AGREED)
             """
     )
     @ApiErrorCodeExamples({
@@ -28,9 +30,13 @@ public interface MemberControllerDocs {
     })
     CommonResponse<Void> agreeToTerms(@CurrentMemberId Long memberId, @Valid @RequestBody AgreeToTermsRequest request);
 
-    @Operation(summary = "회원 탈퇴", description = """
-            소셜 연동 해제 및 서비스 탈퇴를 진행합니다. <br>
-            accessToken 파라미터는 무시하시고 기존대로 헤더에 액세스 토큰 넣어서 요청 보내시면 됩니다.
+    @Operation(
+            summary = "회원 탈퇴",
+            description = """
+            서비스 이용을 중단하고 회원의 소셜 연동 해제 및 탈퇴 처리를 진행합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 헤더에 포함된 액세스 토큰을 통해 본인 확인 및 연동 해제를 진행하므로 별도의 파라미터는 무시하셔도 됩니다.
             """
     )
     @ApiErrorCodeExamples({
