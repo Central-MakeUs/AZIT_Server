@@ -32,4 +32,9 @@ public class CrewPersistenceAdapter implements LoadCrewPort, SaveCrewPort {
     public Optional<Crew> findByInvitationCode(String invitationCode) {
         return crewRepository.findByInvitationCode(invitationCode).map(crewMapper::toDomain);
     }
+
+    @Override
+    public boolean existsByInvitationCode(String invitationCode) {
+        return crewRepository.existsByInvitationCode(invitationCode);
+    }
 }

@@ -5,6 +5,7 @@ import com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository.
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -24,5 +25,10 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     @Override
     public boolean existsByCrewIdAndMemberId(Long crewId, Long memberId) {
         return crewMemberRepository.existsByCrewIdAndMemberId(crewId, memberId);
+    }
+
+    @Override
+    public long countJoinedMembersByCrewId(Long crewId) {
+        return crewMemberRepository.countByCrewIdAndStatus(crewId, CrewMemberStatus.JOINED);
     }
 }
