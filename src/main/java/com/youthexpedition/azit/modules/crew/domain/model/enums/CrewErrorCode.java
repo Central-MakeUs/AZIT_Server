@@ -11,7 +11,6 @@ public enum CrewErrorCode implements BaseErrorCode {
     CREW_NOT_FOUND("CREW_NOT_FOUND", "존재하지 않는 크루입니다.", HttpStatus.NOT_FOUND),
     INVALID_CREW_CATEGORY("INVALID_CREW_CATEGORY", "유효하지 않은 크루 카테고리입니다.", HttpStatus.BAD_REQUEST),
     INVALID_REGION("INVALID_REGION", "유효하지 않은 활동 지역입니다.", HttpStatus.BAD_REQUEST),
-    INVALID_INVITATION_CODE("INVALID_INVITATION_CODE", "유효하지 않은 초대 코드입니다.", HttpStatus.BAD_REQUEST),
     ALREADY_JOINED_CREW("ALREADY_JOINED_CREW", "이미 가입한 크루입니다.", HttpStatus.BAD_REQUEST);
 
     private final String code;
