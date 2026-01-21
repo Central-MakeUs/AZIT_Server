@@ -20,4 +20,9 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
         CrewMemberEntity savedEntity = crewMemberRepository.save(entity);
         return crewMemberMapper.toDomain(savedEntity);
     }
+
+    @Override
+    public boolean existsByCrewIdAndMemberId(Long crewId, Long memberId) {
+        return crewMemberRepository.existsByCrewIdAndMemberId(crewId, memberId);
+    }
 }

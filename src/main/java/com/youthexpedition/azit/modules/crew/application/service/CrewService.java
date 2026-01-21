@@ -3,11 +3,15 @@ package com.youthexpedition.azit.modules.crew.application.service;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -21,7 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CrewService implements CrewUseCase {
     private final SaveCrewPort saveCrewPort;
+    private final LoadCrewPort loadCrewPort;
     private final SaveCrewMemberPort saveCrewMemberPort;
+    private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
 
@@ -43,5 +49,20 @@ public class CrewService implements CrewUseCase {
         saveMemberPort.save(member);
 
         return CreateCrewResponse.from(savedCrew.getInvitationCode());
+    }
+
+    @Override
+    public void joinCrew(JoinCrewCommand command) {
+        Crew crew = loadCrewPort.findByInvitationCode(command.invitationCode())
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        // 이미 가입된 멤버인지 확인
+        if (loadCrewMemberPort.existsByCrewIdAndMemberId(crew.getId(), command.memberId())) {
+            throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
+        }
+
+        // 크루 멤버 등록 및 REQUESTED로 멤버 상태 변경
+        CrewMember crewMember = CrewMember.createAsMember(crew.getId(), command.memberId());
+        saveCrewMemberPort.save(crewMember);
     }
 }

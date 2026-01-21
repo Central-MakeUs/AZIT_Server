@@ -4,4 +4,5 @@ import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.Crew
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Long> {
+    boolean existsByCrewIdAndMemberId(Long crewId, Long memberId);
 }

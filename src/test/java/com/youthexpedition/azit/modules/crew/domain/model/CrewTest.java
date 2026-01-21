@@ -9,7 +9,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class CrewTest {
     @Test
-    @DisplayName("크루 생성 시 6자리의 영문 대문자 및 숫자 조합 초대 코드가 생성됨")
+    @DisplayName("크루 생성 시 6자리의 영문 대문자 및 숫자 조합 초대 코드가 생성된다.")
     void createCrew_Success() {
         // given
         String name = "아지트 러닝 크루";
