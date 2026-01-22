@@ -39,4 +39,9 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
         return crewMemberRepository.findByCrewIdAndMemberId(crewId, memberId)
                 .map(CrewMemberEntity::getStatus);
     }
+
+    @Override
+    public void updateAllStatusByMemberId(Long memberId, CrewMemberStatus status) {
+        crewMemberRepository.updateAllStatusByMemberId(memberId, status);
+    }
 }

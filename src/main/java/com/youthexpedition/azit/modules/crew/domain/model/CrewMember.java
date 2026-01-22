@@ -1,11 +1,10 @@
 package com.youthexpedition.azit.modules.crew.domain.model;
+
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -45,5 +44,10 @@ public class CrewMember {
     // 가입 거절
     public void reject() {
         this.status = CrewMemberStatus.REJECTED;
+    }
+
+    // 크루 탈퇴
+    public void exit() {
+        this.status = CrewMemberStatus.EXITED;
     }
 }
