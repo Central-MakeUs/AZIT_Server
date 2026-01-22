@@ -9,10 +9,12 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCre
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
+import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
@@ -26,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -36,6 +40,7 @@ public class CrewService implements CrewUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
+    private final CrewMemberResponseMapper crewMemberResponseMapper;
 
     @Override
     public CreateCrewResponse createCrew(CreateCrewCommand command) {
@@ -161,9 +166,19 @@ public class CrewService implements CrewUseCase {
         saveCrewMemberPort.save(targetCrewMember);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long leaderId) {
+        validateLeader(crewId, leaderId);
+
+        return loadCrewMemberPort.findJoinRequestsByCrewId(crewId).stream()
+                .map(crewMemberResponseMapper::toResponse)
+                .toList();
+    }
+
     private void validateLeader(Long crewId, Long leaderId) {
         CrewMember requester = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_CREW_LEADER));
 
         if (requester.getRole() != CrewMemberRole.LEADER) {
             throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);

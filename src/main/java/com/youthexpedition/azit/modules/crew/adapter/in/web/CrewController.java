@@ -11,9 +11,12 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.Process
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/crews")
@@ -63,5 +66,12 @@ public class CrewController implements CrewControllerDocs {
         crewUseCase.rejectJoinRequest(command);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @GetMapping("/{crewId}/join-requests")
+    public CommonResponse<List<JoinRequestMemberResponse>> getJoinRequests(@PathVariable Long crewId, @CurrentMemberId Long leaderId) {
+        List<JoinRequestMemberResponse> responses = crewUseCase.getJoinRequests(crewId, leaderId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, responses);
     }
 }
