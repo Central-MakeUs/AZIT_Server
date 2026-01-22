@@ -1,9 +1,9 @@
 package com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository;
 
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
+import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestQueryResult;
 
 import java.util.List;
 
 public interface CrewMemberRepositoryCustom {
-    List<JoinRequestMemberResponse> findJoinRequestsByCrewId(Long crewId);
+    List<JoinRequestQueryResult> findJoinRequestsByCrewId(Long crewId);
 }

@@ -14,6 +14,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMember
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
+import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
@@ -39,6 +40,7 @@ public class CrewService implements CrewUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
+    private final CrewMemberResponseMapper crewMemberResponseMapper;
 
     @Override
     public CreateCrewResponse createCrew(CreateCrewCommand command) {
@@ -169,8 +171,9 @@ public class CrewService implements CrewUseCase {
     public List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long leaderId) {
         validateLeader(crewId, leaderId);
 
-        // 'REQUESTED' 상태인 멤버 정보 조회
-        return loadCrewMemberPort.findJoinRequestsByCrewId(crewId);
+        return loadCrewMemberPort.findJoinRequestsByCrewId(crewId).stream()
+                .map(crewMemberResponseMapper::toResponse)
+                .toList();
     }
 
     private void validateLeader(Long crewId, Long leaderId) {

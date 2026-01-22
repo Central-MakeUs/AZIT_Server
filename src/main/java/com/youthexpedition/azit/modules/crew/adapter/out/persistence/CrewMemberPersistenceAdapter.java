@@ -2,9 +2,9 @@ package com.youthexpedition.azit.modules.crew.adapter.out.persistence;
 
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewMemberEntity;
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository.CrewMemberRepository;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestQueryResult;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +49,7 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
-    public List<JoinRequestMemberResponse> findJoinRequestsByCrewId(Long crewId) {
+    public List<JoinRequestQueryResult> findJoinRequestsByCrewId(Long crewId) {
         return crewMemberRepository.findJoinRequestsByCrewId(crewId);
     }
 }
