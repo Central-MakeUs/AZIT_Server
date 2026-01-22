@@ -6,6 +6,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateC
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
@@ -13,6 +14,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -95,5 +97,18 @@ public class CrewService implements CrewUseCase {
         long memberCount = loadCrewMemberPort.countJoinedMembersByCrewId(crew.getId());
 
         return CrewInvitationResponse.of(crew, memberCount);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CrewJoinStatusResponse getCrewJoinStatus(Long crewId, Long memberId) {
+        Crew crew = loadCrewPort.findById(crewId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        // 가입 내역 조회
+        CrewMemberStatus status = loadCrewMemberPort.findStatusByCrewIdAndMemberId(crewId, memberId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+
+        return CrewJoinStatusResponse.of(crew.getId(), crew.getName(), status);
     }
 }

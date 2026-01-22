@@ -27,8 +27,7 @@ public class MemberController implements MemberControllerDocs {
     }
 
     @PostMapping("/me/withdraw")
-    public CommonResponse<Void> withdraw(
-            @CurrentMemberId Long memberId, @CurrentAccessToken String accessToken) {
+    public CommonResponse<Void> withdraw(@CurrentMemberId Long memberId, @CurrentAccessToken String accessToken) {
         memberUseCase.withdraw(memberId, accessToken);
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }

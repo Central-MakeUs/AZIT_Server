@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,14 @@ public class CrewController implements CrewControllerDocs {
     @GetMapping("/invitation/{invitationCode}")
     public CommonResponse<CrewInvitationResponse> getCrewByInvitation(@PathVariable String invitationCode) {
         CrewInvitationResponse response = crewUseCase.getCrewInfoByInvitationCode(invitationCode);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/{crewId}/join-status")
+    public CommonResponse<CrewJoinStatusResponse> getCrewJoinStatus(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        CrewJoinStatusResponse response = crewUseCase.getCrewJoinStatus(crewId, memberId);
+
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 }
