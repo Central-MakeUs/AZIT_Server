@@ -100,4 +100,19 @@ public interface CrewControllerDocs {
             "NOT_JOINED_CREW", "MEMBER_NOT_FOUND", "FORBIDDEN_ERROR",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"})
     CommonResponse<Void> approveJoinRequest(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId);
+
+    @Operation(
+            summary = "가입 요청 거절",
+            description = """
+            크루 리더가 대기 중인 가입 요청을 거절합니다. <br><br>
+            
+            **[제약 사항]** <br>
+            * 해당 크루의 **리더(LEADER)**만 이 API를 호출할 수 있습니다. (FORBIDDEN_ERROR)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "NOT_JOINED_CREW", "FORBIDDEN_ERROR",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> rejectJoinRequest(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId);
 }
