@@ -50,4 +50,9 @@ public class CrewMember {
     public void exit() {
         this.status = CrewMemberStatus.EXITED;
     }
+
+    // 가입 재신청
+    public void reJoin() {
+        this.status = CrewMemberStatus.REQUESTED;
+    }
 }
