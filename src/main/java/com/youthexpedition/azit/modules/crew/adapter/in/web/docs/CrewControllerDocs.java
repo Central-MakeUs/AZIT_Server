@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewReques
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,7 +28,7 @@ public interface CrewControllerDocs {
             * 활동 지역(region): SEOUL, GYEONGGI_INCHEON, CHUNGCHEONG_DAEJEON, JEOLLA_GWANGJU, GYEONGBUK_DAEGU, GYEONGNAM_BUSAN, GANGWON, JEJU <br><br>
             
             **[제약 사항]** <br>
-            * 크루 이름: 최대 20자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
+            * 크루 이름: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
             * 온보딩 단계(PENDING_ONBOARDING) 또는 정회원(ACTIVE) 상태의 사용자만 요청 가능합니다. (INVALID_MEMBER_STATUS)
             """
     )
@@ -49,7 +50,7 @@ public interface CrewControllerDocs {
     )
     @ApiErrorCodeExamples({
             "CREW_NOT_FOUND", "ALREADY_JOINED_CREW",
-            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN" // 인증 관련 에러
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> joinCrew(@CurrentMemberId Long memberId, @Valid @RequestBody JoinCrewRequest request);
 
@@ -69,4 +70,20 @@ public interface CrewControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CrewInvitationResponse> getCrewByInvitation(@PathVariable String invitationCode);
+
+    @Operation(
+            summary = "가입 승인 상태 조회",
+            description = """
+        특정 크루에 신청한 멤버(로그인한 사용자) 가입 요청이 어떤 상태인지 조회합니다. <br><br>
+        
+        **[응답 상태값]** <br>
+        * REQUESTED: 승인 대기 중
+        * JOINED: 승인 완료
+        * REJECTED: 가입 거절
+        """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_JOINED_CREW",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"})
+    CommonResponse<CrewJoinStatusResponse> getCrewJoinStatus(@PathVariable Long crewId, @CurrentMemberId Long memberId);
 }

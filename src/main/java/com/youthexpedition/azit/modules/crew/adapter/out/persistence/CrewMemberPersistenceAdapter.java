@@ -9,6 +9,8 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCrewMemberPort {
@@ -28,7 +30,24 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
+    public Optional<CrewMember> findByCrewIdAndMemberId(Long crewId, Long memberId) {
+        return crewMemberRepository.findByCrewIdAndMemberId(crewId, memberId)
+                .map(crewMemberMapper::toDomain);
+    }
+
+    @Override
     public long countJoinedMembersByCrewId(Long crewId) {
         return crewMemberRepository.countByCrewIdAndStatus(crewId, CrewMemberStatus.JOINED);
+    }
+
+    @Override
+    public Optional<CrewMemberStatus> findStatusByCrewIdAndMemberId(Long crewId, Long memberId) {
+        return crewMemberRepository.findByCrewIdAndMemberId(crewId, memberId)
+                .map(CrewMemberEntity::getStatus);
+    }
+
+    @Override
+    public void updateAllStatusByMemberId(Long memberId, CrewMemberStatus status) {
+        crewMemberRepository.updateAllStatusByMemberId(memberId, status);
     }
 }

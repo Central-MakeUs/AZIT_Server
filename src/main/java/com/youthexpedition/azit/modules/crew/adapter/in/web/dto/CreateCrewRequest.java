@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public record CreateCrewRequest(
         @Schema(description = "크루 이름")
         @NotBlank(message = "이름은 필수입니다.")
-        @Size(max = 20, message = "크루 이름은 최대 20자까지 가능합니다.")
+        @Size(max = 15, message = "크루 이름은 최대 15자까지 가능합니다.")
         String name,
 
         @Schema(description = "크루 카테고리")

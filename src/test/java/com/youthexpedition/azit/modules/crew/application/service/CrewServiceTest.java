@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
+import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
@@ -82,43 +83,83 @@ class CrewServiceTest {
     }
 
     @Test
-    @DisplayName("크루 가입 요청 시 초대 코드가 일치하면 REQUESTED 상태로 등록된다.")
-    void joinCrew_Success() {
+    @DisplayName("신규 가입 요청 시 REQUESTED 상태로 등록된다.")
+    void joinCrew_NewMember_Success() {
         // given
         Long crewId = 100L;
         Long memberId = 1L;
         String invitationCode = "ABC123";
         JoinCrewCommand command = JoinCrewCommand.of(memberId, invitationCode);
 
-        // 초대 코드가 포함된 크루
-        Crew mockCrew = Crew.builder()
-                .id(crewId)
-                .invitationCode(invitationCode)
-                .build();
+        Crew mockCrew = Crew.builder().id(crewId).invitationCode(invitationCode).build();
         given(loadCrewPort.findByInvitationCode(invitationCode)).willReturn(Optional.of(mockCrew));
-        given(loadCrewMemberPort.existsByCrewIdAndMemberId(crewId, memberId)).willReturn(false);
+
+        // 기존 가입 내역 없음
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.empty());
 
         // when
         crewService.joinCrew(command);
 
         // then
-        verify(loadCrewPort, times(1)).findByInvitationCode(invitationCode);
-
-        // 가입 신청자(MEMBER)가 REQUESTED 상태로 저장되었는지 확인
         verify(saveCrewMemberPort, times(1)).save(argThat(crewMember ->
-                crewMember.getCrewId().equals(crewId) &&
-                        crewMember.getMemberId().equals(memberId) &&
-                        crewMember.getRole() == CrewMemberRole.MEMBER &&
-                        crewMember.getStatus() == CrewMemberStatus.REQUESTED
+                crewMember.getStatus() == CrewMemberStatus.REQUESTED
         ));
+    }
+
+    @Test
+    @DisplayName("탈퇴(EXITED) 상태였던 회원이 재가입하면 REQUESTED 상태로 업데이트된다.")
+    void joinCrew_ReJoin_Success() {
+        // given
+        Long crewId = 100L;
+        Long memberId = 1L;
+        String invitationCode = "ABC123";
+        JoinCrewCommand command = JoinCrewCommand.of(memberId, invitationCode);
+
+        Crew mockCrew = Crew.builder().id(crewId).invitationCode(invitationCode).build();
+        given(loadCrewPort.findByInvitationCode(invitationCode)).willReturn(Optional.of(mockCrew));
+
+        // 기존에 탈퇴(EXITED) 상태인 멤버
+        CrewMember exitedMember = CrewMember.builder()
+                .crewId(crewId)
+                .memberId(memberId)
+                .status(CrewMemberStatus.EXITED)
+                .build();
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(exitedMember));
+
+        // when
+        crewService.joinCrew(command);
+
+        // then
+        assertThat(exitedMember.getStatus()).isEqualTo(CrewMemberStatus.REQUESTED);
+        verify(saveCrewMemberPort, times(1)).save(exitedMember);
+    }
+
+    @Test
+    @DisplayName("이미 대기(REQUESTED) 중이거나 가입(JOINED)된 상태면 예외가 발생한다.")
+    void joinCrew_Fail_AlreadyJoined() {
+        // given
+        Long memberId = 1L;
+        Long crewId = 100L;
+        String invitationCode = "ABC123";
+        JoinCrewCommand command = JoinCrewCommand.of(memberId, invitationCode);
+
+        Crew mockCrew = Crew.builder().id(crewId).build();
+        given(loadCrewPort.findByInvitationCode(invitationCode)).willReturn(Optional.of(mockCrew));
+
+        // 이미 가입 완료된 상태
+        CrewMember joinedMember = CrewMember.builder().status(CrewMemberStatus.JOINED).build();
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(joinedMember));
+
+        // when & then
+        assertThatThrownBy(() -> crewService.joinCrew(command))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(CrewErrorCode.ALREADY_JOINED_CREW.getMessage());
     }
 
     @Test
     @DisplayName("크루 가입 요청 시 존재하지 않는 크루 코드면 예외가 발생한다.")
     void joinCrew_Fail_CrewNotFound() {
         // given
-        Long crewId = 100L;
-        String correctCode = "ABC123";
         String wrongCode = "WRONG_CODE";
         JoinCrewCommand command = JoinCrewCommand.of(1L, wrongCode);
 
@@ -128,30 +169,6 @@ class CrewServiceTest {
         assertThatThrownBy(() -> crewService.joinCrew(command))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining(CrewErrorCode.CREW_NOT_FOUND.getMessage());
-    }
-
-    @Test
-    @DisplayName("이미 가입된 멤버(또는 리더)가 가입 신청을 하면 예외가 발생한다.")
-    void joinCrew_Fail_AlreadyJoined() {
-        // given
-        Long memberId = 1L;
-        String invitationCode = "ABC123";
-        Long crewId = 100L;
-        JoinCrewCommand command = JoinCrewCommand.of(memberId, invitationCode);
-
-        Crew mockCrew = Crew.builder().id(crewId).build();
-        given(loadCrewPort.findByInvitationCode(invitationCode)).willReturn(Optional.of(mockCrew));
-
-        // 이미 멤버가 존재한다고 가정
-        given(loadCrewMemberPort.existsByCrewIdAndMemberId(crewId, memberId)).willReturn(true);
-
-        // when & then
-        assertThatThrownBy(() -> crewService.joinCrew(command))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining(CrewErrorCode.ALREADY_JOINED_CREW.getMessage());
-
-        // 가입 저장이 호출되지 않았는지 확인
-        verify(saveCrewMemberPort, never()).save(any());
     }
 
 }

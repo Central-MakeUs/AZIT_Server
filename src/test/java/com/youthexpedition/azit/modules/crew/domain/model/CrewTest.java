@@ -15,9 +15,10 @@ class CrewTest {
         String name = "아지트 러닝 크루";
         CrewCategory category = CrewCategory.RUNNING;
         Region region = Region.SEOUL;
+        String invitationCode = "ABC123";
 
         // when
-        Crew crew = Crew.create(name, category, region);
+        Crew crew = Crew.create(name, category, region, invitationCode);
 
         // then
         assertThat(crew.getName()).isEqualTo(name);

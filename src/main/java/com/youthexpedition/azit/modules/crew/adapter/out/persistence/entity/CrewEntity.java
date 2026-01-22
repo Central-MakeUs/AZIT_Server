@@ -18,7 +18,7 @@ public class CrewEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 20)
     private String name;
 
     @Enumerated(EnumType.STRING)

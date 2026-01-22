@@ -6,6 +6,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateC
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
@@ -13,6 +14,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -76,13 +78,25 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
         // 이미 가입된 멤버인지 확인
-        if (loadCrewMemberPort.existsByCrewIdAndMemberId(crew.getId(), command.memberId())) {
-            throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
-        }
+        loadCrewMemberPort.findByCrewIdAndMemberId(crew.getId(), command.memberId())
+                .ifPresentOrElse(
+                        existingMember -> {
+                            // 이미 대기 중이거나 가입된 상태일 경우 재가입 요청 불가
+                            if (existingMember.getStatus() == CrewMemberStatus.REQUESTED ||
+                                    existingMember.getStatus() == CrewMemberStatus.JOINED) {
+                                throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
+                            }
 
-        // 크루 멤버 등록 및 REQUESTED로 멤버 상태 변경
-        CrewMember crewMember = CrewMember.createAsMember(crew.getId(), command.memberId());
-        saveCrewMemberPort.save(crewMember);
+                            // 탈퇴나 거절 상태일 경우 재신청
+                            existingMember.reJoin();
+                            saveCrewMemberPort.save(existingMember);
+                        },
+                        () -> {
+                            // 첫 신청일 경우 새로 생성
+                            CrewMember newMember = CrewMember.createAsMember(crew.getId(), command.memberId());
+                            saveCrewMemberPort.save(newMember);
+                        }
+                );
     }
 
     @Override
@@ -95,5 +109,18 @@ public class CrewService implements CrewUseCase {
         long memberCount = loadCrewMemberPort.countJoinedMembersByCrewId(crew.getId());
 
         return CrewInvitationResponse.of(crew, memberCount);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CrewJoinStatusResponse getCrewJoinStatus(Long crewId, Long memberId) {
+        Crew crew = loadCrewPort.findById(crewId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        // 가입 내역 조회
+        CrewMemberStatus status = loadCrewMemberPort.findStatusByCrewIdAndMemberId(crewId, memberId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+
+        return CrewJoinStatusResponse.of(crew.getId(), crew.getName(), status);
     }
 }

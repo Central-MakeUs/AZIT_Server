@@ -107,7 +107,7 @@ public class Member {
             return; // 탈퇴 상태가 아니면 패스
         }
 
-        this.status = MemberStatus.ACTIVE;
+        this.status = MemberStatus.PENDING_TERMS; // 추후 기획 확인 필요
         this.updatedAt = LocalDateTime.now();
     }
 }
