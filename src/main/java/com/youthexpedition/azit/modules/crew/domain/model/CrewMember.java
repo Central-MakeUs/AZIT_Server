@@ -38,6 +38,9 @@ public class CrewMember {
 
     // 가입 승인
     public void approve() {
+        if (this.status != CrewMemberStatus.REQUESTED) {
+            return;
+        }
         this.status = CrewMemberStatus.JOINED;
     }
 

@@ -23,12 +23,14 @@ public class MemberController implements MemberControllerDocs {
     @PostMapping("/terms")
     public CommonResponse<Void> agreeToTerms(@CurrentMemberId Long memberId, @Valid @RequestBody AgreeToTermsRequest request) {
         memberUseCase.agreeToTerms(memberId, request.toCommand());
+
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
     @PostMapping("/me/withdraw")
     public CommonResponse<Void> withdraw(@CurrentMemberId Long memberId, @CurrentAccessToken String accessToken) {
         memberUseCase.withdraw(memberId, accessToken);
+
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 }
