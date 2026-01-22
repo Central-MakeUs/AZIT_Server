@@ -7,7 +7,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.docs.CrewControllerD
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.ApproveJoinCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
@@ -51,8 +51,16 @@ public class CrewController implements CrewControllerDocs {
 
     @PostMapping("/{crewId}/join-requests/{targetMemberId}/approve")
     public CommonResponse<Void> approveJoinRequest(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId) {
-        ApproveJoinCommand command = ApproveJoinCommand.of(crewId, targetMemberId, leaderId);
+        ProcessJoinCommand command = ProcessJoinCommand.of(crewId, targetMemberId, leaderId);
         crewUseCase.approveJoinRequest(command);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @PostMapping("/{crewId}/join-requests/{targetMemberId}/reject")
+    public CommonResponse<Void> rejectJoinRequest(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId) {
+        ProcessJoinCommand command = ProcessJoinCommand.of(crewId, targetMemberId, leaderId);
+        crewUseCase.rejectJoinRequest(command);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }

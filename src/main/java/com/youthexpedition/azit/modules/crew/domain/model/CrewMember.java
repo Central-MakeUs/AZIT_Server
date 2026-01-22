@@ -46,6 +46,9 @@ public class CrewMember {
 
     // 가입 거절
     public void reject() {
+        if (this.status != CrewMemberStatus.REQUESTED) {
+            return;
+        }
         this.status = CrewMemberStatus.REJECTED;
     }
 

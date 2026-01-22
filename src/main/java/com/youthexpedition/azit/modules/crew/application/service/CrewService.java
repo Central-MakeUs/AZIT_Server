@@ -3,7 +3,7 @@ package com.youthexpedition.azit.modules.crew.application.service;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.ApproveJoinCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
@@ -128,14 +128,9 @@ public class CrewService implements CrewUseCase {
 
     @Override
     @Transactional
-    public void approveJoinRequest(ApproveJoinCommand command) {
+    public void approveJoinRequest(ProcessJoinCommand command) {
         // 승인 요청자가 해당 크루의 리더인지 확인
-        CrewMember requester = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.leaderId())
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
-
-        if (requester.getRole() != CrewMemberRole.LEADER) {
-            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
-        }
+        validateLeader(command.crewId(), command.leaderId());
 
         // 가입 대기 중인 대상자 조회
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
@@ -151,5 +146,27 @@ public class CrewService implements CrewUseCase {
 
         member.completeOnboarding();
         saveMemberPort.save(member);
+    }
+
+    @Override
+    @Transactional
+    public void rejectJoinRequest(ProcessJoinCommand command) {
+        // 승인 요청자가 해당 크루의 리더인지 확인
+        validateLeader(command.crewId(), command.leaderId());
+
+        CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+
+        targetCrewMember.reject();
+        saveCrewMemberPort.save(targetCrewMember);
+    }
+
+    private void validateLeader(Long crewId, Long leaderId) {
+        CrewMember requester = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+
+        if (requester.getRole() != CrewMemberRole.LEADER) {
+            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
     }
 }
