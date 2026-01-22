@@ -1,7 +1,9 @@
 package com.youthexpedition.azit.modules.crew.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
@@ -14,6 +16,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
@@ -82,8 +85,7 @@ public class CrewService implements CrewUseCase {
                 .ifPresentOrElse(
                         existingMember -> {
                             // 이미 대기 중이거나 가입된 상태일 경우 재가입 요청 불가
-                            if (existingMember.getStatus() == CrewMemberStatus.REQUESTED ||
-                                    existingMember.getStatus() == CrewMemberStatus.JOINED) {
+                            if (existingMember.getStatus() == CrewMemberStatus.REQUESTED || existingMember.getStatus() == CrewMemberStatus.JOINED) {
                                 throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
                             }
 
@@ -119,8 +121,52 @@ public class CrewService implements CrewUseCase {
 
         // 가입 내역 조회
         CrewMemberStatus status = loadCrewMemberPort.findStatusByCrewIdAndMemberId(crewId, memberId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
         return CrewJoinStatusResponse.of(crew.getId(), crew.getName(), status);
+    }
+
+    @Override
+    @Transactional
+    public void approveJoinRequest(ProcessJoinCommand command) {
+        // 승인 요청자가 해당 크루의 리더인지 확인
+        validateLeader(command.crewId(), command.leaderId());
+
+        // 가입 대기 중인 대상자 조회
+        CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
+
+        // 가입 승인
+        targetCrewMember.approve();
+        saveCrewMemberPort.save(targetCrewMember);
+
+        // 해당 유저의 회원 상태를 ACTIVE로 전환 (온보딩 완료 처리)
+        Member member = loadMemberPort.findById(command.targetMemberId())
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        member.completeOnboarding();
+        saveMemberPort.save(member);
+    }
+
+    @Override
+    @Transactional
+    public void rejectJoinRequest(ProcessJoinCommand command) {
+        // 승인 요청자가 해당 크루의 리더인지 확인
+        validateLeader(command.crewId(), command.leaderId());
+
+        CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
+
+        targetCrewMember.reject();
+        saveCrewMemberPort.save(targetCrewMember);
+    }
+
+    private void validateLeader(Long crewId, Long leaderId) {
+        CrewMember requester = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+
+        if (requester.getRole() != CrewMemberRole.LEADER) {
+            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
     }
 }

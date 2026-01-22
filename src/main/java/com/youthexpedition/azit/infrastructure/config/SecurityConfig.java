@@ -57,7 +57,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/crews",
                                 "/api/v1/crews/join",
-                                "/api/v1/crews/invitation/**"
+                                "/api/v1/crews/invitation/**",
+                                "/api/v1/crews/*/join-status"
                         ).hasAnyAuthority("STATUS_PENDING_ONBOARDING", "STATUS_ACTIVE")
 
                         // 사용자 인증 시 상태 상관없이 허용
