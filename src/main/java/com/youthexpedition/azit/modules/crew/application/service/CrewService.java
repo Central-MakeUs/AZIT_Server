@@ -121,7 +121,7 @@ public class CrewService implements CrewUseCase {
 
         // 가입 내역 조회
         CrewMemberStatus status = loadCrewMemberPort.findStatusByCrewIdAndMemberId(crewId, memberId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
         return CrewJoinStatusResponse.of(crew.getId(), crew.getName(), status);
     }
@@ -134,7 +134,7 @@ public class CrewService implements CrewUseCase {
 
         // 가입 대기 중인 대상자 조회
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
         // 가입 승인
         targetCrewMember.approve();
@@ -155,7 +155,7 @@ public class CrewService implements CrewUseCase {
         validateLeader(command.crewId(), command.leaderId());
 
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
         targetCrewMember.reject();
         saveCrewMemberPort.save(targetCrewMember);

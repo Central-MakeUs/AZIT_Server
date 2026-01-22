@@ -97,7 +97,7 @@ public interface CrewControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "NOT_JOINED_CREW", "MEMBER_NOT_FOUND", "FORBIDDEN_ERROR",
+            "NOT_JOINED_CREW", "MEMBER_NOT_FOUND", "FORBIDDEN_ERROR", "ALREADY_PROCESSED_JOIN_REQUEST", "JOIN_REQUEST_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"})
     CommonResponse<Void> approveJoinRequest(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId);
 
@@ -111,7 +111,7 @@ public interface CrewControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "NOT_JOINED_CREW", "FORBIDDEN_ERROR",
+            "NOT_JOINED_CREW", "FORBIDDEN_ERROR", "ALREADY_PROCESSED_JOIN_REQUEST", "JOIN_REQUEST_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> rejectJoinRequest(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId);
