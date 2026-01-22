@@ -85,8 +85,7 @@ public class CrewService implements CrewUseCase {
                 .ifPresentOrElse(
                         existingMember -> {
                             // 이미 대기 중이거나 가입된 상태일 경우 재가입 요청 불가
-                            if (existingMember.getStatus() == CrewMemberStatus.REQUESTED ||
-                                    existingMember.getStatus() == CrewMemberStatus.JOINED) {
+                            if (existingMember.getStatus() == CrewMemberStatus.REQUESTED || existingMember.getStatus() == CrewMemberStatus.JOINED) {
                                 throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
                             }
 

@@ -25,11 +25,6 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
-    public boolean existsByCrewIdAndMemberId(Long crewId, Long memberId) {
-        return crewMemberRepository.existsByCrewIdAndMemberId(crewId, memberId);
-    }
-
-    @Override
     public Optional<CrewMember> findByCrewIdAndMemberId(Long crewId, Long memberId) {
         return crewMemberRepository.findByCrewIdAndMemberId(crewId, memberId)
                 .map(crewMemberMapper::toDomain);
