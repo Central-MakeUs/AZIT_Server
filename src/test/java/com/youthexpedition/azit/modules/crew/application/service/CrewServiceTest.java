@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.crew.application.service;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
@@ -169,6 +170,103 @@ class CrewServiceTest {
         assertThatThrownBy(() -> crewService.joinCrew(command))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining(CrewErrorCode.CREW_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("리더가 가입 요청을 승인하면, 신청자의 상태가 JOINED로 변경되고 정회원(ACTIVE)이 된다.")
+    void approveJoinRequest_Success() {
+        // given
+        Long crewId = 100L;
+        Long leaderId = 1L;
+        Long targetMemberId = 2L;
+        ProcessJoinCommand command = ProcessJoinCommand.of(crewId, targetMemberId, leaderId);
+
+        // 리더 권한 설정
+        CrewMember leader = CrewMember.builder()
+                .crewId(crewId).memberId(leaderId).role(CrewMemberRole.LEADER).build();
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)).willReturn(Optional.of(leader));
+
+        // 가입 대상자 상태 설정 (상태: REQUESTED)
+        CrewMember targetCrewMember = CrewMember.builder()
+                .crewId(crewId).memberId(targetMemberId).status(CrewMemberStatus.REQUESTED).build();
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, targetMemberId)).willReturn(Optional.of(targetCrewMember));
+
+        Member targetMember = Member.builder()
+                .id(targetMemberId).status(MemberStatus.PENDING_ONBOARDING).build();
+        given(loadMemberPort.findById(targetMemberId)).willReturn(Optional.of(targetMember));
+
+        // when
+        crewService.approveJoinRequest(command);
+
+        // then
+        assertThat(targetCrewMember.getStatus()).isEqualTo(CrewMemberStatus.JOINED); // 크루 상태 변경 확인
+        assertThat(targetMember.getStatus()).isEqualTo(MemberStatus.ACTIVE); // 정회원 전환 확인
+
+        verify(saveCrewMemberPort, times(1)).save(targetCrewMember);
+        verify(saveMemberPort, times(1)).save(targetMember);
+    }
+
+    @Test
+    @DisplayName("리더가 아닌 사용자가 승인을 시도하면 FORBIDDEN 에러가 발생한다.")
+    void approveJoinRequest_Fail_Forbidden() {
+        // given
+        Long crewId = 100L;
+        Long notLeaderId = 999L;
+        ProcessJoinCommand command = ProcessJoinCommand.of(crewId, 2L, notLeaderId);
+
+        // 일반 멤버로 모킹
+        CrewMember member = CrewMember.builder()
+                .role(CrewMemberRole.MEMBER).build();
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(anyLong(), anyLong())).willReturn(Optional.of(member));
+
+        // when & then
+        assertThatThrownBy(() -> crewService.approveJoinRequest(command))
+                .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    @DisplayName("리더가 가입 요청을 거절하면, 신청자의 상태가 REJECTED로 변경된다.")
+    void rejectJoinRequest_Success() {
+        // given
+        Long crewId = 100L;
+        Long leaderId = 1L;
+        Long targetMemberId = 2L;
+        ProcessJoinCommand command = ProcessJoinCommand.of(crewId, targetMemberId, leaderId);
+
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId))
+                .willReturn(Optional.of(CrewMember.builder().role(CrewMemberRole.LEADER).build()));
+
+        CrewMember targetCrewMember = CrewMember.builder()
+                .status(CrewMemberStatus.REQUESTED).build();
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, targetMemberId)).willReturn(Optional.of(targetCrewMember));
+
+        // when
+        crewService.rejectJoinRequest(command);
+
+        // then
+        assertThat(targetCrewMember.getStatus()).isEqualTo(CrewMemberStatus.REJECTED); // 거절 상태 확인
+        verify(saveCrewMemberPort, times(1)).save(targetCrewMember);
+        verify(saveMemberPort, never()).save(any()); // 거절 시에는 멤버 상태를 변경하지 않음
+    }
+
+    @Test
+    @DisplayName("이미 승인되었거나 거절된 유저를 다시 승인하려 하면 예외가 발생한다.")
+    void approveJoinRequest_Fail_InvalidStatus() {
+        // given
+        Long crewId = 100L;
+        ProcessJoinCommand command = ProcessJoinCommand.of(crewId, 2L, 1L);
+
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, 1L))
+                .willReturn(Optional.of(CrewMember.builder().role(CrewMemberRole.LEADER).build()));
+
+        // 이미 JOINED 상태인 멤버
+        CrewMember alreadyJoinedMember = CrewMember.builder()
+                .status(CrewMemberStatus.JOINED).build();
+        given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, 2L)).willReturn(Optional.of(alreadyJoinedMember));
+
+        // when & then
+        assertThatThrownBy(() -> crewService.approveJoinRequest(command))
+                .isInstanceOf(BusinessException.class);
     }
 
 }
