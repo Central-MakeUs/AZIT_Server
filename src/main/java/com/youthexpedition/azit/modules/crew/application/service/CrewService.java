@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCre
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
@@ -25,6 +26,8 @@ import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCod
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -161,9 +164,18 @@ public class CrewService implements CrewUseCase {
         saveCrewMemberPort.save(targetCrewMember);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long leaderId) {
+        validateLeader(crewId, leaderId);
+
+        // 'REQUESTED' 상태인 멤버 정보 조회
+        return loadCrewMemberPort.findJoinRequestsByCrewId(crewId);
+    }
+
     private void validateLeader(Long crewId, Long leaderId) {
         CrewMember requester = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_JOINED_CREW));
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_CREW_LEADER));
 
         if (requester.getRole() != CrewMemberRole.LEADER) {
             throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
