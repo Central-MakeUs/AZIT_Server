@@ -48,7 +48,7 @@ oauth:
     client-id: ${KAKAO_REST_API_KEY}
     client-secret: ${KAKAO_CLIENT_SECRET}
     admin-key: ${KAKAO_ADMIN_KEY}
-    redirect-uri: https://dev.azitcrew.com/oauth/callback?provider=kakao
+    redirect-uri: https://dev.azitcrew.com/auth/kakao/callback
   apple:
     team-id: ${APPLE_TEAM_ID}
     client-id: ${APPLE_SERVICE_ID}
