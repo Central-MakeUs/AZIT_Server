@@ -5,27 +5,29 @@ import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Tag(name = "Product" , description = "회원 API")
+@Tag(name = "Product" , description = "상품 API")
 public interface ProductControllerDocs {
 
     @Operation(
-            summary = "약관 동의",
+            summary = "상품 목록 조회 (무한 스크롤)",
             description = """
-            소셜 로그인 직후 '약관 동의 대기(PENDING_TERMS)' 상태인 회원이 필수 서비스 약관에 동의하는 단계입니다. <br><br>
+            커서 기반 페이징을 사용하여 전체 상품 목록을 조회합니다. <br><br>
             
-            **[제약 사항]** <br>
-            * '약관 동의 대기(PENDING_TERMS)' 상태의 회원만 호출 가능합니다. (INVALID_MEMBER_STATUS)
-            * 필수 약관 중 하나라도 누락될 경우 가입이 진행되지 않습니다. (REQUIRED_TERMS_NOT_AGREED)
+            **[참고 사항]** <br>
+            * 최신순 정렬: 가장 최근에 등록된 상품부터 정렬되어 반환됩니다.
+            * 무한 스크롤 방식: hasNext를 통해 다음 페이지 존재 여부를 확인하고, lastId를 다음 요청의 cursorId로 호출하면 됩니다.
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND",
-            "REQUIRED_TERMS_NOT_AGREED", // 필수 약관 중 하나라도 동의하지 않은 경우
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    public CommonResponse<SliceResponse<ProductListResponse>> getProducts(
-            @RequestParam(required = false) Long cursorId, @RequestParam(defaultValue = "20") int size);
+    CommonResponse<SliceResponse<ProductListResponse>> getProducts(
+            @Parameter(description = "마지막으로 조회된 상품 ID (첫 페이지 조회 시 null 또는 넣지 않아도 됨)")
+            @RequestParam(required = false) Long cursorId,
+            @Parameter(description = "한 번에 조회할 상품 개수")
+            @RequestParam(defaultValue = "20") int size);
 }
