@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -17,6 +19,8 @@ public class CrewMember {
     private final Long memberId;
     private CrewMemberRole role;
     private CrewMemberStatus status;
+    private final LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     // 리더 등록
     public static CrewMember createAsLeader(Long crewId, Long memberId) {

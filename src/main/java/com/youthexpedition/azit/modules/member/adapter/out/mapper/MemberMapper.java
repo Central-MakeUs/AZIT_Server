@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.member.adapter.out.persistence;
+package com.youthexpedition.azit.modules.member.adapter.out.mapper;
 
 import com.youthexpedition.azit.modules.member.adapter.out.persistence.entity.MemberEntity;
 import com.youthexpedition.azit.modules.member.domain.model.Member;

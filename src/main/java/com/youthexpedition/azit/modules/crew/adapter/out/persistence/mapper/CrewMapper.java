@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.crew.adapter.out.persistence;
+package com.youthexpedition.azit.modules.crew.adapter.out.persistence.mapper;
 
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewEntity;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
@@ -21,13 +21,13 @@ public class CrewMapper {
                 .build();
     }
 
-    public CrewEntity toEntity(Crew crew) {
+    public CrewEntity toEntity(Crew domain) {
         return CrewEntity.builder()
-                .id(crew.getId())
-                .name(crew.getName())
-                .category(crew.getCategory())
-                .region(crew.getRegion())
-                .invitationCode(crew.getInvitationCode())
+                .id(domain.getId())
+                .name(domain.getName())
+                .category(domain.getCategory())
+                .region(domain.getRegion())
+                .invitationCode(domain.getInvitationCode())
                 .build();
     }
 }
