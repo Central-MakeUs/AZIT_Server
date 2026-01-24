@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.crew.adapter.out.persistence;
+package com.youthexpedition.azit.modules.crew.adapter.out.persistence.mapper;
 
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewMemberEntity;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;

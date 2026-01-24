@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.member.adapter.out.persistence;
 
+import com.youthexpedition.azit.modules.member.adapter.out.mapper.MemberMapper;
 import com.youthexpedition.azit.modules.member.adapter.out.persistence.entity.MemberEntity;
 import com.youthexpedition.azit.modules.member.adapter.out.persistence.repository.MemberRepository;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
