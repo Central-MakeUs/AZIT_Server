@@ -18,7 +18,7 @@ public class Product {
     private Integer discountRate;
     private Long salePrice;
     private Long shippingFee;
-    private String shippingPolicy;
+    private Integer shippingLeadTime;
     private String refundPolicy;
     private String description;
     private List<ProductImage> images;

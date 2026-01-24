@@ -37,8 +37,8 @@ public class ProductEntity extends BaseEntity {
     @Column(name = "shipping_fee", nullable = false)
     private Long shippingFee;
 
-    @Column(name = "shipping_policy", length = 500)
-    private String shippingPolicy;
+    @Column(name = "shipping_lead_time", nullable = false)
+    private Integer shippingLeadTime; // 배송 출고 소요 시간 (예: 2 -> 2일 내 발송)
 
     @Column(name = "refund_policy", length = 1000)
     private String refundPolicy;
