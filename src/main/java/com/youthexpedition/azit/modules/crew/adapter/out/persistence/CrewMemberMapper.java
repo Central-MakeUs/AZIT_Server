@@ -16,16 +16,18 @@ public class CrewMemberMapper {
                 .memberId(entity.getMemberId())
                 .role(entity.getRole())
                 .status(entity.getStatus())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 
-    public CrewMemberEntity toEntity(CrewMember crewMember) {
+    public CrewMemberEntity toEntity(CrewMember domain) {
         return CrewMemberEntity.builder()
-                .id(crewMember.getId())
-                .crewId(crewMember.getCrewId())
-                .memberId(crewMember.getMemberId())
-                .role(crewMember.getRole())
-                .status(crewMember.getStatus())
+                .id(domain.getId())
+                .crewId(domain.getCrewId())
+                .memberId(domain.getMemberId())
+                .role(domain.getRole())
+                .status(domain.getStatus())
                 .build();
     }
 }
