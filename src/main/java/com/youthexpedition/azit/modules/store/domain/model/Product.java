@@ -12,17 +12,20 @@ import java.util.List;
 @AllArgsConstructor
 public class Product {
     private final Long id;
-    private final String brandName;
-    private final String name;
-    private final Long basePrice;
-    private final Integer discountRate;
-    private final Long salePrice;
-    private final Long shippingFee;
-    private final String shippingPolicy;
-    private final String refundPolicy;
-    private final String description;
-    private final List<ProductImage> images;
-    private final List<ProductOption> options;
+    private String brandName;
+    private String name;
+    private Long basePrice;
+    private Integer discountRate;
+    private Long salePrice;
+    private Long shippingFee;
+    private String shippingPolicy;
+    private String refundPolicy;
+    private String description;
+    private List<ProductImage> images;
+    private List<ProductOptionGroup> optionGroups;
+    private List<ProductSku> skus;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private final Long createdBy;
+    private Long updatedBy;
 }

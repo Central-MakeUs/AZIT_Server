@@ -1,20 +1,20 @@
 package com.youthexpedition.azit.modules.store.domain.model;
 
-import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
-public class ProductImage {
+public class ProductSku {
     private final Long id;
-    private String imageUrl;
-    private Integer sortOrder;
-    private ProductImageType imageType;
+    private Long additionalPrice;
+    private Integer stockQuantity;
+    private List<ProductSkuOption> skuOptions;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private final Long createdBy;
