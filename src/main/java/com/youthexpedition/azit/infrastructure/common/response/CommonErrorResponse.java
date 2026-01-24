@@ -5,13 +5,8 @@ import com.youthexpedition.azit.infrastructure.common.response.code.BaseErrorCod
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 값이면 JSON 응답에서 제외
-public class CommonErrorResponse {
-    private final String code;
-    private final String message;
-
+public record CommonErrorResponse(String code, String message) {
     public static CommonErrorResponse of(BaseErrorCode errorCode) {
         return new CommonErrorResponse(errorCode.getCode(), errorCode.getMessage());
     }
