@@ -16,6 +16,7 @@ public class ProductService implements ProductUseCase {
     private final LoadProductPort loadProductPort;
 
     @Override
+    @Transactional(readOnly = true)
     public SliceResponse<ProductListResponse> getProducts(GetProductListQuery query) {
         return loadProductPort.findProducts(query);
     }
