@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Product {
     private final Long id;
-    private String brandName;
+    private final Brand brand;
     private String name;
     private Long basePrice;
     private Integer discountRate;

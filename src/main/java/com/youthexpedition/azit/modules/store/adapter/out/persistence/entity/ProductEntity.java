@@ -19,8 +19,9 @@ public class ProductEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "brand_name", nullable = false, length = 100)
-    private String brandName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "brand_id", nullable = false)
+    private BrandEntity brand;
 
     @Column(name = "name", nullable = false, length = 255)
     private String name;

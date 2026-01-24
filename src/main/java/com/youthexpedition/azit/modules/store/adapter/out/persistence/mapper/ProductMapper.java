@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.store.adapter.out.persistence.mapper;
 
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.*;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
 import com.youthexpedition.azit.modules.store.domain.model.*;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,7 @@ public class ProductMapper {
 
         return Product.builder()
                 .id(entity.getId())
-                .brandName(entity.getBrandName())
+                .brand(toBrandDomain(entity.getBrand()))
                 .name(entity.getName())
                 .basePrice(entity.getBasePrice())
                 .discountRate(entity.getDiscountRate())
@@ -103,12 +104,26 @@ public class ProductMapper {
                 .build();
     }
 
+    private Brand toBrandDomain(BrandEntity entity) {
+        if (entity == null) return null;
+        return Brand.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .logoImageUrl(entity.getLogoImageUrl())
+                .description(entity.getDescription())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .createdBy(entity.getCreatedBy())
+                .updatedBy(entity.getUpdatedBy())
+                .build();
+    }
+
     public ProductEntity toEntity(Product domain) {
         if (domain == null) return null;
 
         return ProductEntity.builder()
                 .id(domain.getId())
-                .brandName(domain.getBrandName())
+                .brand(BrandEntity.builder().id(domain.getBrand().getId()).build())
                 .name(domain.getName())
                 .basePrice(domain.getBasePrice())
                 .discountRate(domain.getDiscountRate())
@@ -118,5 +133,17 @@ public class ProductMapper {
                 .refundPolicy(domain.getRefundPolicy())
                 .description(domain.getDescription())
                 .build();
+    }
+
+    public ProductListResponse toListResponse(ProductListResponse response, String cloudFrontDomain) {
+        return new ProductListResponse(
+                response.id(),
+                response.brandName(),
+                response.productName(),
+                response.basePrice(),
+                response.discountRate(),
+                response.salePrice(),
+                cloudFrontDomain + response.thumbnailImageUrl()
+        );
     }
 }
