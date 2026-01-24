@@ -1,7 +1,6 @@
 package com.youthexpedition.azit.modules.store.adapter.out.persistence.mapper;
 
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.*;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
 import com.youthexpedition.azit.modules.store.domain.model.*;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +29,7 @@ public class ProductMapper {
                         .map(this::toOptionGroupDomain)
                         .collect(Collectors.toList()))
                 .skus(entity.getSkus().stream()
-                        .map(this::toItemDomain)
+                        .map(this::toSkuDomain)
                         .collect(Collectors.toList()))
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
@@ -78,7 +77,7 @@ public class ProductMapper {
                 .build();
     }
 
-    private ProductSku toItemDomain(ProductSkuEntity entity) {
+    private ProductSku toSkuDomain(ProductSkuEntity entity) {
         return ProductSku.builder()
                 .id(entity.getId())
                 .additionalPrice(entity.getAdditionalPrice())
@@ -133,17 +132,5 @@ public class ProductMapper {
                 .refundPolicy(domain.getRefundPolicy())
                 .description(domain.getDescription())
                 .build();
-    }
-
-    public ProductListResponse toListResponse(ProductListResponse response, String cloudFrontDomain) {
-        return new ProductListResponse(
-                response.id(),
-                response.brandName(),
-                response.productName(),
-                response.basePrice(),
-                response.discountRate(),
-                response.salePrice(),
-                cloudFrontDomain + response.thumbnailImageUrl()
-        );
     }
 }

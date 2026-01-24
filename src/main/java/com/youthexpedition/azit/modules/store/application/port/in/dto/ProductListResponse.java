@@ -18,4 +18,8 @@ public record ProductListResponse(
         @Schema(description = "썸네일 이미지 url")
         String thumbnailImageUrl
 ) {
+        public static ProductListResponse of(Long id, String brandName, String productName, Long basePrice,
+                                             Integer discountRate, Long salePrice, String thumbnailImageUrl) {
+                return new ProductListResponse(id, brandName, productName, basePrice, discountRate, salePrice, thumbnailImageUrl);
+        }
 }
