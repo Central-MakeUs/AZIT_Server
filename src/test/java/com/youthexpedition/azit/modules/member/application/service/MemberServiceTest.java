@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.member.application.service;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -32,6 +33,8 @@ class MemberServiceTest {
     private LoadMemberPort loadMemberPort;
     @Mock
     private SaveMemberPort saveMemberPort;
+    @Mock
+    private SaveCrewMemberPort saveCrewMemberPort;
     @Mock
     private SocialAuthPort socialAuthPort;
     @Mock
