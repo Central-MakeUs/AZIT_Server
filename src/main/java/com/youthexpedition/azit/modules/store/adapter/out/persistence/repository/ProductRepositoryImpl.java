@@ -34,12 +34,11 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 ))
                 .from(productEntity)
                 .join(productEntity.brand, brandEntity) // brand가 없는 상품은 없으므로 inner join
-                .leftJoin(productEntity.images, productImageEntity)
-                .where(
-                        ltCursorId(query.cursorId()),
-                        productImageEntity.sortOrder.eq(1), // 노출 순서가 가장 먼저인 이미지
-                        productImageEntity.imageType.eq(ProductImageType.SLIDE)
+                .leftJoin(productEntity.images, productImageEntity).on(
+                        productImageEntity.sortOrder.eq(1) // 노출 순서가 가장 먼저인 이미지
+                        .and(productImageEntity.imageType.eq(ProductImageType.SLIDE))
                 )
+                .where(ltCursorId(query.cursorId()))
                 .orderBy(productEntity.id.desc()) // 최신순 정렬
                 .limit(query.size() + 1)
                 .fetch();
