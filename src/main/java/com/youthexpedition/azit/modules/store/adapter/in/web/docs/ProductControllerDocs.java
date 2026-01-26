@@ -45,7 +45,7 @@ public interface ProductControllerDocs {
             * skus: 선택 가능한 옵션 조합(SKU) 리스트입니다. 각 SKU는 optionValueIds 리스트를 통해 어떤 옵션값들의 조합인지 나타냅니다.
             
             **[참고 사항]** <br>
-            * optionValueIds: DB에 저장된 노출 순서를 기준으로 정렬되어 있습니다.
+            * 옵션 관련 데이터들은 DB에 저장된 노출 순서를 기준으로 정렬되어 있습니다.
             """
     )
     @ApiErrorCodeExamples({

@@ -50,7 +50,9 @@ public class ProductResponseMapper {
         return product.getSkus().stream()
                 .map(sku -> new ProductDetailResponse.SkuResponse(
                         sku.getId(), sku.getAdditionalPrice(), sku.getStockQuantity(),
-                        sku.getSkuOptions().stream().map(opt -> opt.getOptionValue().getId()).toList()
+                        sku.getSkuOptions().stream()
+                                .sorted(Comparator.comparing(opt -> opt.getOptionValue().getSortOrder()))
+                                .map(opt -> opt.getOptionValue().getId()).toList()
                 )).toList();
     }
 }
