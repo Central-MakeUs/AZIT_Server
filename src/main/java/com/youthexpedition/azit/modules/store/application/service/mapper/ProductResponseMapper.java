@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.store.application.service.mapper;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductDetailResponse;
 import com.youthexpedition.azit.modules.store.domain.model.*;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -11,21 +12,24 @@ import java.util.List;
 @Component
 public class ProductResponseMapper {
 
+    @Value("${spring.cloud.aws.cloudfront.domain}")
+    private String cloudFrontDomain;
+
     public ProductDetailResponse toDetailResponse(Product product) {
         return ProductDetailResponse.of(
                 product,
-                filterImageUrls(product, ProductImageType.SLIDE),
-                filterImageUrls(product, ProductImageType.DETAIL),
+                filterAndResolveUrls(product, ProductImageType.SLIDE),
+                filterAndResolveUrls(product, ProductImageType.DETAIL),
                 mapOptionGroups(product),
                 mapSkus(product)
         );
     }
 
-    private List<String> filterImageUrls(Product product, ProductImageType type) {
+    private List<String> filterAndResolveUrls(Product product, ProductImageType type) {
         return product.getImages().stream()
                 .filter(img -> img.getImageType() == type)
                 .sorted(Comparator.comparing(ProductImage::getSortOrder))
-                .map(ProductImage::getImageUrl)
+                .map(img -> cloudFrontDomain + img.getImageUrl())
                 .toList();
     }
 

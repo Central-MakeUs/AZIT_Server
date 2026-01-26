@@ -19,8 +19,4 @@ public class ProductImage {
     private LocalDateTime updatedAt;
     private final Long createdBy;
     private Long updatedBy;
-
-    public void updateImageUrl(String fullImageUrl) {
-        this.imageUrl = fullImageUrl;
-    }
 }

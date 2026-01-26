@@ -38,16 +38,7 @@ public class ProductPersistenceAdapter implements LoadProductPort, SaveProductPo
     @Override
     public Optional<Product> findById(Long productId) {
         return productRepository.findByIdWithAllDetails(productId)
-                .map(entity -> {
-                    Product domain = productMapper.toDomain(entity);
-                    return resolveImageUrls(domain);
-                });
-    }
-
-    private Product resolveImageUrls(Product product) {
-        product.getImages().forEach(img ->
-                img.updateImageUrl(buildFullImageUrl(img.getImageUrl())));
-        return product;
+                .map(productMapper::toDomain);
     }
 
     private ProductListResponse resolveImageUrl(ProductListResponse dto) {
