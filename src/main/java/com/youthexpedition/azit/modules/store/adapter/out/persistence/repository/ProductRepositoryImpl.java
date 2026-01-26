@@ -4,16 +4,21 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
+import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.ProductEntity;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.query.GetProductListQuery;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QBrandEntity.brandEntity;
 import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductEntity.productEntity;
 import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductImageEntity.productImageEntity;
+import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductOptionGroupEntity.productOptionGroupEntity;
+import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductOptionValueEntity.productOptionValueEntity;
+import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductSkuEntity.productSkuEntity;
 
 @RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductRepositoryCustom {
@@ -55,5 +60,15 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
     private BooleanExpression ltCursorId(Long cursorId) {
         return cursorId == null ? null : productEntity.id.lt(cursorId);
+    }
+
+    @Override
+    public Optional<ProductEntity> findByIdWithAllDetails(Long productId) {
+        return Optional.ofNullable(queryFactory
+                .selectFrom(productEntity)
+                .join(productEntity.brand, brandEntity).fetchJoin()
+                .leftJoin(productEntity.images, productImageEntity).fetchJoin()
+                .where(productEntity.id.eq(productId))
+                .fetchOne());
     }
 }

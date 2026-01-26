@@ -70,6 +70,7 @@ public class ProductMapper {
         return ProductOptionValue.builder()
                 .id(entity.getId())
                 .value(entity.getValue())
+                .sortOrder(entity.getSortOrder())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .createdBy(entity.getCreatedBy())
