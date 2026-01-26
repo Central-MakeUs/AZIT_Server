@@ -6,13 +6,11 @@ import com.youthexpedition.azit.infrastructure.common.response.code.CommonSucces
 import com.youthexpedition.azit.modules.store.adapter.in.web.docs.ProductControllerDocs;
 import com.youthexpedition.azit.modules.store.adapter.in.web.mapper.ProductWebMapper;
 import com.youthexpedition.azit.modules.store.application.port.in.ProductUseCase;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.query.GetProductListQuery;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -26,6 +24,13 @@ public class ProductController implements ProductControllerDocs {
             @RequestParam(required = false) Long cursorId, @RequestParam(defaultValue = "20") int size) {
         GetProductListQuery query = productWebMapper.toQuery(cursorId, size);
         SliceResponse<ProductListResponse> result = productUseCase.getProducts(query);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, result);
+    }
+
+    @GetMapping("/{productId}")
+    public CommonResponse<ProductDetailResponse> getProduct(@PathVariable Long productId) {
+        ProductDetailResponse result = productUseCase.getProduct(productId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, result);
     }

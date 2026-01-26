@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class ProductOptionValue {
     private final Long id;
     private String value;
+    private Integer sortOrder;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private final Long createdBy;

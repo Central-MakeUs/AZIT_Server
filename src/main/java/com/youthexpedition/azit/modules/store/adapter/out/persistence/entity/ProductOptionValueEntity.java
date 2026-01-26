@@ -22,4 +22,7 @@ public class ProductOptionValueEntity extends BaseEntity {
 
     @Column(name = "value", nullable = false, length = 100)
     private String value; // S, M, 240 등 옵션 값
+
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder; // 화면 노출 순서
 }
