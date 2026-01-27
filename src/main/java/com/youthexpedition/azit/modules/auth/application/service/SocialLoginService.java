@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort
 import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -24,6 +25,7 @@ public class SocialLoginService implements SocialLoginUseCase {
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
     private final TokenPort tokenPort;
+    private final LoadCrewMemberPort loadCrewMemberPort;
     private final JwtProvider jwtProvider;
 
     @Override
@@ -33,6 +35,10 @@ public class SocialLoginService implements SocialLoginUseCase {
         // 기존 회원 확인 및 신규 회원 가입
         Member member = upsertMember(profile);
         Member savedMember = saveMemberPort.save(member);
+
+        // 가장 최근에 조회한 크루 조회
+        Long crewId = loadCrewMemberPort.findRecentCrewIdByMemberId(savedMember.getId())
+                .orElse(null);
 
         // 토큰 생성
         AuthToken authToken = AuthToken.builder()
@@ -44,7 +50,7 @@ public class SocialLoginService implements SocialLoginUseCase {
         // Redis에 Refresh Token 저장
         saveRefreshToken(savedMember.getId(), authToken.refreshToken());
 
-        return new AuthResult(authToken, savedMember.getStatus());
+        return new AuthResult(authToken, savedMember.getStatus(), crewId);
     }
 
     private Member upsertMember(SocialProfile profile) {

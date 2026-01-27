@@ -75,7 +75,7 @@ public interface CrewControllerDocs {
     CommonResponse<CrewInvitationResponse> getCrewByInvitation(@PathVariable String invitationCode);
 
     @Operation(
-            summary = "가입 승인 상태 조회",
+            summary = "가입 요청 상태 조회",
             description = """
             특정 크루에 신청한 멤버(로그인한 사용자) 가입 요청이 어떤 상태인지 조회합니다. <br><br>
             
