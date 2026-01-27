@@ -82,12 +82,40 @@ public class Member {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // 온보딩 완료했을 경우(크루 생성 및 크루 가입) ACTIVE 처리
+    // 리더가 크루 생성 완료했을 경우 상태 변경 (ACTIVE)
     public void completeOnboarding() {
-        if (this.status == MemberStatus.PENDING_ONBOARDING) {
-            this.status = MemberStatus.ACTIVE;
-            this.updatedAt = LocalDateTime.now();
+        if (this.status != MemberStatus.PENDING_ONBOARDING) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
+        this.status = MemberStatus.ACTIVE;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // 크루원이 초대 코드 입력 후 승인 대기할 경우 상태 변경 (WAITING_FOR_APPROVE)
+    public void applyForJoin() {
+        if (this.status != MemberStatus.PENDING_ONBOARDING) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
+        this.status = MemberStatus.WAITING_FOR_APPROVE;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // 리더가 가입 신청을 승인했을 경우 상태 변경 (ACTIVE)
+    public void approveJoin() {
+        if (this.status != MemberStatus.WAITING_FOR_APPROVE) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
+        this.status = MemberStatus.ACTIVE;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // 리더가 가입 신청을 거절했을 경우 상태 변경 (PENDING_ONBOARDING)
+    public void rejectJoin() {
+        if (this.status != MemberStatus.WAITING_FOR_APPROVE) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
+        this.status = MemberStatus.PENDING_ONBOARDING;
+        this.updatedAt = LocalDateTime.now();
     }
 
     // 탈퇴 상태로 변경

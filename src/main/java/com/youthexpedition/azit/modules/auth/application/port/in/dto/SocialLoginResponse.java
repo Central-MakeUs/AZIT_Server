@@ -12,13 +12,16 @@ public record SocialLoginResponse(
         @Schema(description = "액세스 토큰 만료 시간 (초)")
         long accessTokenExpiresIn, // 액세스 토큰 만료 시간
         @Schema(description = "회원 상태")
-        MemberStatus status
+        MemberStatus status,
+        @Schema(description = "가입한 크루 ID (없을 경우 null)")
+        Long crewId
 ) {
     public static SocialLoginResponse from(AuthResult authResult) {
         return SocialLoginResponse.builder()
                 .accessToken(authResult.authToken().accessToken())
                 .accessTokenExpiresIn(authResult.authToken().accessTokenExpiresIn())
                 .status(authResult.status())
+                .crewId(authResult.crewId())
                 .build();
     }
 }

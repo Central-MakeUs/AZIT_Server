@@ -6,6 +6,7 @@ import lombok.Builder;
 @Builder
 public record AuthResult(
         AuthToken authToken,
-        MemberStatus status
+        MemberStatus status,
+        Long crewId
 ) {
 }

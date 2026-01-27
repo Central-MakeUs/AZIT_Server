@@ -33,9 +33,7 @@ public class MemberService implements MemberUseCase {
     public void agreeToTerms(Long memberId, AgreeToTermsCommand command) {
         command.validateRequired(); // 필수 약관 동의 여부 검증
 
-        Member member = loadMemberPort.findById(memberId)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
+        Member member = getMember(memberId);
         member.completeTermsAgreement(command.marketingTermsAgreed(), command.notificationTermsAgreed()); // 멤버 상태 업데이트 (약관 동의)
         saveMemberPort.save(member);
     }
@@ -43,8 +41,7 @@ public class MemberService implements MemberUseCase {
     @Override
     @Transactional
     public void withdraw(Long memberId, String accessToken) {
-        Member member = loadMemberPort.findById(memberId)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+        Member member = getMember(memberId);
 
         // 소셜 연동 해제
         socialAuthPort.revoke(SocialRevokeCommand.from(member));
@@ -79,5 +76,10 @@ public class MemberService implements MemberUseCase {
 
         member.updateEmailSharingStatus(isEnabled);
         saveMemberPort.save(member);
+    }
+
+    private Member getMember(Long memberId) {
+        return loadMemberPort.findById(memberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }

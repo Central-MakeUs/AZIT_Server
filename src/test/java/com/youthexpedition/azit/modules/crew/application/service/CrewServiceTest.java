@@ -108,6 +108,11 @@ class CrewServiceTest {
             given(loadCrewPort.findByInvitationCode(invitationCode)).willReturn(Optional.of(mockCrew));
 
             // 기존 가입 내역 없음
+            Member member = Member.builder()
+                    .id(memberId)
+                    .status(MemberStatus.PENDING_ONBOARDING)
+                    .build();
+            given(loadMemberPort.findById(memberId)).willReturn(Optional.of(member));
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.empty());
 
             // when
@@ -117,6 +122,8 @@ class CrewServiceTest {
             verify(saveCrewMemberPort, times(1)).save(argThat(crewMember ->
                     crewMember.getStatus() == CrewMemberStatus.REQUESTED
             ));
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.WAITING_FOR_APPROVE);
+            verify(saveMemberPort, times(1)).save(member);
         }
 
         @Test
@@ -139,12 +146,20 @@ class CrewServiceTest {
                     .build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(exitedMember));
 
+            Member member = Member.builder()
+                    .id(memberId)
+                    .status(MemberStatus.PENDING_ONBOARDING)
+                    .build();
+            given(loadMemberPort.findById(memberId)).willReturn(Optional.of(member));
+
             // when
             crewService.joinCrew(command);
 
             // then
             assertThat(exitedMember.getStatus()).isEqualTo(CrewMemberStatus.REQUESTED);
             verify(saveCrewMemberPort, times(1)).save(exitedMember);
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.WAITING_FOR_APPROVE);
+            verify(saveMemberPort, times(1)).save(member);
         }
 
         @Test
@@ -209,7 +224,7 @@ class CrewServiceTest {
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, targetMemberId)).willReturn(Optional.of(targetCrewMember));
 
             Member targetMember = Member.builder()
-                    .id(targetMemberId).status(MemberStatus.PENDING_ONBOARDING).build();
+                    .id(targetMemberId).status(MemberStatus.WAITING_FOR_APPROVE).build();
             given(loadMemberPort.findById(targetMemberId)).willReturn(Optional.of(targetMember));
 
             // when

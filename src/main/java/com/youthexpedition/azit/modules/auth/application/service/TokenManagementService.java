@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.auth.application.port.out.TokenProviderP
 import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
@@ -21,6 +22,7 @@ public class TokenManagementService implements TokenUseCase {
     private final LoadMemberPort loadMemberPort;
     private final TokenPort tokenPort;
     private final TokenProviderPort tokenProviderPort;
+    private final LoadCrewMemberPort loadCrewMemberPort;
 
     private static final String BLACKLIST_REASON_LOGOUT = "logout";
 
@@ -48,13 +50,17 @@ public class TokenManagementService implements TokenUseCase {
 
         tokenPort.save(member.getId(), newRefreshToken, tokenProviderPort.getRefreshTokenExpirationSeconds());
 
+        // 가장 최근에 조회한 크루 조회
+        Long crewId = loadCrewMemberPort.findRecentCrewIdByMemberId(member.getId())
+                .orElse(null);
+
         AuthToken token = AuthToken.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .accessTokenExpiresIn(tokenProviderPort.getAccessTokenExpirationSeconds())
                 .build();
 
-        return new AuthResult(token, member.getStatus());
+        return new AuthResult(token, member.getStatus(), crewId);
     }
 
     @Override

@@ -53,4 +53,11 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     public List<JoinRequestQueryResult> findJoinRequestsByCrewId(Long crewId) {
         return crewMemberRepository.findJoinRequestsByCrewId(crewId);
     }
+
+    @Override
+    public Optional<Long> findRecentCrewIdByMemberId(Long memberId) {
+        // CrewMemberEntity에서 JOINED 상태인 것 중 ID가 가장 큰 것(최근 가입)을 조회
+        return crewMemberRepository.findFirstByMemberIdAndStatusOrderByIdDesc(memberId, CrewMemberStatus.JOINED)
+                .map(CrewMemberEntity::getCrewId);
+    }
 }

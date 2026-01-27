@@ -12,4 +12,5 @@ public interface LoadCrewMemberPort {
     long countJoinedMembersByCrewId(Long crewId);
     Optional<CrewMemberStatus> findStatusByCrewIdAndMemberId(Long crewId, Long memberId);
     List<JoinRequestQueryResult> findJoinRequestsByCrewId(Long crewId);
+    Optional<Long> findRecentCrewIdByMemberId(Long memberId);
 }
