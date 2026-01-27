@@ -104,6 +104,13 @@ public class CrewService implements CrewUseCase {
                             saveCrewMemberPort.save(newMember);
                         }
                 );
+
+        Member member = loadMemberPort.findById(command.memberId())
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // WAITING_FOR_APPROVE으로 상태 변경
+        member.applyForJoin();
+        saveMemberPort.save(member);
     }
 
     @Override
@@ -149,7 +156,7 @@ public class CrewService implements CrewUseCase {
         Member member = loadMemberPort.findById(command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        member.completeOnboarding();
+        member.approveJoin();
         saveMemberPort.save(member);
     }
 
