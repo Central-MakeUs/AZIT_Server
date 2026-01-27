@@ -152,7 +152,7 @@ public class CrewService implements CrewUseCase {
         targetCrewMember.approve();
         saveCrewMemberPort.save(targetCrewMember);
 
-        // 해당 유저의 회원 상태를 ACTIVE로 전환 (온보딩 완료 처리)
+        // 해당 유저의 회원 상태를 ACTIVE로 변경 (온보딩 완료 처리)
         Member member = loadMemberPort.findById(command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
@@ -170,12 +170,14 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
         targetCrewMember.reject();
+        saveCrewMemberPort.save(targetCrewMember);
 
         Member member = loadMemberPort.findById(command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        // 해당 유저의 회원 상태를 PENDING_ONBOARDING으로 변경
         member.rejectJoin();
-        saveCrewMemberPort.save(targetCrewMember);
+        saveMemberPort.save(member);
     }
 
     @Override
