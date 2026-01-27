@@ -170,6 +170,11 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
         targetCrewMember.reject();
+
+        Member member = loadMemberPort.findById(command.targetMemberId())
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        member.rejectJoin();
         saveCrewMemberPort.save(targetCrewMember);
     }
 
