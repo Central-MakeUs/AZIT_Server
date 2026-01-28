@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface LoadProductPort {
     SliceResponse<ProductListResponse> findProducts(GetProductListQuery query);
     Optional<Product> findById(Long productId);
+    Optional<Product> findByIdForCart(Long productId);
 }

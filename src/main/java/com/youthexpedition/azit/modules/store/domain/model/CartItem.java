@@ -20,6 +20,15 @@ public class CartItem {
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
+    public static CartItem create(Long memberId, Product product, ProductSku sku, int quantity) {
+        return CartItem.builder()
+                .memberId(memberId)
+                .product(product)
+                .sku(sku)
+                .quantity(quantity)
+                .build();
+    }
+
     // 장바구니 수량 변경
     public void changeQuantity(Integer newQuantity) {
         if (newQuantity <= 0) {

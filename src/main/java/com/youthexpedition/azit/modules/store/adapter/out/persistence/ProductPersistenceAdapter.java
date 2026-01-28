@@ -53,4 +53,10 @@ public class ProductPersistenceAdapter implements LoadProductPort, SaveProductPo
         }
         return cloudFrontDomain + imagePath;
     }
+
+    @Override
+    public Optional<Product> findByIdForCart(Long productId) {
+        return productRepository.findByIdForCart(productId)
+                .map(productMapper::toDomain);
+    }
 }
