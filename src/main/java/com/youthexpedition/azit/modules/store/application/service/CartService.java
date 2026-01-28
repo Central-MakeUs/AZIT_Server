@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.store.application.service;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.store.application.port.in.CartUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.AddToCartCommand;
+import com.youthexpedition.azit.modules.store.application.port.in.command.CartItemDeleteCommand;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadProductPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -61,5 +63,14 @@ public class CartService implements CartUseCase {
         // 업데이트 또는 저장
         CartItem newItem = CartItem.create(command.memberId(), product, sku, command.quantity());
         saveCartPort.save(newItem);
+    }
+
+    @Override
+    public void deleteCartItems(Long memberId, CartItemDeleteCommand command) {
+        if (command.cartItemIds() == null || command.cartItemIds().isEmpty()) {
+            return;
+        }
+
+        saveCartPort.deleteAllByMemberIdAndIds(memberId, command.cartItemIds());
     }
 }

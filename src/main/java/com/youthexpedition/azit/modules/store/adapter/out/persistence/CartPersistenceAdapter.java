@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.store.domain.model.CartItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -32,5 +33,10 @@ public class CartPersistenceAdapter implements LoadCartPort, SaveCartPort {
     public Optional<CartItem> findByMemberIdAndSkuId(Long memberId, Long productSkuId) {
         return cartItemRepository.findByMemberIdAndSkuId(memberId, productSkuId)
                 .map(cartMapper::toDomain);
+    }
+
+    @Override
+    public void deleteAllByMemberIdAndIds(Long memberId, List<Long> cartItemIds) {
+        cartItemRepository.deleteAllByMemberIdAndIds(memberId, cartItemIds);
     }
 }
