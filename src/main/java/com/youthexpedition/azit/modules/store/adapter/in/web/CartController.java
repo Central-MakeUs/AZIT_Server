@@ -21,7 +21,7 @@ public class CartController implements CartControllerDocs {
 
     @PostMapping("/items")
     public CommonResponse<Void> addCartItem(@CurrentMemberId Long memberId, @RequestBody @Valid AddToCartRequest request) {
-        cartUseCase.addOrUpdateCartItem(memberId, request.toCommand(memberId));
+        cartUseCase.addOrUpdateCartItem(request.toCommand(memberId));
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
