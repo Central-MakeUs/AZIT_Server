@@ -12,6 +12,6 @@ public record CartItemDeleteRequest(
         List<Long> cartItemIds
 ) {
     public CartItemDeleteCommand toCommand() {
-        return CartItemDeleteCommand.of(cartItemIds);
+        return CartItemDeleteCommand.of(cartItemIds.stream().filter(java.util.Objects::nonNull).toList()); // null 요소 필터링
     }
 }
