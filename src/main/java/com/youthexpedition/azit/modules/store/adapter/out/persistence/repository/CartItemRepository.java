@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CartItemRepository extends JpaRepository<CartItemEntity, Long>, CartItemRepositoryCustom {
@@ -18,4 +19,8 @@ public interface CartItemRepository extends JpaRepository<CartItemEntity, Long>,
     @Modifying
     @Query("UPDATE CartItemEntity ci SET ci.quantity = ci.quantity + :quantity WHERE ci.id = :id")
     void addQuantity(@Param("id") Long id, @Param("quantity") int quantity);
+
+    @Modifying
+    @Query("DELETE FROM CartItemEntity ci WHERE ci.memberId = :memberId AND ci.id IN :ids")
+    void deleteAllByMemberIdAndIds(@Param("memberId") Long memberId, @Param("ids") List<Long> ids);
 }

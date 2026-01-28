@@ -1,9 +1,9 @@
 package com.youthexpedition.azit.modules.store.application.service;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.store.adapter.in.web.dto.AddToCartRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.CartUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.AddToCartCommand;
+import com.youthexpedition.azit.modules.store.application.port.in.command.CartItemDeleteCommand;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadProductPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
@@ -28,9 +28,9 @@ public class CartService implements CartUseCase {
     private final CartResponseMapper cartResponseMapper;
 
     @Override
-    public void addOrUpdateCartItem(Long memberId, AddToCartCommand command) {
+    public void addOrUpdateCartItem(AddToCartCommand command) {
         // 장바구니에 이미 동일한 SKU가 있는지 조회
-        Optional<CartItem> existingItem = loadCartPort.findByMemberIdAndSkuId(memberId, command.productSkuId());
+        Optional<CartItem> existingItem = loadCartPort.findByMemberIdAndSkuId(command.memberId(), command.productSkuId());
 
         // 이미 항목이 있다면 바로 수량 업데이트
         if (existingItem.isPresent()) {
@@ -62,5 +62,14 @@ public class CartService implements CartUseCase {
         // 업데이트 또는 저장
         CartItem newItem = CartItem.create(command.memberId(), product, sku, command.quantity());
         saveCartPort.save(newItem);
+    }
+
+    @Override
+    public void deleteCartItems(Long memberId, CartItemDeleteCommand command) {
+        if (command.cartItemIds() == null || command.cartItemIds().isEmpty()) {
+            return;
+        }
+
+        saveCartPort.deleteAllByMemberIdAndIds(memberId, command.cartItemIds());
     }
 }
