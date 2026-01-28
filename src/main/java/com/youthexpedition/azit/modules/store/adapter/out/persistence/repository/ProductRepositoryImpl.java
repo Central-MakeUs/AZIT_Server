@@ -71,4 +71,14 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .where(productEntity.id.eq(productId))
                 .fetchOne());
     }
+
+    @Override
+    public Optional<ProductEntity> findByIdForCart(Long productId) {
+        return Optional.ofNullable(queryFactory
+                .selectFrom(productEntity)
+                // 재고 확인을 위한 skus만 fetch 조인
+                .leftJoin(productEntity.skus, productSkuEntity).fetchJoin()
+                .where(productEntity.id.eq(productId))
+                .fetchOne());
+    }
 }

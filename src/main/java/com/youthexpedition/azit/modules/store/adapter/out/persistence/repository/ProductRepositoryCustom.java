@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface ProductRepositoryCustom {
     SliceResponse<ProductListResponse> findProducts(GetProductListQuery query);
     Optional<ProductEntity> findByIdWithAllDetails(Long productId);
+    Optional<ProductEntity> findByIdForCart(Long productId);
 }

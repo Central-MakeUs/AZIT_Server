@@ -39,6 +39,8 @@ public class ProductMapper {
     }
 
     private ProductImage toImageDomain(ProductImageEntity entity) {
+        if (entity == null) return null;
+
         return ProductImage.builder()
                 .id(entity.getId())
                 .imageUrl(entity.getImageUrl())
@@ -52,6 +54,8 @@ public class ProductMapper {
     }
 
     private ProductOptionGroup toOptionGroupDomain(ProductOptionGroupEntity entity) {
+        if (entity == null) return null;
+
         return ProductOptionGroup.builder()
                 .id(entity.getId())
                 .name(entity.getName())
@@ -67,6 +71,8 @@ public class ProductMapper {
     }
 
     private ProductOptionValue toOptionValueDomain(ProductOptionValueEntity entity) {
+        if (entity == null) return null;
+
         return ProductOptionValue.builder()
                 .id(entity.getId())
                 .value(entity.getValue())
@@ -78,7 +84,9 @@ public class ProductMapper {
                 .build();
     }
 
-    private ProductSku toSkuDomain(ProductSkuEntity entity) {
+    public ProductSku toSkuDomain(ProductSkuEntity entity) {
+        if (entity == null) return null;
+
         return ProductSku.builder()
                 .id(entity.getId())
                 .additionalPrice(entity.getAdditionalPrice())
@@ -94,6 +102,8 @@ public class ProductMapper {
     }
 
     private ProductSkuOption toSkuOptionDomain(ProductSkuOptionEntity entity) {
+        if (entity == null) return null;
+
         return ProductSkuOption.builder()
                 .id(entity.getId())
                 .optionValue(toOptionValueDomain(entity.getOptionValue()))
@@ -106,6 +116,7 @@ public class ProductMapper {
 
     private Brand toBrandDomain(BrandEntity entity) {
         if (entity == null) return null;
+
         return Brand.builder()
                 .id(entity.getId())
                 .name(entity.getName())
@@ -132,6 +143,41 @@ public class ProductMapper {
                 .shippingLeadTime(domain.getShippingLeadTime())
                 .refundPolicy(domain.getRefundPolicy())
                 .description(domain.getDescription())
+                .build();
+    }
+
+    public ProductSkuEntity toSkuEntity(ProductSku domain) {
+        if (domain == null) return null;
+
+        return ProductSkuEntity.builder()
+                .id(domain.getId())
+                .additionalPrice(domain.getAdditionalPrice())
+                .stockQuantity(domain.getStockQuantity())
+                .build();
+    }
+
+    // 장바구니 전용 변환 메서드
+    public Product toDomainForCart(ProductEntity entity) {
+        if (entity == null) return null;
+
+        return Product.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .basePrice(entity.getBasePrice())
+                .discountRate(entity.getDiscountRate())
+                .salePrice(entity.getSalePrice())
+                .shippingFee(entity.getShippingFee())
+                .build();
+    }
+
+    // SKU 정보 중 장바구니(재고/금액 확인)에 필요한 최소 정보만 매핑
+    public ProductSku toSkuDomainForCart(ProductSkuEntity entity) {
+        if (entity == null) return null;
+
+        return ProductSku.builder()
+                .id(entity.getId())
+                .additionalPrice(entity.getAdditionalPrice())
+                .stockQuantity(entity.getStockQuantity())
                 .build();
     }
 }
