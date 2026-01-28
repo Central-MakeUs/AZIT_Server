@@ -9,7 +9,7 @@ public record AddToCartRequest(
         @Schema(description = "상품 ID")
         @NotNull
         Long productId,
-        @Schema(description = "상품 옵션 조합 ID")
+        @Schema(description = "상품 옵션 조합(SKU) ID")
         @NotNull
         Long productSkuId,
         @Schema(description = "담을 수량")
