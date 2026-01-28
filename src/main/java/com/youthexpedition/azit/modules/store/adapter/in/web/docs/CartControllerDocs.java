@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.AddToCartRequest;
+import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CartItemDeleteRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,4 +30,24 @@ public interface CartControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> addCartItem(@CurrentMemberId Long memberId, @RequestBody @Valid AddToCartRequest request);
+
+
+    @Operation(
+            summary = "장바구니 항목 삭제 (다건/단건 통합)",
+            description = """
+            선택한 장바구니 항목들을 삭제합니다. <br><br>
+            
+            **[동작 방식]** <br>
+            * 단건 삭제: 리스트에 하나의 ID만 담아 요청합니다. (예: `{"cartItemIds": [1]}`)
+            * 다건 삭제: 삭제할 모든 ID를 리스트에 담아 요청합니다. (예: `{"cartItemIds": [1, 2, 3]}`)
+            
+            **[참고 사항]** <br>
+            * 로그인한 사용자의 장바구니 항목만 삭제할 수 있습니다. 타인의 ID를 포함하더라도 해당 항목은 무시되고 본인의 것만 삭제됩니다.
+            * 멱등성 보장: 이미 삭제된 ID나 존재하지 않는 ID를 요청에 포함하더라도 에러를 발생시키지 않고 성공 처리합니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> deleteItems(@CurrentMemberId Long memberId, @RequestBody CartItemDeleteRequest request);
 }
