@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.SocialLoginReque
 import com.youthexpedition.azit.modules.auth.application.port.in.dto.SocialLoginResponse;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,7 +36,8 @@ public interface AuthControllerDocs {
     @ApiErrorCodeExamples({
             "INVALID_SOCIAL_CODE", "SOCIAL_AUTHENTICATION_FAILED"
     })
-    CommonResponse<SocialLoginResponse> socialLogin(@PathVariable SocialProvider provider, @Valid @RequestBody SocialLoginRequest request, HttpServletResponse response);
+    CommonResponse<SocialLoginResponse> socialLogin(
+            @PathVariable SocialProvider provider, @Valid @RequestBody SocialLoginRequest request, HttpServletResponse response);
 
     @Operation(
             summary = "애플 소셜 로그인 (백엔드 전용)",
@@ -77,7 +79,9 @@ public interface AuthControllerDocs {
     @ApiErrorCodeExamples({
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> logout(@CurrentMemberId Long memberId, @CurrentAccessToken String accessToken, HttpServletResponse response);
+    CommonResponse<Void> logout(
+            @Parameter(hidden = true) @CurrentMemberId Long memberId, @Parameter(hidden = true) @CurrentAccessToken String accessToken,
+            HttpServletResponse response);
 
     @Operation(
             summary = "애플 서버 알림 수신 (S2S)",
