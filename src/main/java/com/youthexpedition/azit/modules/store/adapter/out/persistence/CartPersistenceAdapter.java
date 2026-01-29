@@ -5,6 +5,7 @@ import com.youthexpedition.azit.modules.store.adapter.out.persistence.mapper.Car
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.repository.CartItemRepository;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
+import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.domain.model.CartItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -44,4 +45,10 @@ public class CartPersistenceAdapter implements LoadCartPort, SaveCartPort {
     public long countByMemberId(Long memberId) {
         return cartItemRepository.countByMemberId(memberId);
     }
+
+    @Override
+    public List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId) {
+        return cartItemRepository.findCartDetailsByMemberId(memberId);
+    }
+
 }

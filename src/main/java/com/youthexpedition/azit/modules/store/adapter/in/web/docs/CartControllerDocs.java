@@ -6,6 +6,7 @@ import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExampl
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.AddToCartRequest;
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CartItemDeleteRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -66,4 +67,21 @@ public interface CartControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CartItemCountResponse> getCartItemCount(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "장바구니 목록 조회",
+            description = """
+            사용자의 장바구니에 담긴 상품 목록과 결제 요약 정보를 조회합니다. <br><br>
+            
+            **[데이터 구조]** <br>
+            * totalProductPrice: 장바구니에 담긴 모든 상품의 '정가 + 옵션가' 합계입니다.
+            * membershipDiscount: 아지트 멤버십 할인 금액입니다.
+            * shippingFee: 브랜드별로 가장 높은 배송비를 한 번씩만 합산한 금액입니다.
+            * expectedShippingDate: 상품의 예상 출고 소요 시간을 기준으로 계산되며, 주말(토, 일)은 발송일에서 제외됩니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<CartListResponse> getCarts(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

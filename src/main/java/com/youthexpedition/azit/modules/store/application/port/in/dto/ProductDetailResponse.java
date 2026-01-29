@@ -13,7 +13,7 @@ public record ProductDetailResponse(
         String brandName,
         @Schema(description = "상품명")
         String productName,
-        @Schema(description = "기본 가격")
+        @Schema(description = "정가")
         Long basePrice,
         @Schema(description = "할인율(%)")
         Integer discountRate,

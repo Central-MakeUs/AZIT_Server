@@ -5,12 +5,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestQueryResult;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 import static com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.QCrewMemberEntity.crewMemberEntity;
 import static com.youthexpedition.azit.modules.member.adapter.out.persistence.entity.QMemberEntity.memberEntity;
 
+@Repository
 @RequiredArgsConstructor
 public class CrewMemberRepositoryImpl implements CrewMemberRepositoryCustom {
     private final JPAQueryFactory queryFactory;

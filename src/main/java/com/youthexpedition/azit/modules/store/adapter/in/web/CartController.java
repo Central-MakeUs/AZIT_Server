@@ -8,9 +8,9 @@ import com.youthexpedition.azit.modules.store.adapter.in.web.dto.AddToCartReques
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CartItemDeleteRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.CartUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.service.RequestBodyService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CartController implements CartControllerDocs {
     private final CartUseCase cartUseCase;
-    private final RequestBodyService requestBodyBuilder;
 
     @PostMapping("/items")
     public CommonResponse<Void> addCartItem(@CurrentMemberId Long memberId, @RequestBody @Valid AddToCartRequest request) {
@@ -39,5 +38,12 @@ public class CartController implements CartControllerDocs {
         CartItemCountResponse result = cartUseCase.getCartItemCount(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, result);
+    }
+
+    @GetMapping
+    public CommonResponse<CartListResponse> getCarts(@CurrentMemberId Long memberId) {
+        CartListResponse response = cartUseCase.getCarts(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 }

@@ -272,13 +272,23 @@ class CrewServiceTest {
                     .status(CrewMemberStatus.REQUESTED).build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, targetMemberId)).willReturn(Optional.of(targetCrewMember));
 
+            Member targetMember = Member.builder()
+                    .id(targetMemberId)
+                    .status(MemberStatus.WAITING_FOR_APPROVE)
+                    .build();
+            given(loadMemberPort.findById(targetMemberId)).willReturn(Optional.of(targetMember));
+
             // when
             crewService.rejectJoinRequest(command);
 
             // then
-            assertThat(targetCrewMember.getStatus()).isEqualTo(CrewMemberStatus.REJECTED); // 거절 상태 확인
+            // 크루 가입 신청 상태가 REJECTED로 변경되었는지 확인
+            assertThat(targetCrewMember.getStatus()).isEqualTo(CrewMemberStatus.REJECTED);
             verify(saveCrewMemberPort, times(1)).save(targetCrewMember);
-            verify(saveMemberPort, never()).save(any()); // 거절 시에는 멤버 상태를 변경하지 않음
+
+            // 회원 상태가 PENDING_ONBOARDING으로 변경되고 저장되었는지 확인
+            assertThat(targetMember.getStatus()).isEqualTo(MemberStatus.PENDING_ONBOARDING);
+            verify(saveMemberPort, times(1)).save(targetMember);
         }
 
         @Test
