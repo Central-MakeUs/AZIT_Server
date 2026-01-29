@@ -4,12 +4,17 @@ import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCo
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class CartResponseMapper {
+
+    @Value("${spring.cloud.aws.cloudfront.domain}")
+    private String cloudFrontDomain;
+
     public CartItemCountResponse toCountResponse(long count) {
         return CartItemCountResponse.from(count);
     }
@@ -23,13 +28,15 @@ public class CartResponseMapper {
     }
 
     private CartListResponse.CartItemDetail toItemDetail(CartItemQueryDto cartItem) {
+        String fullImageUrl = (cartItem.imageUrl() != null) ? cloudFrontDomain + cartItem.imageUrl() : null;
+
         return new CartListResponse.CartItemDetail(
                 cartItem.cartItemId(),
                 cartItem.brandName(),
                 cartItem.productName(),
                 Product.calculateExpectedShippingDate(cartItem.shippingLeadTime()),
                 formatOptionValues(cartItem.optionValues()),
-                cartItem.imageUrl(),
+                fullImageUrl,
                 cartItem.basePrice() + cartItem.additionalPrice(),
                 cartItem.salePrice() + cartItem.additionalPrice(),
                 cartItem.quantity(),
