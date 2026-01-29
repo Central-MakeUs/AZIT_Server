@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.store.application.port.in.CartUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.AddToCartCommand;
 import com.youthexpedition.azit.modules.store.application.port.in.command.CartItemDeleteCommand;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadProductPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
@@ -71,5 +72,13 @@ public class CartService implements CartUseCase {
         }
 
         saveCartPort.deleteAllByMemberIdAndIds(memberId, command.cartItemIds());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CartItemCountResponse getCartItemCount(Long memberId) {
+        long count = loadCartPort.countByMemberId(memberId);
+
+        return cartResponseMapper.toCountResponse(count);
     }
 }
