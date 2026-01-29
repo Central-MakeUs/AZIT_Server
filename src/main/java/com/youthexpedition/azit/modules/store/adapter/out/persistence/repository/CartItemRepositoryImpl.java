@@ -1,7 +1,6 @@
 package com.youthexpedition.azit.modules.store.adapter.out.persistence.repository;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
@@ -31,9 +30,8 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
     @Override
     public List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId) {
 
-        // 메인 정보 조회
-        List<CartItemQueryDto> results = queryFactory
-                .select(Projections.constructor(CartItemQueryDto.class,
+        List<Tuple> mainTuples = queryFactory
+                .select(
                         cartItemEntity.id,
                         brandEntity.name,
                         productEntity.name,
@@ -51,9 +49,8 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
                         cartItemEntity.quantity,
                         productSkuEntity.stockQuantity,
                         brandEntity.id,
-                        productEntity.shippingFee,
-                        com.querydsl.core.types.dsl.Expressions.constant(Collections.emptyList()) // 임시 빈 리스트
-                ))
+                        productEntity.shippingFee
+                )
                 .from(cartItemEntity)
                 .join(cartItemEntity.product, productEntity)
                 .join(productEntity.brand, brandEntity)
@@ -61,12 +58,14 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
                 .where(cartItemEntity.memberId.eq(memberId))
                 .fetch();
 
-        if (results.isEmpty()) return results;
+        if (mainTuples.isEmpty()) return Collections.emptyList();
 
-        // 장바구니 아이템들의 모든 옵션값을 한 번에 조회
-        List<Long> cartItemIds = results.stream().map(CartItemQueryDto::cartItemId).toList();
+        // 옵션 정보 조회
+        List<Long> cartItemIds = mainTuples.stream()
+                .map(t -> t.get(cartItemEntity.id))
+                .toList();
 
-        List<Tuple> options = queryFactory
+        List<Tuple> optionTuples = queryFactory
                 .select(cartItemEntity.id, productOptionValueEntity.value)
                 .from(cartItemEntity)
                 .join(cartItemEntity.sku, productSkuEntity)
@@ -75,20 +74,29 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
                 .where(cartItemEntity.id.in(cartItemIds))
                 .fetch();
 
-        // 아이디별로 옵션 리스트 그룹화
-        Map<Long, List<String>> optionsMap = options.stream()
+        // 옵션 그룹화
+        Map<Long, List<String>> optionsMap = optionTuples.stream()
                 .collect(Collectors.groupingBy(
                         t -> Objects.requireNonNull(t.get(cartItemEntity.id)),
                         Collectors.mapping(t -> t.get(productOptionValueEntity.value), Collectors.toList())
                 ));
 
-        // 메인 정보와 옵션 리스트 병합
-        return results.stream()
-                .map(dto -> new CartItemQueryDto(
-                        dto.cartItemId(), dto.brandName(), dto.productName(), dto.shippingLeadTime(),
-                        dto.imageUrl(), dto.basePrice(), dto.salePrice(), dto.additionalPrice(),
-                        dto.quantity(), dto.stockQuantity(), dto.brandId(), dto.shippingFee(),
-                        optionsMap.getOrDefault(dto.cartItemId(), List.of())
+        // 최종 DTO 생성
+        return mainTuples.stream()
+                .map(t -> new CartItemQueryDto(
+                        t.get(cartItemEntity.id),
+                        t.get(brandEntity.name),
+                        t.get(productEntity.name),
+                        t.get(productEntity.shippingLeadTime),
+                        t.get(4, String.class),
+                        t.get(productEntity.basePrice),
+                        t.get(productEntity.salePrice),
+                        t.get(productSkuEntity.additionalPrice),
+                        t.get(cartItemEntity.quantity),
+                        t.get(productSkuEntity.stockQuantity),
+                        t.get(brandEntity.id),
+                        t.get(productEntity.shippingFee),
+                        optionsMap.getOrDefault(t.get(cartItemEntity.id), List.of())
                 ))
                 .toList();
     }
