@@ -39,4 +39,9 @@ public class CartPersistenceAdapter implements LoadCartPort, SaveCartPort {
     public void deleteAllByMemberIdAndIds(Long memberId, List<Long> cartItemIds) {
         cartItemRepository.deleteAllByMemberIdAndIds(memberId, cartItemIds);
     }
+
+    @Override
+    public long countByMemberId(Long memberId) {
+        return cartItemRepository.countByMemberId(memberId);
+    }
 }

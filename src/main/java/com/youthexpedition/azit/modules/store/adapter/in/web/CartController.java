@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.store.adapter.in.web.docs.CartController
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.AddToCartRequest;
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CartItemDeleteRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.CartUseCase;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.service.RequestBodyService;
@@ -31,5 +32,12 @@ public class CartController implements CartControllerDocs {
         cartUseCase.deleteCartItems(memberId, request.toCommand());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @GetMapping("/count")
+    public CommonResponse<CartItemCountResponse> getCartItemCount(@CurrentMemberId Long memberId) {
+        CartItemCountResponse result = cartUseCase.getCartItemCount(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, result);
     }
 }

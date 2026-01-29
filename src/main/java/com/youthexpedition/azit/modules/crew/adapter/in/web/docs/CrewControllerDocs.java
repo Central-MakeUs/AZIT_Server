@@ -10,6 +10,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitat
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,7 +39,8 @@ public interface CrewControllerDocs {
     @ApiErrorCodeExamples({
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN" // 인증 관련 에러
     })
-    CommonResponse<CreateCrewResponse> createCrew(@CurrentMemberId Long memberId, @Valid @RequestBody CreateCrewRequest request);
+    CommonResponse<CreateCrewResponse> createCrew(
+            @Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody CreateCrewRequest request);
 
     @Operation(
             summary = "크루 가입 신청",
@@ -55,7 +57,7 @@ public interface CrewControllerDocs {
             "CREW_NOT_FOUND", "ALREADY_JOINED_CREW",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> joinCrew(@CurrentMemberId Long memberId, @Valid @RequestBody JoinCrewRequest request);
+    CommonResponse<Void> joinCrew(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody JoinCrewRequest request);
 
 
     @Operation(
@@ -88,7 +90,7 @@ public interface CrewControllerDocs {
     @ApiErrorCodeExamples({
             "CREW_NOT_FOUND", "NOT_JOINED_CREW",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"})
-    CommonResponse<CrewJoinStatusResponse> getCrewJoinStatus(@PathVariable Long crewId, @CurrentMemberId Long memberId);
+    CommonResponse<CrewJoinStatusResponse> getCrewJoinStatus(@PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
             summary = "가입 요청 승인",
@@ -102,7 +104,8 @@ public interface CrewControllerDocs {
     @ApiErrorCodeExamples({
             "NOT_CREW_LEADER", "MEMBER_NOT_FOUND", "FORBIDDEN_ERROR", "ALREADY_PROCESSED_JOIN_REQUEST", "JOIN_REQUEST_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"})
-    CommonResponse<Void> approveJoinRequest(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId);
+    CommonResponse<Void> approveJoinRequest(
+            @PathVariable Long crewId, @PathVariable Long targetMemberId, @Parameter(hidden = true) @CurrentMemberId Long leaderId);
 
     @Operation(
             summary = "가입 요청 거절",
@@ -117,7 +120,8 @@ public interface CrewControllerDocs {
             "NOT_CREW_LEADER", "FORBIDDEN_ERROR", "ALREADY_PROCESSED_JOIN_REQUEST", "JOIN_REQUEST_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> rejectJoinRequest(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId);
+    CommonResponse<Void> rejectJoinRequest(
+            @PathVariable Long crewId, @PathVariable Long targetMemberId, @Parameter(hidden = true) @CurrentMemberId Long leaderId);
 
     @Operation(
             summary = "가입 신청 목록 조회",
@@ -126,5 +130,6 @@ public interface CrewControllerDocs {
     @ApiErrorCodeExamples({
             "NOT_CREW_LEADER", "FORBIDDEN_ERROR"
     })
-    CommonResponse<List<JoinRequestMemberResponse>> getJoinRequests(@PathVariable Long crewId, @CurrentMemberId Long leaderId);
+    CommonResponse<List<JoinRequestMemberResponse>> getJoinRequests(
+            @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long leaderId);
 }
