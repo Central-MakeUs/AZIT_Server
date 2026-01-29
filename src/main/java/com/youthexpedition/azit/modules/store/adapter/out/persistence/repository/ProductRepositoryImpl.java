@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductLis
 import com.youthexpedition.azit.modules.store.application.port.in.query.GetProductListQuery;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +17,9 @@ import java.util.Optional;
 import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QBrandEntity.brandEntity;
 import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductEntity.productEntity;
 import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductImageEntity.productImageEntity;
-import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductOptionGroupEntity.productOptionGroupEntity;
-import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductOptionValueEntity.productOptionValueEntity;
 import static com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QProductSkuEntity.productSkuEntity;
 
+@Repository
 @RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductRepositoryCustom {
     private final JPAQueryFactory queryFactory;
@@ -45,7 +45,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 )
                 .where(ltCursorId(query.cursorId()))
                 .orderBy(productEntity.id.desc()) // 최신순 정렬
-                .limit(query.size() + 1)
+                .limit((long) query.size() + 1)
                 .fetch();
 
         boolean hasNext = content.size() > query.size();
