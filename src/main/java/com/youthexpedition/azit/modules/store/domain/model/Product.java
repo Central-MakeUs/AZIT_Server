@@ -32,7 +32,14 @@ public class Product {
     private Long updatedBy;
 
     // 예상 배송일 계산
+    // 인스턴스 메서드 (엔티티 객체가 있을 때 사용)
     public LocalDate calculateExpectedShippingDate() {
+        return calculateExpectedShippingDate(this.shippingLeadTime);
+    }
+
+    // 예상 배송일 계산
+    // 정적 메서드 (DTO처럼 데이터만 있을 때 사용)
+    public static LocalDate calculateExpectedShippingDate(int shippingLeadTime) {
         LocalDate expectedDay = LocalDate.now().plusDays(shippingLeadTime);
 
         if (expectedDay.getDayOfWeek() == DayOfWeek.SATURDAY) return expectedDay.plusDays(2);
