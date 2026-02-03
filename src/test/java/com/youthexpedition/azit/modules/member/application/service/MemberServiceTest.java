@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPo
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -171,6 +172,75 @@ class MemberServiceTest {
 
             assertEquals(MemberErrorCode.REQUIRED_TERMS_NOT_AGREED, exception.getErrorCode());
             verify(loadMemberPort, never()).findById(anyLong());
+            verify(saveMemberPort, never()).save(any(Member.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 상태 확정 (결과 확인)")
+    class ConfirmMemberStatus {
+
+        private final Long memberId = 1L;
+
+        @Test
+        @DisplayName("성공 - 승인 대기 상태에서 정회원(ACTIVE)으로 전환")
+        void confirmMemberStatus_success_toActive() {
+            // given
+            // 1. 승인 확인 대기 상태의 멤버 생성 (Member.java에 정의된 로직 기반)
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, "imageUrl");
+
+            // 가입 신청 단계 -> 리더 승인 단계 순서대로 호출
+            member.completeTermsAgreement(true, true); // PENDING_ONBOARDING
+            member.applyForJoin(); // WAITING_FOR_APPROVE
+            member.approveJoin(); // APPROVED_PENDING_CONFIRM
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.confirmMemberStatus(memberId);
+
+            // then
+            assertEquals(MemberStatus.ACTIVE, member.getStatus()); // 정회원으로 변경되었는지 확인
+            verify(loadMemberPort, times(1)).findById(memberId);
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("성공 - 거절 확인 후 다시 온보딩 대기(PENDING_ONBOARDING)로 전환")
+        void confirmMemberStatus_success_toPendingOnboarding() {
+            // given
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, "imageUrl");
+            member.completeTermsAgreement(true, true);
+            member.applyForJoin();
+            member.rejectJoin(); // REJECTED_PENDING_CONFIRM 상태로 생성
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.confirmMemberStatus(memberId);
+
+            // then
+            assertEquals(MemberStatus.PENDING_ONBOARDING, member.getStatus()); // 다시 처음으로 돌아갔는지 확인
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("실패 - 확정 가능한 상태가 아닐 때 예외 발생")
+        void confirmMemberStatus_fail_invalidStatus() {
+            // given
+            // 확정할 수 없는 상태(예: 처음 가입한 상태)의 멤버
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, "imageUrl");
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class, () ->
+                    memberService.confirmMemberStatus(memberId)
+            );
+
+            assertEquals(MemberErrorCode.INVALID_MEMBER_STATUS, exception.getErrorCode());
             verify(saveMemberPort, never()).save(any(Member.class));
         }
     }
