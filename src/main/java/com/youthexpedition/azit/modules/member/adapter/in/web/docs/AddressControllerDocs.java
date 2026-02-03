@@ -1,0 +1,32 @@
+package com.youthexpedition.azit.modules.member.adapter.in.web.docs;
+
+import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
+import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
+import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AddressRegisterRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestBody;
+
+@Tag(name = "Address" , description = "주소 API")
+public interface AddressControllerDocs {
+
+    @Operation(
+            summary = "배송지 등록",
+            description = """
+            신규 배송지 정보를 등록합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 수령인, 연락처, 우편번호, 기본 주소, 상세 주소는 모두 필수 입력 항목입니다. (INVALID_ADDRESS_INPUT)
+            * 사용자의 첫 번째 배송지 등록인 경우, 요청값과 관계없이 자동으로 '기본 배송지'로 설정됩니다.
+            * 새 주소를 기본 배송지(isDefault: true)로 등록할 경우, 기존에 설정된 기본 배송지는 자동으로 일반 배송지로 변경됩니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "INVALID_ADDRESS_INPUT", "MEMBER_NOT_FOUND",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> registerAddress(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody AddressRegisterRequest request);
+}
