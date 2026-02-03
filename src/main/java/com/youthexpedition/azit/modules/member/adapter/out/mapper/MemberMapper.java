@@ -31,24 +31,24 @@ public class MemberMapper {
                 .build();
     }
 
-    public MemberEntity toEntity(Member member) {
+    public MemberEntity toEntity(Member domain) {
         return MemberEntity.builder()
-                .id(member.getId())
-                .socialProvider(member.getSocialProvider())
-                .socialProviderId(member.getSocialProviderId())
-                .nickname(member.getNickname())
-                .email(member.getEmail())
-                .isEmailSharingEnabled(member.isEmailSharingEnabled())
-                .profileImageUrl(member.getProfileImageUrl())
-                .appleRefreshToken(member.getAppleRefreshToken())
-                .status(member.getStatus())
-                .role(member.getRole())
-                .totalPoints(member.getTotalPoints())
-                .essentialTermsAgreedAt(member.getEssentialTermsAgreedAt())
-                .isMarketingTermsAgreed(member.isMarketingTermsAgreed())
-                .marketingTermsAgreedAt(member.getMarketingTermsAgreedAt())
-                .isNotificationAgreed(member.isNotificationAgreed())
-                .notificationAgreedAt(member.getNotificationAgreedAt())
+                .id(domain.getId())
+                .socialProvider(domain.getSocialProvider())
+                .socialProviderId(domain.getSocialProviderId())
+                .nickname(domain.getNickname())
+                .email(domain.getEmail())
+                .isEmailSharingEnabled(domain.isEmailSharingEnabled())
+                .profileImageUrl(domain.getProfileImageUrl())
+                .appleRefreshToken(domain.getAppleRefreshToken())
+                .status(domain.getStatus())
+                .role(domain.getRole())
+                .totalPoints(domain.getTotalPoints())
+                .essentialTermsAgreedAt(domain.getEssentialTermsAgreedAt())
+                .isMarketingTermsAgreed(domain.isMarketingTermsAgreed())
+                .marketingTermsAgreedAt(domain.getMarketingTermsAgreedAt())
+                .isNotificationAgreed(domain.isNotificationAgreed())
+                .notificationAgreedAt(domain.getNotificationAgreedAt())
                 .build();
     }
 }

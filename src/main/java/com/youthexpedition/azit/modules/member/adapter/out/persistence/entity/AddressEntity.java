@@ -25,11 +25,11 @@ public class AddressEntity extends BaseEntity {
     @Column(name = "phone_number", nullable = false, length = 20)
     private String phoneNumber;
 
-    @Column(name = "zip_code", nullable = false, length = 10)
+    @Column(name = "zipcode", nullable = false, length = 10)
     private String zipcode;
 
-    @Column(name = "address", nullable = false, length = 255)
-    private String address;
+    @Column(name = "base_address", nullable = false, length = 255)
+    private String baseAddress;
 
     @Column(name = "detail_address", nullable = false, length = 255)
     private String detailAddress;

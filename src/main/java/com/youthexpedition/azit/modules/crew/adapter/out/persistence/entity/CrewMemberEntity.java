@@ -18,9 +18,13 @@ public class CrewMemberEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "crew_id", nullable = false)
-    private CrewEntity crew;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "crew_id", nullable = false)
+//    private CrewEntity crew;
+
+    @Column(name = "crew_id", nullable = false)
+    private Long crewId;
+
 
     @Column(name = "member_id", nullable = false)
     private Long memberId;
