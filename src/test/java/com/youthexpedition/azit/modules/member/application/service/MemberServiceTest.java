@@ -223,6 +223,7 @@ class MemberServiceTest {
 
             // then
             assertEquals(MemberStatus.PENDING_ONBOARDING, member.getStatus()); // 다시 처음으로 돌아갔는지 확인
+            verify(loadMemberPort, times(1)).findById(memberId);
             verify(saveMemberPort, times(1)).save(member);
         }
 
@@ -241,6 +242,7 @@ class MemberServiceTest {
             );
 
             assertEquals(MemberErrorCode.INVALID_MEMBER_STATUS, exception.getErrorCode());
+            verify(loadMemberPort, times(1)).findById(memberId);
             verify(saveMemberPort, never()).save(any(Member.class));
         }
     }
