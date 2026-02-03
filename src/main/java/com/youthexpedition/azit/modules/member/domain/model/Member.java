@@ -105,7 +105,7 @@ public class Member {
         if (this.status != MemberStatus.WAITING_FOR_APPROVE) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
-        this.status = MemberStatus.ACTIVE;
+        this.status = MemberStatus.APPROVED_PENDING_CONFIRM;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -114,7 +114,18 @@ public class Member {
         if (this.status != MemberStatus.WAITING_FOR_APPROVE) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
-        this.status = MemberStatus.PENDING_ONBOARDING;
+        this.status = MemberStatus.REJECTED_PENDING_CONFIRM;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // 승인/거절 결과 확인 후 상태 확정
+    public void confirmStatus() {
+        this.status = switch (this.status) {
+            case APPROVED_PENDING_CONFIRM -> MemberStatus.ACTIVE; // 승인 확인 시 정회원으로 변경
+            case REJECTED_PENDING_CONFIRM -> MemberStatus.PENDING_ONBOARDING; // 거절 확인 시 다시 크루 선택 전 단계로 변경
+            default -> throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS); // 그 외 상태는 예외 처리
+        };
+
         this.updatedAt = LocalDateTime.now();
     }
 

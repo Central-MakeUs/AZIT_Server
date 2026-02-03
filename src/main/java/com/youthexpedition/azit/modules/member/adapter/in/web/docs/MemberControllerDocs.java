@@ -42,4 +42,21 @@ public interface MemberControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> withdraw(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Parameter(hidden = true) @CurrentAccessToken String accessToken);
+
+    @Operation(
+            summary = "가입 승인/거절 결과 확인",
+            description = """
+            사용자가 가입 요청에 대한 승인 또는 거절 결과를 확인했음을 서버에 알립니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * APPROVED_PENDING_CONFIRM 또는 REJECTED_PENDING_CONFIRM 상태인 회원만 호출 가능합니다. (INVALID_MEMBER_STATUS)
+            * 가입 승인 완료 화면에서 '홈으로' 버튼 클릭 시 호출: 멤버 상태가 APPROVED_PENDING_CONFIRM -> ACTIVE로 변경됩니다.
+            * 가입 거절 안내 화면에서 '처음으로' 버튼 클릭 시 호출: 멤버 상태가 REJECTED_PENDING_CONFIRM -> PENDING_ONBOARDING으로 변경됩니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND", "INVALID_MEMBER_STATUS",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> confirmMemberStatus(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

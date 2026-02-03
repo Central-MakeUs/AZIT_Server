@@ -45,7 +45,7 @@ public class MemberEntity extends BaseTimeEntity {
     private String appleRefreshToken;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "status", nullable = false, length = 30)
     private MemberStatus status;
 
     @Builder.Default
