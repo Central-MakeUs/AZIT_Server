@@ -8,7 +8,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-import static org.apache.logging.log4j.util.Strings.isEmpty;
+import static java.util.Objects.isNull;
 
 @Getter
 @Builder
@@ -67,8 +67,11 @@ public class Address {
 
     // 주소 필수 항목 확인
     private static void validateInfo(String recipientName, String phoneNumber, String zipcode, String baseAddress, String detailAddress) {
-        if (isEmpty(recipientName) || isEmpty(phoneNumber) || isEmpty(zipcode) ||
-                isEmpty(baseAddress) || isEmpty(detailAddress)) {
+        if (isNull(recipientName) || recipientName.isEmpty() ||
+                isNull(phoneNumber) || phoneNumber.isEmpty() ||
+                isNull(zipcode) || zipcode.isEmpty() ||
+                isNull(baseAddress) || baseAddress.isEmpty() ||
+                isNull(detailAddress) || detailAddress.isEmpty()) {
             throw new BusinessException(AddressErrorCode.INVALID_ADDRESS_INPUT);
         }
     }
