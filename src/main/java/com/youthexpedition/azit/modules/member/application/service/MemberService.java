@@ -78,6 +78,16 @@ public class MemberService implements MemberUseCase {
         saveMemberPort.save(member);
     }
 
+    // 멤버 상태 변경
+    @Override
+    @Transactional
+    public void confirmMemberStatus(Long memberId) {
+        Member member = getMember(memberId);
+        member.confirmStatus();
+
+        saveMemberPort.save(member);
+    }
+
     private Member getMember(Long memberId) {
         return loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
