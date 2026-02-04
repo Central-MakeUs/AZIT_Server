@@ -3,11 +3,13 @@ package com.youthexpedition.azit.modules.member.adapter.in.web.docs;
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
-import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AddressRegisterRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.RegisterAddressRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateAddressRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Address" , description = "주소 API")
@@ -28,5 +30,23 @@ public interface AddressControllerDocs {
             "INVALID_ADDRESS_INPUT", "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> registerAddress(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody AddressRegisterRequest request);
+    CommonResponse<Void> registerAddress(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody RegisterAddressRequest request);
+
+    @Operation(
+            summary = "배송지 수정",
+            description = """
+        기존 배송지 정보를 수정합니다. <br><br>
+        
+        **[참고 사항]** <br>
+        * 본인의 배송지만 수정 가능합니다. (FORBIDDEN_ADDRESS_ACCESS)
+        * 모든 필드는 필수 입력 항목입니다. (INVALID_ADDRESS_INPUT)
+        * 해당 주소를 '기본 배송지'로 변경 시, 기존의 다른 기본 배송지는 해제됩니다.
+        """
+    )
+    @ApiErrorCodeExamples({
+            "ADDRESS_NOT_FOUND", "FORBIDDEN_ADDRESS_ACCESS", "INVALID_ADDRESS_INPUT",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> updateAddress(
+            @Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long addressId, @Valid @RequestBody UpdateAddressRequest request);
 }
