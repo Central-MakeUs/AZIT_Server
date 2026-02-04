@@ -5,5 +5,5 @@ import com.youthexpedition.azit.modules.member.adapter.out.persistence.entity.De
 import java.util.List;
 
 public interface DeliveryAddressRepositoryCustom {
-    List<DeliveryAddressEntity> findAllByMemberIdAndIsDefaultTrue(Long memberId);
+    List<DeliveryAddressEntity> findAllByMemberIdOrderByDefaultDescCreatedAtDesc(Long memberId);
 }

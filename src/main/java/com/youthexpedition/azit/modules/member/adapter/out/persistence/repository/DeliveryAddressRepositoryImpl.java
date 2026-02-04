@@ -16,7 +16,7 @@ public class DeliveryAddressRepositoryImpl implements DeliveryAddressRepositoryC
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<DeliveryAddressEntity> findAllByMemberIdAndIsDefaultTrue(Long memberId) {
+    public List<DeliveryAddressEntity> findAllByMemberIdOrderByDefaultDescCreatedAtDesc(Long memberId) {
         return queryFactory
                 .selectFrom(deliveryAddressEntity)
                 .where(deliveryAddressEntity.memberId.eq(memberId))

@@ -48,7 +48,7 @@ public class DeliveryPersistenceAdapter implements LoadDeliveryAddressPort, Save
 
     @Override
     public List<DeliveryAddress> findAllByMemberIdOrderByDefault(Long memberId) {
-        return deliveryAddressRepository.findAllByMemberIdAndIsDefaultTrue(memberId)
+        return deliveryAddressRepository.findAllByMemberIdOrderByDefaultDescCreatedAtDesc(memberId)
                 .stream()
                 .map(deliveryAddressMapper::toDomain)
                 .toList();
