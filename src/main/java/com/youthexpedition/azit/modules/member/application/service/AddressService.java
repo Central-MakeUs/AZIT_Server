@@ -32,11 +32,7 @@ public class AddressService implements AddressUseCase {
 
         // 새 주소가 기본 배송지일 경우 기존의 기본 주소 해제
         if (shouldBeDefault && hasExistingAddress) {
-            loadAddressPort.findDefaultByMemberId(command.memberId())
-                    .ifPresent(oldDefault -> {
-                        oldDefault.markAsNonDefault();
-                        saveAddressPort.save(oldDefault);
-                    });
+            resetExistingDefault(command.memberId());
         }
 
         saveAddressPort.save(newAddress);
@@ -44,24 +40,12 @@ public class AddressService implements AddressUseCase {
 
     @Override
     public void updateAddress(UpdateAddressCommand command) {
-        Address address = loadAddressPort.findById(command.addressId())
-                .orElseThrow(() -> new BusinessException(AddressErrorCode.ADDRESS_NOT_FOUND));
-
-        // 로그인한 멤버 주소지가 아닐 경우 권한 에러
-        if (!address.getMemberId().equals(command.memberId())) {
-            throw new BusinessException(AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
-        }
-
+        Address address = getAddressValidated(command.addressId(), command.memberId());
         address.update(command.recipientName(), command.phoneNumber(), command.zipcode(), command.baseAddress(), command.detailAddress());
 
-        // 기본 배송지 설정 처리
-        // 기존에 기본이 아니었는데 기본으로 변경하려는 경우
+        // 기본 배송지 설정 확인
         if (command.isDefault() && !address.isDefault()) {
-            loadAddressPort.findDefaultByMemberId(command.memberId())
-                    .ifPresent(oldDefault -> {
-                        oldDefault.markAsNonDefault();
-                        saveAddressPort.save(oldDefault);
-                    });
+            resetExistingDefault(command.memberId());
             address.markAsDefault();
         }
 
@@ -70,6 +54,13 @@ public class AddressService implements AddressUseCase {
 
     @Override
     public void deleteAddress(Long memberId, Long addressId) {
+        Address address = getAddressValidated(addressId, memberId);
+
+        saveAddressPort.delete(address);
+    }
+
+    // 주소 조회 및 현재 로그인한 멤버의 소유인지 검증
+    private Address getAddressValidated(Long addressId, Long memberId) {
         Address address = loadAddressPort.findById(addressId)
                 .orElseThrow(() -> new BusinessException(AddressErrorCode.ADDRESS_NOT_FOUND));
 
@@ -77,7 +68,15 @@ public class AddressService implements AddressUseCase {
         if (!address.getMemberId().equals(memberId)) {
             throw new BusinessException(AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
         }
+        return address;
+    }
 
-        saveAddressPort.delete(address);
+    // 기존 기본 배송지를 일반 배송지로 변경
+    private void resetExistingDefault(Long memberId) {
+        loadAddressPort.findDefaultByMemberId(memberId)
+                .ifPresent(oldDefault -> {
+                    oldDefault.markAsNonDefault();
+                    saveAddressPort.save(oldDefault);
+                });
     }
 }
