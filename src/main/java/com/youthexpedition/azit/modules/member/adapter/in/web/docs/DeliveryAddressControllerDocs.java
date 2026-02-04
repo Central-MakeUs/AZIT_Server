@@ -3,9 +3,9 @@ package com.youthexpedition.azit.modules.member.adapter.in.web.docs;
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
-import com.youthexpedition.azit.modules.member.adapter.in.web.dto.RegisterAddressRequest;
-import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateAddressRequest;
-import com.youthexpedition.azit.modules.member.application.port.in.dto.AddressResponse;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.RegisterDeliveryAddressRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateDeliveryAddressRequest;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 @Tag(name = "Address" , description = "주소 API")
-public interface AddressControllerDocs {
+public interface DeliveryAddressControllerDocs {
 
     @Operation(
             summary = "배송지 등록",
@@ -33,7 +33,7 @@ public interface AddressControllerDocs {
             "INVALID_ADDRESS_INPUT", "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> registerAddress(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody RegisterAddressRequest request);
+    CommonResponse<Void> registerDeliveryAddress(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody RegisterDeliveryAddressRequest request);
 
     @Operation(
             summary = "배송지 수정",
@@ -50,8 +50,8 @@ public interface AddressControllerDocs {
             "ADDRESS_NOT_FOUND", "FORBIDDEN_ADDRESS_ACCESS", "INVALID_ADDRESS_INPUT",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> updateAddress(
-            @Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long addressId, @Valid @RequestBody UpdateAddressRequest request);
+    CommonResponse<Void> updateDeliveryAddress(
+            @Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long addressId, @Valid @RequestBody UpdateDeliveryAddressRequest request);
 
     @Operation(
             summary = "배송지 삭제",
@@ -67,7 +67,7 @@ public interface AddressControllerDocs {
             "ADDRESS_NOT_FOUND", "FORBIDDEN_ADDRESS_ACCESS",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> deleteAddress(@Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long addressId);
+    CommonResponse<Void> deleteDeliveryAddress(@Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long addressId);
 
     @Operation(
             summary = "배송지 목록 조회",
@@ -82,5 +82,5 @@ public interface AddressControllerDocs {
     @ApiErrorCodeExamples({
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<List<AddressResponse>> getAddresses(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+    CommonResponse<List<DeliveryAddressResponse>> getDeliveryAddresses(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

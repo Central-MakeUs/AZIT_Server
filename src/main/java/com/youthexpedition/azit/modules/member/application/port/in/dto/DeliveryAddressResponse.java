@@ -1,10 +1,10 @@
 package com.youthexpedition.azit.modules.member.application.port.in.dto;
 
-import com.youthexpedition.azit.modules.member.domain.model.Address;
+import com.youthexpedition.azit.modules.member.domain.model.DeliveryAddress;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "배송지 응답 정보")
-public record AddressResponse(
+public record DeliveryAddressResponse(
         @Schema(description = "배송지 ID")
         Long id,
         @Schema(description = "수령인 성함")
@@ -20,15 +20,15 @@ public record AddressResponse(
         @Schema(description = "기본 배송지 여부")
         boolean isDefault
 ) {
-    public static AddressResponse from(Address address) {
-        return new AddressResponse(
-                address.getId(),
-                address.getRecipientName(),
-                address.getPhoneNumber(),
-                address.getZipcode(),
-                address.getBaseAddress(),
-                address.getDetailAddress(),
-                address.isDefault()
+    public static DeliveryAddressResponse from(DeliveryAddress deliveryAddress) {
+        return new DeliveryAddressResponse(
+                deliveryAddress.getId(),
+                deliveryAddress.getRecipientName(),
+                deliveryAddress.getPhoneNumber(),
+                deliveryAddress.getZipcode(),
+                deliveryAddress.getBaseAddress(),
+                deliveryAddress.getDetailAddress(),
+                deliveryAddress.isDefault()
         );
     }
 }

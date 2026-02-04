@@ -5,12 +5,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "address")
+@Table(name = "delivery_address")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // 무분별한 객체 생성 제한 (JPA만 생성할 수 있도록)
 @AllArgsConstructor(access = AccessLevel.PRIVATE) // 빌더로만 생성하도록 강제
 @Builder
-public class AddressEntity extends BaseEntity {
+public class DeliveryAddressEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

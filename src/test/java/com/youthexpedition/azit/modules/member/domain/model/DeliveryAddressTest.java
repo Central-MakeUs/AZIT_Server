@@ -1,26 +1,26 @@
 package com.youthexpedition.azit.modules.member.domain.model;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.member.domain.model.enums.AddressErrorCode;
+import com.youthexpedition.azit.modules.member.domain.model.enums.DeliveryAddressErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-class AddressTest {
+class DeliveryAddressTest {
     @Test
     @DisplayName("성공: 필수 항목이 모두 입력되면 배송지 객체가 생성된다.")
     void create_success() {
         // given & when
-        Address address = Address.create(
+        DeliveryAddress deliveryAddress = DeliveryAddress.create(
                 1L, "김철수", "010-1234-5678", "06234",
                 "서울시 강남구", "101호", true
         );
 
         // then
-        assertThat(address.getRecipientName()).isEqualTo("김철수");
-        assertThat(address.getBaseAddress()).isEqualTo("서울시 강남구");
+        assertThat(deliveryAddress.getRecipientName()).isEqualTo("김철수");
+        assertThat(deliveryAddress.getBaseAddress()).isEqualTo("서울시 강남구");
     }
 
     @Test
@@ -30,11 +30,11 @@ class AddressTest {
         String emptyDetailAddress = "";
 
         // when & then
-        assertThatThrownBy(() -> Address.create(
+        assertThatThrownBy(() -> DeliveryAddress.create(
                 1L, "김철수", "010-1234-5678", "06234",
                 "서울시 강남구", emptyDetailAddress, true
         ))
                 .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", AddressErrorCode.INVALID_ADDRESS_INPUT);
+                .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.INVALID_ADDRESS_INPUT);
     }
 }

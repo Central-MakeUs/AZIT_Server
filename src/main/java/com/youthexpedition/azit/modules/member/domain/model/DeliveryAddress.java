@@ -1,7 +1,7 @@
 package com.youthexpedition.azit.modules.member.domain.model;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.member.domain.model.enums.AddressErrorCode;
+import com.youthexpedition.azit.modules.member.domain.model.enums.DeliveryAddressErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import static java.util.Objects.isNull;
 @Getter
 @Builder
 @AllArgsConstructor
-public class Address {
+public class DeliveryAddress {
     private final Long id;
     private final Long memberId;
     private String recipientName;  // 수령인
@@ -27,11 +27,11 @@ public class Address {
     private final Long createdBy;
     private Long updatedBy;
 
-    public static Address create(Long memberId, String recipientName, String phoneNumber,
-                                 String zipcode, String baseAddress, String detailAddress, boolean isDefault) {
+    public static DeliveryAddress create(Long memberId, String recipientName, String phoneNumber,
+                                         String zipcode, String baseAddress, String detailAddress, boolean isDefault) {
         validateInfo(recipientName, phoneNumber, zipcode, baseAddress, detailAddress);
 
-        return Address.builder()
+        return DeliveryAddress.builder()
                 .memberId(memberId)
                 .recipientName(recipientName)
                 .phoneNumber(phoneNumber)
@@ -71,7 +71,7 @@ public class Address {
                 isNull(zipcode) || zipcode.isEmpty() ||
                 isNull(baseAddress) || baseAddress.isEmpty() ||
                 isNull(detailAddress) || detailAddress.isEmpty()) {
-            throw new BusinessException(AddressErrorCode.INVALID_ADDRESS_INPUT);
+            throw new BusinessException(DeliveryAddressErrorCode.INVALID_ADDRESS_INPUT);
         }
     }
 }

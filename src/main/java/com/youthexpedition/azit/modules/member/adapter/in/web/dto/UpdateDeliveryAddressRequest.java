@@ -1,12 +1,12 @@
 package com.youthexpedition.azit.modules.member.adapter.in.web.dto;
 
-import com.youthexpedition.azit.modules.member.application.port.in.command.RegisterAddressCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateAddressCommand;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-public record RegisterAddressRequest(
+public record UpdateDeliveryAddressRequest(
         @Schema(description = "수령인")
         @NotBlank(message = "수령인은 필수입니다.")
         String recipientName,
@@ -32,7 +32,7 @@ public record RegisterAddressRequest(
         @NotNull(message = "기본 배송지 여부는 필수입니다.")
         boolean isDefault
 ) {
-    public RegisterAddressCommand toCommand(Long memberId) {
-        return new RegisterAddressCommand(memberId, recipientName, phoneNumber, zipcode, baseAddress, detailAddress, isDefault);
+    public UpdateAddressCommand toCommand(Long memberId, Long addressId) {
+        return new UpdateAddressCommand(memberId, addressId, recipientName, phoneNumber, zipcode, baseAddress, detailAddress, isDefault);
     }
 }
