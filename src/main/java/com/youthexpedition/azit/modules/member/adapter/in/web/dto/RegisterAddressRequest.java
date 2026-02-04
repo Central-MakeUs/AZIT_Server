@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-public record AddressRegisterRequest(
+public record RegisterAddressRequest(
         @Schema(description = "수령인")
         @NotBlank(message = "수령인은 필수입니다.")
         String recipientName,

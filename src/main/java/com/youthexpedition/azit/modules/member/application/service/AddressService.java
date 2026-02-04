@@ -1,10 +1,13 @@
 package com.youthexpedition.azit.modules.member.application.service;
 
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.application.port.in.AddressUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.command.RegisterAddressCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateAddressCommand;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadAddressPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveAddressPort;
 import com.youthexpedition.azit.modules.member.domain.model.Address;
+import com.youthexpedition.azit.modules.member.domain.model.enums.AddressErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,5 +40,31 @@ public class AddressService implements AddressUseCase {
         }
 
         saveAddressPort.save(newAddress);
+    }
+
+    @Override
+    public void updateAddress(UpdateAddressCommand command) {
+        Address address = loadAddressPort.findById(command.addressId())
+                .orElseThrow(() -> new BusinessException(AddressErrorCode.ADDRESS_NOT_FOUND));
+
+        // 해당 멤버 주소지가 아닐 경우 권한 에러
+        if (!address.getMemberId().equals(command.memberId())) {
+            throw new BusinessException(AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
+        }
+
+        address.update(command.recipientName(), command.phoneNumber(), command.zipcode(), command.baseAddress(), command.detailAddress());
+
+        // 기본 배송지 설정 처리
+        // 기존에 기본이 아니었는데 기본으로 변경하려는 경우
+        if (command.isDefault() && !address.isDefault()) {
+            loadAddressPort.findDefaultByMemberId(command.memberId())
+                    .ifPresent(oldDefault -> {
+                        oldDefault.markAsNonDefault();
+                        saveAddressPort.save(oldDefault);
+                    });
+            address.markAsDefault();
+        }
+
+        saveAddressPort.save(address);
     }
 }

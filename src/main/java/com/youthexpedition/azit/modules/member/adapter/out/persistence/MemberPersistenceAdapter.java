@@ -20,7 +20,8 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
 
     @Override
     public Optional<Member> findById(Long id) {
-        return memberRepository.findById(id).map(memberMapper::toDomain); // Entity -> Domain 변환
+        return memberRepository.findById(id)
+                .map(memberMapper::toDomain); // Entity -> Domain 변환
     }
 
     @Override

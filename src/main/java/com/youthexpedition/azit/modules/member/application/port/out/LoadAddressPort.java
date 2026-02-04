@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface LoadAddressPort {
     boolean existsByMemberId(Long memberId);
     Optional<Address> findDefaultByMemberId(Long memberId);
+    Optional<Address> findById(Long addressId);
 }
