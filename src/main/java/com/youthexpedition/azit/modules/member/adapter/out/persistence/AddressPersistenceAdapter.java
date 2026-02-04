@@ -39,4 +39,9 @@ public class AddressPersistenceAdapter implements LoadAddressPort, SaveAddressPo
         return addressRepository.findById(addressId)
                 .map(addressMapper::toDomain);
     }
+
+    @Override
+    public void delete(Address address) {
+        addressRepository.deleteById(address.getId());
+    }
 }

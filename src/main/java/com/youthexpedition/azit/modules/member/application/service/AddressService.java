@@ -47,7 +47,7 @@ public class AddressService implements AddressUseCase {
         Address address = loadAddressPort.findById(command.addressId())
                 .orElseThrow(() -> new BusinessException(AddressErrorCode.ADDRESS_NOT_FOUND));
 
-        // 해당 멤버 주소지가 아닐 경우 권한 에러
+        // 로그인한 멤버 주소지가 아닐 경우 권한 에러
         if (!address.getMemberId().equals(command.memberId())) {
             throw new BusinessException(AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
         }
@@ -66,5 +66,18 @@ public class AddressService implements AddressUseCase {
         }
 
         saveAddressPort.save(address);
+    }
+
+    @Override
+    public void deleteAddress(Long memberId, Long addressId) {
+        Address address = loadAddressPort.findById(addressId)
+                .orElseThrow(() -> new BusinessException(AddressErrorCode.ADDRESS_NOT_FOUND));
+
+        // 로그인한 멤버 주소지가 아닐 경우 권한 에러
+        if (!address.getMemberId().equals(memberId)) {
+            throw new BusinessException(AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
+        }
+
+        saveAddressPort.delete(address);
     }
 }

@@ -30,4 +30,11 @@ public class AddressController implements AddressControllerDocs {
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
+
+    @DeleteMapping("/{addressId}")
+    public CommonResponse<Void> deleteAddress(@CurrentMemberId Long memberId, @PathVariable Long addressId) {
+        addressUseCase.deleteAddress(memberId, addressId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
 }
