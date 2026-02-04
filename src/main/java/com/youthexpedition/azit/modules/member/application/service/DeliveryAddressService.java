@@ -88,7 +88,7 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
     @Override
     @Transactional(readOnly = true)
     public List<DeliveryAddressResponse> getDeliveryAddresses(Long memberId) {
-        List<DeliveryAddress> deliveryAddresses = loadDeliveryAddressPort.findAllByMemberIdOrderByDefault(memberId);
+        List<DeliveryAddress> deliveryAddresses = loadDeliveryAddressPort.findAllByMemberIdOrderByDefaultDescCreatedAtDesc(memberId);
 
         return deliveryAddressResponseMapper.toAddressResponseList(deliveryAddresses);
     }

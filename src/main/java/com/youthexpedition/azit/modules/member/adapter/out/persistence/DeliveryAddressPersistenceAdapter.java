@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class DeliveryPersistenceAdapter implements LoadDeliveryAddressPort, SaveDeliveryAddressPort {
+public class DeliveryAddressPersistenceAdapter implements LoadDeliveryAddressPort, SaveDeliveryAddressPort {
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final DeliveryAddressMapper deliveryAddressMapper;
 
@@ -47,7 +47,7 @@ public class DeliveryPersistenceAdapter implements LoadDeliveryAddressPort, Save
     }
 
     @Override
-    public List<DeliveryAddress> findAllByMemberIdOrderByDefault(Long memberId) {
+    public List<DeliveryAddress> findAllByMemberIdOrderByDefaultDescCreatedAtDesc(Long memberId) {
         return deliveryAddressRepository.findAllByMemberIdOrderByDefaultDescCreatedAtDesc(memberId)
                 .stream()
                 .map(deliveryAddressMapper::toDomain)

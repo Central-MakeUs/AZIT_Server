@@ -9,5 +9,5 @@ public interface LoadDeliveryAddressPort {
     boolean existsByMemberId(Long memberId);
     Optional<DeliveryAddress> findDefaultByMemberId(Long memberId);
     Optional<DeliveryAddress> findById(Long addressId);
-    List<DeliveryAddress> findAllByMemberIdOrderByDefault(Long memberId);
+    List<DeliveryAddress> findAllByMemberIdOrderByDefaultDescCreatedAtDesc(Long memberId);
 }
