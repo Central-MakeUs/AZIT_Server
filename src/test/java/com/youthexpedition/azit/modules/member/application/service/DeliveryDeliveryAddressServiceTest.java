@@ -51,7 +51,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.existsByMemberId(1L)).willReturn(false);
 
             // when
-            deliveryAddressService.registerAddress(command);
+            deliveryAddressService.registerDeliveryAddress(command);
 
             // then
             verify(saveDeliveryAddressPort).save(argThat(DeliveryAddress::isDefault));
@@ -74,7 +74,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findDefaultByMemberId(memberId)).willReturn(Optional.of(oldDefault));
 
             // when
-            deliveryAddressService.registerAddress(command);
+            deliveryAddressService.registerDeliveryAddress(command);
 
             // then
             assertThat(oldDefault.isDefault()).isFalse(); // 기존 주소는 해제됨
@@ -105,7 +105,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(existingDeliveryAddress));
 
             // when
-            deliveryAddressService.updateAddress(command);
+            deliveryAddressService.updateDeliveryAddress(command);
 
             // then
             assertThat(existingDeliveryAddress.getRecipientName()).isEqualTo("홍길동");
@@ -132,7 +132,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(othersDeliveryAddress));
 
             // when & then
-            assertThatThrownBy(() -> deliveryAddressService.updateAddress(command))
+            assertThatThrownBy(() -> deliveryAddressService.updateDeliveryAddress(command))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
         }
@@ -149,7 +149,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> deliveryAddressService.updateAddress(command))
+            assertThatThrownBy(() -> deliveryAddressService.updateDeliveryAddress(command))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.ADDRESS_NOT_FOUND);
         }
@@ -171,7 +171,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findDefaultByMemberId(memberId)).willReturn(Optional.of(oldDefaultDeliveryAddress));
 
             // when
-            deliveryAddressService.updateAddress(command);
+            deliveryAddressService.updateDeliveryAddress(command);
 
             // then
             assertThat(targetDeliveryAddress.isDefault()).isTrue();
@@ -199,7 +199,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(existingDeliveryAddress));
 
             // when
-            deliveryAddressService.deleteAddress(memberId, addressId);
+            deliveryAddressService.deleteDeliveryAddress(memberId, addressId);
 
             // then
             verify(saveDeliveryAddressPort).delete(existingDeliveryAddress);
@@ -221,7 +221,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(defaultDeliveryAddress));
 
             // when
-            deliveryAddressService.deleteAddress(memberId, addressId);
+            deliveryAddressService.deleteDeliveryAddress(memberId, addressId);
 
             // then
             verify(saveDeliveryAddressPort).delete(defaultDeliveryAddress);
@@ -243,7 +243,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(othersDeliveryAddress));
 
             // when & then
-            assertThatThrownBy(() -> deliveryAddressService.deleteAddress(myId, addressId))
+            assertThatThrownBy(() -> deliveryAddressService.deleteDeliveryAddress(myId, addressId))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
         }
@@ -256,7 +256,7 @@ class DeliveryDeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> deliveryAddressService.deleteAddress(1L, addressId))
+            assertThatThrownBy(() -> deliveryAddressService.deleteDeliveryAddress(1L, addressId))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.ADDRESS_NOT_FOUND);
         }
