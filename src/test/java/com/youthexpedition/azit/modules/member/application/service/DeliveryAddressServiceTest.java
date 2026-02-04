@@ -3,10 +3,10 @@ package com.youthexpedition.azit.modules.member.application.service;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.application.port.in.command.RegisterAddressCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateAddressCommand;
-import com.youthexpedition.azit.modules.member.application.port.out.LoadAddressPort;
-import com.youthexpedition.azit.modules.member.application.port.out.SaveAddressPort;
-import com.youthexpedition.azit.modules.member.domain.model.Address;
-import com.youthexpedition.azit.modules.member.domain.model.enums.AddressErrorCode;
+import com.youthexpedition.azit.modules.member.application.port.out.LoadDeliveryAddressPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SaveDeliveryAddressPort;
+import com.youthexpedition.azit.modules.member.domain.model.DeliveryAddress;
+import com.youthexpedition.azit.modules.member.domain.model.enums.DeliveryAddressErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,19 +26,19 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class AddressServiceTest {
+class DeliveryAddressServiceTest {
     @InjectMocks
-    private AddressService addressService;
+    private DeliveryAddressService deliveryAddressService;
 
     @Mock
-    private LoadAddressPort loadAddressPort;
+    private LoadDeliveryAddressPort loadDeliveryAddressPort;
 
     @Mock
-    private SaveAddressPort saveAddressPort;
+    private SaveDeliveryAddressPort saveDeliveryAddressPort;
 
     @Nested
     @DisplayName("주소 등록")
-    class registerAddress {
+    class registerDeliveryAddress {
         @Test
         @DisplayName("성공: 사용자의 첫 배송지 등록 시, 요청과 무관하게 기본 배송지로 설정된다.")
         void registerAddress_first_time_is_always_default() {
@@ -48,13 +48,13 @@ class AddressServiceTest {
                     "서울시 강남구", "101호", false // 요청은 false로 보냄
             );
 
-            given(loadAddressPort.existsByMemberId(1L)).willReturn(false);
+            given(loadDeliveryAddressPort.existsByMemberId(1L)).willReturn(false);
 
             // when
-            addressService.registerAddress(command);
+            deliveryAddressService.registerDeliveryAddress(command);
 
             // then
-            verify(saveAddressPort).save(argThat(Address::isDefault));
+            verify(saveDeliveryAddressPort).save(argThat(DeliveryAddress::isDefault));
         }
 
         @Test
@@ -67,24 +67,24 @@ class AddressServiceTest {
                     "서울시 서초구", "202호", true // 새 주소를 기본으로 설정
             );
 
-            Address oldDefault = Address.builder()
+            DeliveryAddress oldDefault = DeliveryAddress.builder()
                     .memberId(memberId).isDefault(true).build();
 
-            given(loadAddressPort.existsByMemberId(memberId)).willReturn(true);
-            given(loadAddressPort.findDefaultByMemberId(memberId)).willReturn(Optional.of(oldDefault));
+            given(loadDeliveryAddressPort.existsByMemberId(memberId)).willReturn(true);
+            given(loadDeliveryAddressPort.findDefaultByMemberId(memberId)).willReturn(Optional.of(oldDefault));
 
             // when
-            addressService.registerAddress(command);
+            deliveryAddressService.registerDeliveryAddress(command);
 
             // then
             assertThat(oldDefault.isDefault()).isFalse(); // 기존 주소는 해제됨
-            verify(saveAddressPort, times(2)).save(any(Address.class)); // 기존 수정 + 신규 저장
+            verify(saveDeliveryAddressPort, times(2)).save(any(DeliveryAddress.class)); // 기존 수정 + 신규 저장
         }
     }
 
     @Nested
     @DisplayName("주소 수정")
-    class updateAddress {
+    class updateDeliveryAddress {
         @Test
         @DisplayName("성공: 본인의 주소를 정상적인 데이터로 수정하면 성공한다.")
         void updateAddress_success() {
@@ -96,21 +96,21 @@ class AddressServiceTest {
                     "경기도 성남시", "판교역로 1", false
             );
 
-            Address existingAddress = Address.builder()
+            DeliveryAddress existingDeliveryAddress = DeliveryAddress.builder()
                     .id(addressId)
                     .memberId(memberId)
                     .isDefault(false)
                     .build();
 
-            given(loadAddressPort.findById(addressId)).willReturn(Optional.of(existingAddress));
+            given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(existingDeliveryAddress));
 
             // when
-            addressService.updateAddress(command);
+            deliveryAddressService.updateDeliveryAddress(command);
 
             // then
-            assertThat(existingAddress.getRecipientName()).isEqualTo("홍길동");
-            assertThat(existingAddress.getBaseAddress()).isEqualTo("경기도 성남시");
-            verify(saveAddressPort).save(existingAddress);
+            assertThat(existingDeliveryAddress.getRecipientName()).isEqualTo("홍길동");
+            assertThat(existingDeliveryAddress.getBaseAddress()).isEqualTo("경기도 성남시");
+            verify(saveDeliveryAddressPort).save(existingDeliveryAddress);
         }
 
         @Test
@@ -124,17 +124,17 @@ class AddressServiceTest {
                     memberId, addressId, "수정", "010-1111-2222", "12345", "주소", "상세", false
             );
 
-            Address othersAddress = Address.builder()
+            DeliveryAddress othersDeliveryAddress = DeliveryAddress.builder()
                     .id(addressId)
                     .memberId(otherMemberId) // 소유자가 다름
                     .build();
 
-            given(loadAddressPort.findById(addressId)).willReturn(Optional.of(othersAddress));
+            given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(othersDeliveryAddress));
 
             // when & then
-            assertThatThrownBy(() -> addressService.updateAddress(command))
+            assertThatThrownBy(() -> deliveryAddressService.updateDeliveryAddress(command))
                     .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
+                    .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
         }
 
         @Test
@@ -146,12 +146,12 @@ class AddressServiceTest {
                     1L, addressId, "수정", "010-1111-2222", "12345", "주소", "상세", false
             );
 
-            given(loadAddressPort.findById(addressId)).willReturn(Optional.empty());
+            given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> addressService.updateAddress(command))
+            assertThatThrownBy(() -> deliveryAddressService.updateDeliveryAddress(command))
                     .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", AddressErrorCode.ADDRESS_NOT_FOUND);
+                    .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.ADDRESS_NOT_FOUND);
         }
 
         @Test
@@ -164,25 +164,25 @@ class AddressServiceTest {
                     memberId, addressId, "수정", "010-1111-2222", "12345", "주소", "상세", true // 기본으로 변경 요청
             );
 
-            Address targetAddress = Address.builder().id(addressId).memberId(memberId).isDefault(false).build();
-            Address oldDefaultAddress = Address.builder().id(200L).memberId(memberId).isDefault(true).build();
+            DeliveryAddress targetDeliveryAddress = DeliveryAddress.builder().id(addressId).memberId(memberId).isDefault(false).build();
+            DeliveryAddress oldDefaultDeliveryAddress = DeliveryAddress.builder().id(200L).memberId(memberId).isDefault(true).build();
 
-            given(loadAddressPort.findById(addressId)).willReturn(Optional.of(targetAddress));
-            given(loadAddressPort.findDefaultByMemberId(memberId)).willReturn(Optional.of(oldDefaultAddress));
+            given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(targetDeliveryAddress));
+            given(loadDeliveryAddressPort.findDefaultByMemberId(memberId)).willReturn(Optional.of(oldDefaultDeliveryAddress));
 
             // when
-            addressService.updateAddress(command);
+            deliveryAddressService.updateDeliveryAddress(command);
 
             // then
-            assertThat(targetAddress.isDefault()).isTrue();
-            assertThat(oldDefaultAddress.isDefault()).isFalse(); // 기존 배송지는 해제
-            verify(saveAddressPort, times(2)).save(any(Address.class));
+            assertThat(targetDeliveryAddress.isDefault()).isTrue();
+            assertThat(oldDefaultDeliveryAddress.isDefault()).isFalse(); // 기존 배송지는 해제
+            verify(saveDeliveryAddressPort, times(2)).save(any(DeliveryAddress.class));
         }
     }
 
     @Nested
     @DisplayName("주소 삭제")
-    class deleteAddress {
+    class deleteDeliveryAddress {
         @Test
         @DisplayName("성공: 본인의 배송지를 삭제하면 정상적으로 삭제 처리된다.")
         void deleteAddress_success() {
@@ -190,19 +190,19 @@ class AddressServiceTest {
             Long memberId = 1L;
             Long addressId = 100L;
 
-            Address existingAddress = Address.builder()
+            DeliveryAddress existingDeliveryAddress = DeliveryAddress.builder()
                     .id(addressId)
                     .memberId(memberId)
                     .isDefault(false)
                     .build();
 
-            given(loadAddressPort.findById(addressId)).willReturn(Optional.of(existingAddress));
+            given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(existingDeliveryAddress));
 
             // when
-            addressService.deleteAddress(memberId, addressId);
+            deliveryAddressService.deleteDeliveryAddress(memberId, addressId);
 
             // then
-            verify(saveAddressPort).delete(existingAddress);
+            verify(saveDeliveryAddressPort).delete(existingDeliveryAddress);
         }
 
         @Test
@@ -212,19 +212,19 @@ class AddressServiceTest {
             Long memberId = 1L;
             Long addressId = 100L;
 
-            Address defaultAddress = Address.builder()
+            DeliveryAddress defaultDeliveryAddress = DeliveryAddress.builder()
                     .id(addressId)
                     .memberId(memberId)
                     .isDefault(true) // 기본 배송지
                     .build();
 
-            given(loadAddressPort.findById(addressId)).willReturn(Optional.of(defaultAddress));
+            given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(defaultDeliveryAddress));
 
             // when
-            addressService.deleteAddress(memberId, addressId);
+            deliveryAddressService.deleteDeliveryAddress(memberId, addressId);
 
             // then
-            verify(saveAddressPort).delete(defaultAddress);
+            verify(saveDeliveryAddressPort).delete(defaultDeliveryAddress);
         }
 
         @Test
@@ -235,17 +235,17 @@ class AddressServiceTest {
             Long otherMemberId = 2L;
             Long addressId = 100L;
 
-            Address othersAddress = Address.builder()
+            DeliveryAddress othersDeliveryAddress = DeliveryAddress.builder()
                     .id(addressId)
                     .memberId(otherMemberId) // 소유자가 다름
                     .build();
 
-            given(loadAddressPort.findById(addressId)).willReturn(Optional.of(othersAddress));
+            given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(othersDeliveryAddress));
 
             // when & then
-            assertThatThrownBy(() -> addressService.deleteAddress(myId, addressId))
+            assertThatThrownBy(() -> deliveryAddressService.deleteDeliveryAddress(myId, addressId))
                     .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
+                    .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
         }
 
         @Test
@@ -253,12 +253,12 @@ class AddressServiceTest {
         void deleteAddress_fail_not_found() {
             // given
             Long addressId = 999L;
-            given(loadAddressPort.findById(addressId)).willReturn(Optional.empty());
+            given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> addressService.deleteAddress(1L, addressId))
+            assertThatThrownBy(() -> deliveryAddressService.deleteDeliveryAddress(1L, addressId))
                     .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", AddressErrorCode.ADDRESS_NOT_FOUND);
+                    .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.ADDRESS_NOT_FOUND);
         }
     }
 
