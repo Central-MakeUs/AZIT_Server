@@ -26,9 +26,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class DeliveryDeliveryAddressServiceTest {
+class DeliveryAddressServiceTest {
     @InjectMocks
-    private DeliveryDeliveryAddressService deliveryAddressService;
+    private DeliveryAddressService deliveryAddressService;
 
     @Mock
     private LoadDeliveryAddressPort loadDeliveryAddressPort;

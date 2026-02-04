@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class DeliveryDeliveryAddressService implements DeliveryAddressUseCase {
+public class DeliveryAddressService implements DeliveryAddressUseCase {
     private final LoadDeliveryAddressPort loadDeliveryAddressPort;
     private final SaveDeliveryAddressPort saveDeliveryAddressPort;
     private final DeliveryAddressResponseMapper deliveryAddressResponseMapper;
