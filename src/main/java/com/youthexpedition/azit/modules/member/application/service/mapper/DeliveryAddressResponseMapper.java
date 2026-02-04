@@ -16,7 +16,7 @@ public class DeliveryAddressResponseMapper {
     }
 
     private DeliveryAddressResponse toAddressResponse(DeliveryAddress deliveryAddress) {
-        return new DeliveryAddressResponse(
+        return DeliveryAddressResponse.of(
                 deliveryAddress.getId(),
                 deliveryAddress.getRecipientName(),
                 deliveryAddress.getPhoneNumber(),
