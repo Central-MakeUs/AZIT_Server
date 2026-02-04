@@ -29,7 +29,6 @@ public class Address {
 
     public static Address create(Long memberId, String recipientName, String phoneNumber,
                                  String zipcode, String baseAddress, String detailAddress, boolean isDefault) {
-
         validateInfo(recipientName, phoneNumber, zipcode, baseAddress, detailAddress);
 
         return Address.builder()

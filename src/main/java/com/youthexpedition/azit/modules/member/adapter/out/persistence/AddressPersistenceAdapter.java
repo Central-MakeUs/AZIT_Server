@@ -33,4 +33,10 @@ public class AddressPersistenceAdapter implements LoadAddressPort, SaveAddressPo
         return addressRepository.findByMemberIdAndIsDefaultTrue(memberId)
                 .map(addressMapper::toDomain);
     }
+
+    @Override
+    public Optional<Address> findById(Long addressId) {
+        return addressRepository.findById(addressId)
+                .map(addressMapper::toDomain);
+    }
 }
