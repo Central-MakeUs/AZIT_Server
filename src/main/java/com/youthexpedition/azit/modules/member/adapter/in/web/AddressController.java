@@ -7,9 +7,12 @@ import com.youthexpedition.azit.modules.member.adapter.in.web.docs.AddressContro
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.RegisterAddressRequest;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateAddressRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.AddressUseCase;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.AddressResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/addresses")
@@ -36,5 +39,12 @@ public class AddressController implements AddressControllerDocs {
         addressUseCase.deleteAddress(memberId, addressId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @GetMapping
+    public CommonResponse<List<AddressResponse>> getAddresses(@CurrentMemberId Long memberId) {
+        List<AddressResponse> responses = addressUseCase.getAddresses(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, responses);
     }
 }

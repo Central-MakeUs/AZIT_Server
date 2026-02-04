@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.member.domain.model.Address;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -43,5 +44,13 @@ public class AddressPersistenceAdapter implements LoadAddressPort, SaveAddressPo
     @Override
     public void delete(Address address) {
         addressRepository.deleteById(address.getId());
+    }
+
+    @Override
+    public List<Address> findAllByMemberIdOrderByDefault(Long memberId) {
+        return addressRepository.findAllByMemberIdAndIsDefaultTrue(memberId)
+                .stream()
+                .map(addressMapper::toDomain)
+                .toList();
     }
 }

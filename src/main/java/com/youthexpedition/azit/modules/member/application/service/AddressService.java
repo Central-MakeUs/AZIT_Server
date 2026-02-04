@@ -4,13 +4,17 @@ import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.application.port.in.AddressUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.command.RegisterAddressCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateAddressCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.AddressResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadAddressPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveAddressPort;
+import com.youthexpedition.azit.modules.member.application.service.mapper.AddressResponseMapper;
 import com.youthexpedition.azit.modules.member.domain.model.Address;
 import com.youthexpedition.azit.modules.member.domain.model.enums.AddressErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AddressService implements AddressUseCase {
     private final LoadAddressPort loadAddressPort;
     private final SaveAddressPort saveAddressPort;
+    private final AddressResponseMapper addressResponseMapper;
 
     @Override
     public void registerAddress(RegisterAddressCommand command) {
@@ -78,5 +83,13 @@ public class AddressService implements AddressUseCase {
                     oldDefault.markAsNonDefault();
                     saveAddressPort.save(oldDefault);
                 });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AddressResponse> getAddresses(Long memberId) {
+        List<Address> addresses = loadAddressPort.findAllByMemberIdOrderByDefault(memberId);
+
+        return addressResponseMapper.toAddressResponseList(addresses);
     }
 }
