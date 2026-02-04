@@ -180,5 +180,87 @@ class AddressServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("주소 삭제")
+    class deleteAddress {
+        @Test
+        @DisplayName("성공: 본인의 배송지를 삭제하면 정상적으로 삭제 처리된다.")
+        void deleteAddress_success() {
+            // given
+            Long memberId = 1L;
+            Long addressId = 100L;
+
+            Address existingAddress = Address.builder()
+                    .id(addressId)
+                    .memberId(memberId)
+                    .isDefault(false)
+                    .build();
+
+            given(loadAddressPort.findById(addressId)).willReturn(Optional.of(existingAddress));
+
+            // when
+            addressService.deleteAddress(memberId, addressId);
+
+            // then
+            verify(saveAddressPort).delete(existingAddress);
+        }
+
+        @Test
+        @DisplayName("성공: MVP 정책에 따라 기본 배송지도 삭제가 가능하다.")
+        void deleteAddress_default_success() {
+            // given
+            Long memberId = 1L;
+            Long addressId = 100L;
+
+            Address defaultAddress = Address.builder()
+                    .id(addressId)
+                    .memberId(memberId)
+                    .isDefault(true) // 기본 배송지
+                    .build();
+
+            given(loadAddressPort.findById(addressId)).willReturn(Optional.of(defaultAddress));
+
+            // when
+            addressService.deleteAddress(memberId, addressId);
+
+            // then
+            verify(saveAddressPort).delete(defaultAddress);
+        }
+
+        @Test
+        @DisplayName("실패: 타인의 배송지를 삭제하려고 시도할 경우 FORBIDDEN_ADDRESS_ACCESS 예외가 발생한다.")
+        void deleteAddress_fail_forbidden() {
+            // given
+            Long myId = 1L;
+            Long otherMemberId = 2L;
+            Long addressId = 100L;
+
+            Address othersAddress = Address.builder()
+                    .id(addressId)
+                    .memberId(otherMemberId) // 소유자가 다름
+                    .build();
+
+            given(loadAddressPort.findById(addressId)).willReturn(Optional.of(othersAddress));
+
+            // when & then
+            assertThatThrownBy(() -> addressService.deleteAddress(myId, addressId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS);
+        }
+
+        @Test
+        @DisplayName("실패: 존재하지 않는 주소를 삭제하려고 시도할 경우 ADDRESS_NOT_FOUND 예외가 발생한다.")
+        void deleteAddress_fail_not_found() {
+            // given
+            Long addressId = 999L;
+            given(loadAddressPort.findById(addressId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> addressService.deleteAddress(1L, addressId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", AddressErrorCode.ADDRESS_NOT_FOUND);
+        }
+    }
+
 
 }

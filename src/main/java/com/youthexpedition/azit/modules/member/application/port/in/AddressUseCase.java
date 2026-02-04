@@ -6,4 +6,5 @@ import com.youthexpedition.azit.modules.member.application.port.in.command.Updat
 public interface AddressUseCase {
     void registerAddress(RegisterAddressCommand command);
     void updateAddress(UpdateAddressCommand command);
+    void deleteAddress(Long memberId, Long addressId);
 }

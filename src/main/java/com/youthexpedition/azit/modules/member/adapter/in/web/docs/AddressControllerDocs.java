@@ -49,4 +49,21 @@ public interface AddressControllerDocs {
     })
     CommonResponse<Void> updateAddress(
             @Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long addressId, @Valid @RequestBody UpdateAddressRequest request);
+
+    @Operation(
+            summary = "배송지 삭제",
+            description = """
+        등록된 배송지를 삭제합니다. <br><br>
+        
+        **[참고 사항]** <br>
+        * 본인의 배송지만 삭제 가능합니다. (FORBIDDEN_ADDRESS_ACCESS)
+        * MVP 정책: 기본 배송지 여부와 상관없이 삭제가 가능합니다.
+        """
+    )
+    @ApiErrorCodeExamples({
+            "ADDRESS_NOT_FOUND", "FORBIDDEN_ADDRESS_ACCESS",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> deleteAddress(@Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long addressId
+    );
 }
