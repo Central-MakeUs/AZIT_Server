@@ -42,13 +42,20 @@ public class CookieUtil {
      * 쿠키 생성
      */
     public ResponseCookie createCookie(String name, String value, long maxAgeSeconds) {
-        return ResponseCookie.from(name, value)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(name, value)
                 .path("/")
                 .httpOnly(true)
-                .secure(secure) // 운영 환경에서는 HTTPS가 필수이므로 true 설정
-                .sameSite("None")
-                .maxAge(maxAgeSeconds)
-                .build();
+                .secure(secure)
+                .maxAge(maxAgeSeconds);
+
+        // secure가 true일 때만 SameSite=None 설정
+        if (secure) {
+            builder.sameSite("None");
+        } else {
+            builder.sameSite("Lax"); // 로컬 테스트용
+        }
+
+        return builder.build();
     }
 
     /**
