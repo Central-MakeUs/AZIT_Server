@@ -42,7 +42,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/azit-server:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/azit-server:latest
+            ${{ secrets.DOCKER_USERNAME }}/azit-server:${{ github.sha }}
 
   deploy:
     needs: build-and-push
