@@ -29,7 +29,7 @@ public class CookieUtil {
      */
     public String getRefreshToken(HttpServletRequest request) {
         return getCookieValue(request, jwtProvider.getRefreshTokenName())
-                .orElseThrow(() -> new BusinessException(AuthErrorCode.EXPIRED_TOKEN));
+                .orElseThrow(() -> new BusinessException(AuthErrorCode.UNAUTHORIZED));
     }
 
     /**
