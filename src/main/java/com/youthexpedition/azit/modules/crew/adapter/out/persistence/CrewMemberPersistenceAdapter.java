@@ -20,6 +20,8 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     private final CrewMemberRepository crewMemberRepository;
     private final CrewMemberMapper crewMemberMapper;
 
+    private static final List<CrewMemberStatus> ACTIVE_STATUSES = List.of(CrewMemberStatus.JOINED, CrewMemberStatus.REQUESTED, CrewMemberStatus.REJECTED);
+
     @Override
     public CrewMember save(CrewMember crewMember) {
         CrewMemberEntity entity = crewMemberMapper.toEntity(crewMember);
@@ -56,8 +58,8 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
 
     @Override
     public Optional<Long> findRecentCrewIdByMemberId(Long memberId) {
-        // CrewMemberEntity에서 JOINED 상태인 것 중 ID가 가장 큰 것(최근 가입)을 조회
-        return crewMemberRepository.findFirstByMemberIdAndStatusOrderByIdDesc(memberId, CrewMemberStatus.JOINED)
+        // ID가 가장 큰 것(최근 가입)을 조회
+        return crewMemberRepository.findFirstByMemberIdAndStatusInOrderByIdDesc(memberId, ACTIVE_STATUSES)
                 .map(CrewMemberEntity::getCrewId);
     }
 }

@@ -36,9 +36,12 @@ public class SocialLoginService implements SocialLoginUseCase {
         Member member = upsertMember(profile);
         Member savedMember = saveMemberPort.save(member);
 
-        // 가장 최근에 조회한 크루 조회
-        Long crewId = loadCrewMemberPort.findRecentCrewIdByMemberId(savedMember.getId())
-                .orElse(null);
+        Long crewId = null;
+        // 크루 ID 필요한지 체크 후 가장 최근에 가입한 크루 조회
+        if (member.getStatus().isCrewInfoRequired()) {
+            crewId = loadCrewMemberPort.findRecentCrewIdByMemberId(savedMember.getId())
+                    .orElse(null);
+        }
 
         // 토큰 생성
         AuthToken authToken = AuthToken.builder()

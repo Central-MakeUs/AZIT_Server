@@ -7,12 +7,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Long>, CrewMemberRepositoryCustom {
     long countByCrewIdAndStatus(Long crewId, CrewMemberStatus status);
     Optional<CrewMemberEntity> findByCrewIdAndMemberId(Long crewId, Long memberId);
-    Optional<CrewMemberEntity> findFirstByMemberIdAndStatusOrderByIdDesc(Long memberId, CrewMemberStatus status);
+    Optional<CrewMemberEntity> findFirstByMemberIdAndStatusInOrderByIdDesc(Long memberId, Collection<CrewMemberStatus> statuses);
 
     @Modifying(clearAutomatically = true) // 쿼리 실행 후 영속성 컨텍스트를 비워 데이터 불일치 방지
     @Query("UPDATE CrewMemberEntity cm SET cm.status = :status WHERE cm.memberId = :memberId")
