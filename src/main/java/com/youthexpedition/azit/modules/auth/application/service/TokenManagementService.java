@@ -50,9 +50,12 @@ public class TokenManagementService implements TokenUseCase {
 
         tokenPort.save(member.getId(), newRefreshToken, tokenProviderPort.getRefreshTokenExpirationSeconds());
 
-        // 가장 최근에 조회한 크루 조회
-        Long crewId = loadCrewMemberPort.findRecentCrewIdByMemberId(member.getId())
-                .orElse(null);
+        Long crewId = null;
+        // 크루 ID 필요한지 체크 후 가장 최근에 가입한 크루 조회
+        if (member.getStatus().isCrewInfoRequired()) {
+            crewId = loadCrewMemberPort.findRecentCrewIdByMemberId(member.getId())
+                    .orElse(null);
+        }
 
         AuthToken token = AuthToken.builder()
                 .accessToken(newAccessToken)
