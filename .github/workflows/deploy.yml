@@ -77,6 +77,8 @@ jobs:
             cd ~/app
             # .env 파일 생성
             echo "TARGET_PROFILE=${{ github.event.inputs.profile }}" > .env
+            # .env 파일에 현재 배포되는 고유 SHA 태그 저장
+            echo "IMAGE_TAG=${{ github.sha }}" >> .env
             echo "DB_URL=${{ secrets.DB_URL }}" >> .env
             echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
@@ -95,8 +97,8 @@ jobs:
             echo "APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}" >> .env
             echo "APPLE_KEY_PATH=${{ secrets.APPLE_KEY_PATH }}" >> .env
 
-            sudo docker compose pull
-            sudo docker compose up -d --force-recreate --remove-orphans
+            sudo docker compose pull app
+            sudo docker compose up -d --force-recreate app
             sudo docker image prune -f
 
       - name: Revoke Security Group Inbound Rule
