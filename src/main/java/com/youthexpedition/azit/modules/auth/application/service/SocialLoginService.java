@@ -39,7 +39,7 @@ public class SocialLoginService implements SocialLoginUseCase {
         Long crewId = null;
         // 크루 ID 필요한지 체크 후 가장 최근에 가입한 크루 조회
         if (member.getStatus().isCrewInfoRequired()) {
-            crewId = loadCrewMemberPort.findRecentCrewIdByMemberId(member.getId())
+            crewId = loadCrewMemberPort.findRecentCrewIdByMemberId(savedMember.getId())
                     .orElse(null);
         }
 
