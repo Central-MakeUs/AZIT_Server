@@ -34,9 +34,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 헤더에서 accessToken 추출
         String authorizationHeader = request.getHeader("Authorization");
+        log.info("[JwtAuthenticationFilter] Authorization Header: {}", authorizationHeader);
 
         // 헤더가 없는 경우 통과
         if (!StringUtils.hasText(authorizationHeader)) {
+            log.info("[JwtAuthenticationFilter] Authorization header is missing or empty. Proceeding without authentication.");
             filterChain.doFilter(request, response);
             return;
         }
@@ -44,10 +46,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // accessToken 유효성 검증 및 인증 처리
         try {
             String accessToken = TokenUtil.extractToken(authorizationHeader);
+            log.info("[JwtAuthenticationFilter] Extracted Access Token: {}", accessToken);
             // 토큰이 있고 유효한지 검증
             if (tokenProviderPort.validateToken(accessToken)) {
                 // 블랙리스트에 포함된 토큰인지 확인
                 if (tokenPort.isBlacklisted(accessToken)) {
+                    log.warn("[JwtAuthenticationFilter] Token is blacklisted: {}", accessToken);
                     throw new BusinessException(AuthErrorCode.BLACKLISTED_TOKEN);
                 }
 
@@ -60,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             request.setAttribute("exception", e.getErrorCode());
         } catch (Exception e) {
         // NPE 등 기타 예외 발생 시 로그를 남기고 유효하지 않은 토큰으로 처리
-        log.error("Authentication failed: ", e);
+        log.error("Authentication failed: {}", e.getMessage(), e);
         request.setAttribute("exception", AuthErrorCode.INVALID_TOKEN);
     }
 

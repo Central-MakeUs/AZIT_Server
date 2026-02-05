@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class CookieUtil {
 
@@ -28,8 +30,12 @@ public class CookieUtil {
      * 쿠키에서 refresh token 추출
      */
     public String getRefreshToken(HttpServletRequest request) {
+        log.info("[CookieUtil] Attempting to get refresh token from cookie.");
         return getCookieValue(request, jwtProvider.getRefreshTokenName())
-                .orElseThrow(() -> new BusinessException(AuthErrorCode.UNAUTHORIZED));
+                .orElseThrow(() -> {
+                    log.warn("[CookieUtil] Refresh token cookie not found. Throwing UNAUTHORIZED.");
+                    return new BusinessException(AuthErrorCode.UNAUTHORIZED);
+                });
     }
 
     /**
@@ -81,7 +87,9 @@ public class CookieUtil {
      * 요청에서 특정 이름의 쿠키를 반환
      */
     public Optional<String> getCookieValue(HttpServletRequest request, String name) {
+        log.info("[CookieUtil] Searching for cookie with name: {}", name);
         if (request.getCookies() == null) {
+            log.info("[CookieUtil] Request has no cookies.");
             return Optional.empty();
         }
         return Arrays.stream(request.getCookies())

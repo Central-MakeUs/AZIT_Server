@@ -12,9 +12,11 @@ import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPo
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,9 +30,12 @@ public class TokenManagementService implements TokenUseCase {
 
     @Override
     public AuthResult reissue(String refreshToken) {
+        log.info("[reissue] Reissue initiated for refreshToken: {}", refreshToken);
+
         // 검증 및 memberId 추출
         tokenProviderPort.validateToken(refreshToken);
         Long memberId = tokenProviderPort.extractMemberId(refreshToken);
+        log.info("[reissue] Token validated, memberId extracted: {}", memberId);
 
         // Redis의 RT와 비교
         String savedRT = tokenPort.findByMemberId(memberId)
