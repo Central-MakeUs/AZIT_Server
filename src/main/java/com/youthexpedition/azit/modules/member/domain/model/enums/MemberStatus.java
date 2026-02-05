@@ -10,9 +10,9 @@ public enum MemberStatus {
     REJECTED_PENDING_CONFIRM; // 가입 거절 - 확인 전
 
     public boolean isCrewInfoRequired() {
-        return this == ACTIVE ||
-                this == WAITING_FOR_APPROVE ||
-                this == APPROVED_PENDING_CONFIRM ||
-                this == REJECTED_PENDING_CONFIRM;
+        return switch (this) {
+            case ACTIVE, WAITING_FOR_APPROVE, APPROVED_PENDING_CONFIRM, REJECTED_PENDING_CONFIRM -> true;
+            default -> false;
+        };
     }
 }
