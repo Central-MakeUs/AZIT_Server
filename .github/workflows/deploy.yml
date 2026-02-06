@@ -98,7 +98,7 @@ jobs:
             echo "APPLE_KEY_PATH=${{ secrets.APPLE_KEY_PATH }}" >> .env
 
             sudo docker compose pull app
-            sudo docker compose up -d --force-recreate app
+            sudo docker compose up -d app
             sudo docker image prune -a -f
 
       - name: Revoke Security Group Inbound Rule
