@@ -99,7 +99,7 @@ jobs:
 
             sudo docker compose pull app
             sudo docker compose up -d --force-recreate app
-            sudo docker image prune -f
+            sudo docker image prune -a -f
 
       - name: Revoke Security Group Inbound Rule
         if: always() # 배포 실패 시에도 보안을 위해 포트 닫기
