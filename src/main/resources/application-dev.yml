@@ -64,7 +64,7 @@ jwt:
   refresh-token-expiration-seconds: ${JWT_REFRESH_EXPIRATION}
   refresh-token-name: azit_rt_dev
   cookie:
-    secure: false
+    secure: true
 
 server:
   port: 8080
