@@ -29,15 +29,13 @@ public class OrderResponseMapper {
                 .map(this::toPaymentMethodResponse)
                 .toList();
 
-        // 전체 상품 금액 계산
-        long totalProductPrice = items.stream()
-                .mapToLong(item -> (item.basePrice() + item.additionalPrice()) * item.quantity())
-                .sum();
-
-        // 전체 할인 금액 계산
-        long totalSalePrice = items.stream()
-                .mapToLong(item -> (item.salePrice() + item.additionalPrice()) * item.quantity())
-                .sum();
+        // 전체 상품 금액, 할인 금액 계산
+        long totalProductPrice = 0;
+        long totalSalePrice = 0;
+        for (CartItemQueryDto item : items) {
+            totalProductPrice += (item.basePrice() + item.additionalPrice()) * item.quantity();
+            totalSalePrice += (item.salePrice() + item.additionalPrice()) * item.quantity();
+        }
 
         // 멤버십 할인액 계산 (정가 - 판매가)
         long membershipDiscount = totalProductPrice - totalSalePrice;
