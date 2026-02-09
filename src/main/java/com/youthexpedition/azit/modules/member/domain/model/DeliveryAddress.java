@@ -24,8 +24,6 @@ public class DeliveryAddress {
     private boolean isDefault;     // 기본 배송지 여부
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private final Long createdBy;
-    private Long updatedBy;
 
     public static DeliveryAddress create(Long memberId, String recipientName, String phoneNumber,
                                          String zipcode, String baseAddress, String detailAddress, boolean isDefault) {

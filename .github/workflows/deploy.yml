@@ -89,6 +89,7 @@ jobs:
             echo "KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST_API_KEY }}" >> .env
             echo "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" >> .env
             echo "KAKAO_ADMIN_KEY=${{ secrets.KAKAO_ADMIN_KEY }}" >> .env
+            echo "KAKAO_REDIRECT_URL=${{ secrets.KAKAO_REDIRECT_URL }}" >> .env
             echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
             echo "JWT_ACCESS_EXPIRATION=${{ secrets.JWT_ACCESS_EXPIRATION }}" >> .env
             echo "JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}" >> .env
@@ -96,6 +97,7 @@ jobs:
             echo "APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}" >> .env
             echo "APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}" >> .env
             echo "APPLE_KEY_PATH=${{ secrets.APPLE_KEY_PATH }}" >> .env
+            echo "APPLE_REDIRECT_URL=${{ secrets.APPLE_REDIRECT_URL }}" >> .env
 
             sudo docker compose pull app
             sudo docker compose up -d app

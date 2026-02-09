@@ -28,17 +28,4 @@ public class CartItem {
                 .quantity(quantity)
                 .build();
     }
-
-    // 장바구니 수량 변경
-    public void changeQuantity(Integer newQuantity) {
-        if (newQuantity <= 0) {
-            throw new BusinessException(StoreErrorCode.INVALID_QUANTITY);
-        }
-        this.quantity = newQuantity;
-    }
-
-    // 장바구니에 담긴 합계 금액 계산
-    public Long calculateTotalPrice() {
-        return (product.getSalePrice() + sku.getAdditionalPrice()) * quantity;
-    }
 }
