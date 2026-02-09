@@ -67,7 +67,7 @@ public class OrderResponseMapper {
     private OrderCheckoutResponse.PaymentMethodResponse toPaymentMethodResponse(PaymentMethod paymentMethod) {
         return OrderCheckoutResponse.PaymentMethodResponse.of(
                 paymentMethod.getCode(),
-                paymentMethod.getLabel(),
+                paymentMethod.getDescription(),
                 paymentMethod.isEnabled()
         );
     }

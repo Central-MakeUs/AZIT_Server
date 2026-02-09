@@ -10,6 +10,6 @@ public enum PaymentMethod {
     BANK_TRANSFER("BANK_TRANSFER", "무통장 입금", true);
 
     private final String code;
-    private final String label;
+    private final String description;
     private final boolean isEnabled; // 결제 수단 활성화 여부
 }
