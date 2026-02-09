@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface CartItemRepositoryCustom {
     List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId);
+    List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds);
 }

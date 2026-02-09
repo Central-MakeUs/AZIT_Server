@@ -8,10 +8,16 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum StoreErrorCode implements BaseErrorCode {
+    // 상품 관련
     PRODUCT_NOT_FOUND("PRODUCT_NOT_FOUND", "존재하지 않는 상품입니다.", HttpStatus.NOT_FOUND),
     SKU_NOT_FOUND("SKU_NOT_FOUND", "해당 상품의 옵션 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     INVALID_QUANTITY("INVALID_QUANTITY", "유효하지 않은 수량입니다.", HttpStatus.BAD_REQUEST),
-    OUT_OF_STOCK("OUT_OF_STOCK", "재고가 부족합니다.", HttpStatus.BAD_REQUEST);
+    OUT_OF_STOCK("OUT_OF_STOCK", "재고가 부족합니다.", HttpStatus.BAD_REQUEST),
+
+    // 포인트 사용 관련
+    INVALID_POINT_UNIT("INVALID_POINT_UNIT", "포인트는 100P 단위로 이용이 가능합니다.", HttpStatus.BAD_REQUEST),
+    BELOW_MIN_POINT_USAGE("BELOW_MIN_POINT_USAGE", "포인트는 1000P부터 사용이 가능합니다.", HttpStatus.BAD_REQUEST),
+    EXCEED_AVAILABLE_POINTS("EXCEED_AVAILABLE_POINTS", "보유한 포인트보다 많은 포인트를 사용할 수 없습니다.", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;

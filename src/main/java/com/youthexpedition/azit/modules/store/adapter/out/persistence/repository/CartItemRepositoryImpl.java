@@ -1,8 +1,11 @@
 package com.youthexpedition.azit.modules.store.adapter.out.persistence.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QCartItemEntity;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +32,23 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
 
     @Override
     public List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId) {
+        return fetchCartDetails(cartItemEntity.memberId.eq(memberId));
+    }
 
+    @Override
+    public List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds) {
+        if (cartItemIds == null || cartItemIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return fetchCartDetails(cartItemEntity.id.in(cartItemIds));
+    }
+
+
+    private List<CartItemQueryDto> fetchCartDetails(BooleanExpression condition) {
+        // 서브쿼리에서 사용할 별칭
+        QCartItemEntity subCartItem = new QCartItemEntity("subCartItem");
+
+        // 메인 정보 조회 (브랜드, 상품, SKU 정보 포함)
         List<Tuple> mainTuples = queryFactory
                 .select(
                         cartItemEntity.id,
@@ -55,7 +74,19 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
                 .join(cartItemEntity.product, productEntity)
                 .join(productEntity.brand, brandEntity)
                 .join(cartItemEntity.sku, productSkuEntity)
-                .where(cartItemEntity.memberId.eq(memberId))
+                .where(condition)
+                .orderBy(
+                        // 가장 최근에 담은 브랜드 순 정렬
+                        Expressions.asNumber(
+                                JPAExpressions
+                                        .select(subCartItem.id.max())
+                                        .from(subCartItem)
+                                        .where(subCartItem.product.brand.id.eq(brandEntity.id)
+                                                .and(subCartItem.memberId.eq(cartItemEntity.memberId)))
+                        ).desc(),
+                        // 브랜드 내 개별 아이템 최신순 정렬
+                        cartItemEntity.id.desc()
+                )
                 .fetch();
 
         if (mainTuples.isEmpty()) return Collections.emptyList();
@@ -100,4 +131,5 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
                 ))
                 .toList();
     }
+
 }

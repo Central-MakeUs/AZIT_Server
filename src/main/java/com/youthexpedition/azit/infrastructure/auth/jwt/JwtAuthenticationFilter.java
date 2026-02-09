@@ -34,11 +34,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 헤더에서 accessToken 추출
         String authorizationHeader = request.getHeader("Authorization");
-        log.info("[JwtAuthenticationFilter] Authorization Header: {}", authorizationHeader);
 
         // 헤더가 없는 경우 통과
         if (!StringUtils.hasText(authorizationHeader)) {
-            log.info("[JwtAuthenticationFilter] Authorization header is missing or empty. Proceeding without authentication.");
             filterChain.doFilter(request, response);
             return;
         }
@@ -46,7 +44,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // accessToken 유효성 검증 및 인증 처리
         try {
             String accessToken = TokenUtil.extractToken(authorizationHeader);
-            log.info("[JwtAuthenticationFilter] Extracted Access Token: {}", accessToken);
             // 토큰이 있고 유효한지 검증
             if (tokenProviderPort.validateToken(accessToken)) {
                 // 블랙리스트에 포함된 토큰인지 확인

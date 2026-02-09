@@ -10,4 +10,5 @@ public interface LoadCartPort {
     Optional<CartItem> findByMemberIdAndSkuId(Long memberId, Long productSkuId);
     long countByMemberId(Long memberId);
     List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId);
+    List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds);
 }
