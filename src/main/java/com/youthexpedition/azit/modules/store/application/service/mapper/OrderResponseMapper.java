@@ -5,9 +5,11 @@ import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.domain.model.PointPolicy;
+import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -16,11 +18,15 @@ public class OrderResponseMapper {
     @Value("${spring.cloud.aws.cloudfront.domain}")
     private String cloudFrontDomain;
 
-    public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CartItemQueryDto> items,
-                                                         List<OrderCheckoutResponse.PaymentMethodResponse> paymentMethods, long shippingFee) {
+    public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CartItemQueryDto> items, long shippingFee) {
         // 주문 상품 상세 목록 매핑
         List<OrderCheckoutResponse.CheckoutItemResponse> itemResponses = items.stream()
                 .map(this::toCheckoutItemResponse)
+                .toList();
+
+        // 결제 수단 목록 매핑
+        List<OrderCheckoutResponse.PaymentMethodResponse> paymentMethods = Arrays.stream(PaymentMethod.values())
+                .map(this::toPaymentMethodResponse)
                 .toList();
 
         // 전체 상품 금액 계산
@@ -57,6 +63,14 @@ public class OrderResponseMapper {
                 (item.basePrice() + item.additionalPrice()) * item.quantity(),
                 (item.salePrice() + item.additionalPrice()) * item.quantity(),
                 item.quantity()
+        );
+    }
+
+    private OrderCheckoutResponse.PaymentMethodResponse toPaymentMethodResponse(PaymentMethod paymentMethod) {
+        return OrderCheckoutResponse.PaymentMethodResponse.of(
+                paymentMethod.getCode(),
+                paymentMethod.getLabel(),
+                paymentMethod.isEnabled()
         );
     }
 

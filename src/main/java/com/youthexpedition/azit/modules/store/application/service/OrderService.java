@@ -13,7 +13,6 @@ import com.youthexpedition.azit.modules.store.application.port.out.LoadCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.application.service.mapper.OrderResponseMapper;
 import com.youthexpedition.azit.modules.store.domain.model.PointPolicy;
-import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,12 +45,6 @@ public class OrderService implements OrderUseCase {
         // 주문할 장바구니 아이템 상세 조회
         List<CartItemQueryDto> items = loadCartPort.findCartDetailsByIds(cartItemIds);
 
-        // 결제 수단 설정
-        List<OrderCheckoutResponse.PaymentMethodResponse> paymentMethods = List.of(
-                OrderCheckoutResponse.PaymentMethodResponse.of(PaymentMethod.NAVER_PAY.getCode(), PaymentMethod.NAVER_PAY.getLabel(), false),
-                OrderCheckoutResponse.PaymentMethodResponse.of(PaymentMethod.BANK_TRANSFER.getCode(), PaymentMethod.BANK_TRANSFER.getLabel(), true)
-        );
-
         // 배송비 계산
         // 브랜드별 최대 배송비 저장하는 맵
         Map<Long, Long> brandMaxShippingFeesMap = new HashMap<>();
@@ -65,7 +58,7 @@ public class OrderService implements OrderUseCase {
                 .mapToLong(Long::longValue)
                 .sum();
 
-        return orderResponseMapper.toOrderCheckoutResponse(member, defaultAddress, items, paymentMethods, totalShippingFee);
+        return orderResponseMapper.toOrderCheckoutResponse(member, defaultAddress, items, totalShippingFee);
     }
 
     // 포인트 사용 유효성 검증
