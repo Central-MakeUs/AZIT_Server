@@ -20,7 +20,7 @@ public enum StoreErrorCode implements BaseErrorCode {
 
     // 주문/결제 관련
     INVALID_QUANTITY("INVALID_QUANTITY", "주문 수량은 1개 이상이어야 합니다.", HttpStatus.BAD_REQUEST),
-    PAYMENT_METHOD_NOT_SUPPORTED("PAYMENT_METHOD_NOT_SUPPORTED", "현재 지원하지 않는 결제 수단입니다.", HttpStatus.BAD_REQUEST);
+    PAYMENT_METHOD_NOT_SUPPORTED("PAYMENT_METHOD_NOT_SUPPORTED", "지원하지 않는 결제 수단입니다.", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;
