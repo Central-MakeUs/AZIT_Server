@@ -3,14 +3,11 @@ package com.youthexpedition.azit.modules.store.domain.model;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Builder
-@AllArgsConstructor
-public class PointPolicy {
+@NoArgsConstructor(access = AccessLevel.PRIVATE) // 유틸리티 클래스이므로 파라미터가 없는 기본 생성자 private으로 생성
+public final class PointPolicy {
     public static final long MIN_POINT_USAGE = 1000L; // 최소 1,000P부터
     public static final long POINT_UNIT = 100L;      // 100P 단위로 사용 가능
 
