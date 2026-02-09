@@ -54,13 +54,19 @@ public class SecurityConfig {
                         // 약관 동의는 약관 동의 대기 상태 회원만 가능
                         .requestMatchers("/api/v1/members/terms").hasAnyAuthority("STATUS_PENDING_TERMS")
 
-                        // 온보딩 대기 또는 정회원만 가능
+                        // PENDING_TERMS, WITHDRAWN 제외한 상태일 경우 가능
                         .requestMatchers(
                                 "/api/v1/crews",
                                 "/api/v1/crews/join",
                                 "/api/v1/crews/invitation/**",
                                 "/api/v1/crews/*/join-status"
-                        ).hasAnyAuthority("STATUS_PENDING_ONBOARDING", "STATUS_ACTIVE")
+                        ).hasAnyAuthority(
+                                "STATUS_PENDING_ONBOARDING",
+                                "STATUS_ACTIVE",
+                                "STATUS_WAITING_FOR_APPROVE",
+                                "STATUS_APPROVED_PENDING_CONFIRM",
+                                "STATUS_REJECTED_PENDING_CONFIRM"
+                        )
 
                         // 사용자 인증 시 상태 상관없이 허용
                         .requestMatchers(
