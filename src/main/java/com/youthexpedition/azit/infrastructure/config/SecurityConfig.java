@@ -26,6 +26,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final ApiLoggingFilter apiLoggingFilter; // api 요청 로깅
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -68,7 +69,8 @@ public class SecurityConfig {
                         // 나머지 API: 정회원(ACTIVE) 상태만 접근 가능
                         .anyRequest().hasAuthority("STATUS_ACTIVE")
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiLoggingFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
