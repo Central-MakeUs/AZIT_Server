@@ -1,8 +1,11 @@
 package com.youthexpedition.azit.modules.store.adapter.out.persistence.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QCartItemEntity;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,21 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
 
     @Override
     public List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId) {
+        return fetchCartDetails(cartItemEntity.memberId.eq(memberId));
+    }
+
+    @Override
+    public List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds) {
+        if (cartItemIds == null || cartItemIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return fetchCartDetails(cartItemEntity.id.in(cartItemIds));
+    }
+
+
+    private List<CartItemQueryDto> fetchCartDetails(BooleanExpression condition) {
+        // 서브쿼리에서 사용할 별칭
+        QCartItemEntity subCartItem = new QCartItemEntity("subCartItem");
 
         // 메인 정보 조회 (브랜드, 상품, SKU 정보 포함)
         List<Tuple> mainTuples = queryFactory
@@ -56,7 +74,19 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
                 .join(cartItemEntity.product, productEntity)
                 .join(productEntity.brand, brandEntity)
                 .join(cartItemEntity.sku, productSkuEntity)
-                .where(cartItemEntity.memberId.eq(memberId))
+                .where(condition)
+                .orderBy(
+                        // 가장 최근에 담은 브랜드 순 정렬
+                        Expressions.asNumber(
+                                JPAExpressions
+                                        .select(subCartItem.id.max())
+                                        .from(subCartItem)
+                                        .where(subCartItem.product.brand.id.eq(brandEntity.id)
+                                                .and(subCartItem.memberId.eq(cartItemEntity.memberId)))
+                        ).desc(),
+                        // 브랜드 내 개별 아이템 최신순 정렬
+                        cartItemEntity.id.desc()
+                )
                 .fetch();
 
         if (mainTuples.isEmpty()) return Collections.emptyList();
@@ -66,80 +96,6 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
                 .map(t -> t.get(cartItemEntity.id))
                 .toList();
 
-        List<Tuple> optionTuples = queryFactory
-                .select(cartItemEntity.id, productOptionValueEntity.value)
-                .from(cartItemEntity)
-                .join(cartItemEntity.sku, productSkuEntity)
-                .join(productSkuEntity.skuOptions, productSkuOptionEntity)
-                .join(productSkuOptionEntity.optionValue, productOptionValueEntity)
-                .where(cartItemEntity.id.in(cartItemIds))
-                .fetch();
-
-        // 옵션 그룹화
-        Map<Long, List<String>> optionsMap = optionTuples.stream()
-                .collect(Collectors.groupingBy(
-                        t -> Objects.requireNonNull(t.get(cartItemEntity.id)),
-                        Collectors.mapping(t -> t.get(productOptionValueEntity.value), Collectors.toList())
-                ));
-
-        // 최종 DTO 생성
-        return mainTuples.stream()
-                .map(t -> new CartItemQueryDto(
-                        t.get(cartItemEntity.id),
-                        t.get(brandEntity.name),
-                        t.get(productEntity.name),
-                        t.get(productEntity.shippingLeadTime),
-                        t.get(4, String.class),
-                        t.get(productEntity.basePrice),
-                        t.get(productEntity.salePrice),
-                        t.get(productSkuEntity.additionalPrice),
-                        t.get(cartItemEntity.quantity),
-                        t.get(productSkuEntity.stockQuantity),
-                        t.get(brandEntity.id),
-                        t.get(productEntity.shippingFee),
-                        optionsMap.getOrDefault(t.get(cartItemEntity.id), List.of())
-                ))
-                .toList();
-    }
-
-    @Override
-    public List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds) {
-        if (cartItemIds == null || cartItemIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // 메인 정보 조회 (브랜드, 상품, SKU 정보 포함)
-        List<Tuple> mainTuples = queryFactory
-                .select(
-                        cartItemEntity.id,
-                        brandEntity.name,
-                        productEntity.name,
-                        productEntity.shippingLeadTime,
-                        JPAExpressions
-                                .select(productImageEntity.imageUrl)
-                                .from(productImageEntity)
-                                .where(productImageEntity.product.eq(productEntity)
-                                        .and(productImageEntity.imageType.eq(ProductImageType.SLIDE))
-                                        .and(productImageEntity.sortOrder.eq(1)))
-                                .limit(1),
-                        productEntity.basePrice,
-                        productEntity.salePrice,
-                        productSkuEntity.additionalPrice,
-                        cartItemEntity.quantity,
-                        productSkuEntity.stockQuantity,
-                        brandEntity.id,
-                        productEntity.shippingFee
-                )
-                .from(cartItemEntity)
-                .join(cartItemEntity.product, productEntity)
-                .join(productEntity.brand, brandEntity)
-                .join(cartItemEntity.sku, productSkuEntity)
-                .where(cartItemEntity.id.in(cartItemIds)) // ID 리스트로 필터링
-                .fetch();
-
-        if (mainTuples.isEmpty()) return Collections.emptyList();
-
-        // 옵션 정보 조회
         List<Tuple> optionTuples = queryFactory
                 .select(cartItemEntity.id, productOptionValueEntity.value)
                 .from(cartItemEntity)
