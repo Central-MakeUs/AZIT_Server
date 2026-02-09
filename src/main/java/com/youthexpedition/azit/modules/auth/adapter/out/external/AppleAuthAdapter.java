@@ -32,8 +32,8 @@ public class AppleAuthAdapter implements SocialAuthPort {
 
     @Value("${oauth.apple.client-id}")
     private String clientId;
-    @Value("${oauth.apple.redirect-uri}")
-    private String redirectUri;
+    @Value("${oauth.apple.redirect-url}")
+    private String redirectUrl;
 
     private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
     private static final String TOKEN_TYPE_HINT = "refresh_token";
@@ -106,7 +106,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
 
         String clientSecret = appleJwtUtils.createClientSecret();
         AppleTokenResponse tokenResponse = appleFeignClient.getToken(
-                clientId, clientSecret, authorizationCode, GRANT_TYPE_AUTHORIZATION_CODE, redirectUri);
+                clientId, clientSecret, authorizationCode, GRANT_TYPE_AUTHORIZATION_CODE, redirectUrl);
 
         return tokenResponse.refreshToken();
     }
