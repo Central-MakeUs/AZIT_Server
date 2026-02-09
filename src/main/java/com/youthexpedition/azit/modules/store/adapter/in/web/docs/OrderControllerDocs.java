@@ -31,5 +31,5 @@ public interface OrderControllerDocs {
             "PRODUCT_NOT_FOUND", "SKU_NOT_FOUND", "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<OrderCheckoutResponse> getCheckoutInfo(@CurrentMemberId Long memberId, @RequestParam List<Long> cartItemId);
+    CommonResponse<OrderCheckoutResponse> getCheckoutInfo(@CurrentMemberId Long memberId, @RequestParam List<Long> cartItemIds);
 }
