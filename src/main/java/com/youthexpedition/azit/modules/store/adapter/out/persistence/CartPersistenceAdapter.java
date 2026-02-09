@@ -10,6 +10,7 @@ import com.youthexpedition.azit.modules.store.domain.model.CartItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +50,14 @@ public class CartPersistenceAdapter implements LoadCartPort, SaveCartPort {
     @Override
     public List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId) {
         return cartItemRepository.findCartDetailsByMemberId(memberId);
+    }
+
+    @Override
+    public List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds) {
+        if (cartItemIds == null || cartItemIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return cartItemRepository.findCartDetailsByIds(cartItemIds);
     }
 
 }

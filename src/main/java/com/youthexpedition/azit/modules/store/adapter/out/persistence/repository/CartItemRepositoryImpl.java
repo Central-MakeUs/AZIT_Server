@@ -30,6 +30,7 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
     @Override
     public List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId) {
 
+        // 메인 정보 조회 (브랜드, 상품, SKU 정보 포함)
         List<Tuple> mainTuples = queryFactory
                 .select(
                         cartItemEntity.id,
@@ -100,4 +101,79 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
                 ))
                 .toList();
     }
+
+    @Override
+    public List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds) {
+        if (cartItemIds == null || cartItemIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 메인 정보 조회 (브랜드, 상품, SKU 정보 포함)
+        List<Tuple> mainTuples = queryFactory
+                .select(
+                        cartItemEntity.id,
+                        brandEntity.name,
+                        productEntity.name,
+                        productEntity.shippingLeadTime,
+                        JPAExpressions
+                                .select(productImageEntity.imageUrl)
+                                .from(productImageEntity)
+                                .where(productImageEntity.product.eq(productEntity)
+                                        .and(productImageEntity.imageType.eq(ProductImageType.SLIDE))
+                                        .and(productImageEntity.sortOrder.eq(1)))
+                                .limit(1),
+                        productEntity.basePrice,
+                        productEntity.salePrice,
+                        productSkuEntity.additionalPrice,
+                        cartItemEntity.quantity,
+                        productSkuEntity.stockQuantity,
+                        brandEntity.id,
+                        productEntity.shippingFee
+                )
+                .from(cartItemEntity)
+                .join(cartItemEntity.product, productEntity)
+                .join(productEntity.brand, brandEntity)
+                .join(cartItemEntity.sku, productSkuEntity)
+                .where(cartItemEntity.id.in(cartItemIds)) // ID 리스트로 필터링
+                .fetch();
+
+        if (mainTuples.isEmpty()) return Collections.emptyList();
+
+        // 옵션 정보 조회
+        List<Tuple> optionTuples = queryFactory
+                .select(cartItemEntity.id, productOptionValueEntity.value)
+                .from(cartItemEntity)
+                .join(cartItemEntity.sku, productSkuEntity)
+                .join(productSkuEntity.skuOptions, productSkuOptionEntity)
+                .join(productSkuOptionEntity.optionValue, productOptionValueEntity)
+                .where(cartItemEntity.id.in(cartItemIds))
+                .fetch();
+
+        // 옵션 그룹화
+        Map<Long, List<String>> optionsMap = optionTuples.stream()
+                .collect(Collectors.groupingBy(
+                        t -> Objects.requireNonNull(t.get(cartItemEntity.id)),
+                        Collectors.mapping(t -> t.get(productOptionValueEntity.value), Collectors.toList())
+                ));
+
+        // 최종 DTO 생성
+        return mainTuples.stream()
+                .map(t -> new CartItemQueryDto(
+                        t.get(cartItemEntity.id),
+                        t.get(brandEntity.name),
+                        t.get(productEntity.name),
+                        t.get(productEntity.shippingLeadTime),
+                        t.get(4, String.class),
+                        t.get(productEntity.basePrice),
+                        t.get(productEntity.salePrice),
+                        t.get(productSkuEntity.additionalPrice),
+                        t.get(cartItemEntity.quantity),
+                        t.get(productSkuEntity.stockQuantity),
+                        t.get(brandEntity.id),
+                        t.get(productEntity.shippingFee),
+                        optionsMap.getOrDefault(t.get(cartItemEntity.id), List.of())
+                ))
+                .toList();
+    }
+
 }

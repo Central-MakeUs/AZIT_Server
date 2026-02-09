@@ -22,8 +22,7 @@ public class Member {
     private String email;
     private boolean isEmailSharingEnabled;
     private String profileImageUrl;
-    // 애플 리프레시 토큰
-    private String appleRefreshToken;
+    private String appleRefreshToken; // 애플 리프레시 토큰
     private MemberStatus status;
     private MemberRole role;
     private Long totalPoints;
@@ -148,5 +147,18 @@ public class Member {
 
         this.status = MemberStatus.PENDING_ONBOARDING; // 추후 기획 확인 필요
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // 포인트가 충분한지 체크
+    public boolean hasEnoughPoints(long points) {
+        return this.totalPoints >= points;
+    }
+
+    // 포인트 차감
+    public void deductPoints(long points) {
+        if (!hasEnoughPoints(points)) {
+            throw new BusinessException(MemberErrorCode.INSUFFICIENT_POINTS);
+        }
+        this.totalPoints -= points;
     }
 }
