@@ -52,6 +52,8 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
         List<Tuple> mainTuples = queryFactory
                 .select(
                         cartItemEntity.id,
+                        productEntity.id,
+                        productSkuEntity.id,
                         brandEntity.name,
                         productEntity.name,
                         productEntity.shippingLeadTime,
@@ -116,10 +118,12 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
         return mainTuples.stream()
                 .map(t -> new CartItemQueryDto(
                         t.get(cartItemEntity.id),
+                        t.get(productEntity.id),
+                        t.get(productSkuEntity.id),
                         t.get(brandEntity.name),
                         t.get(productEntity.name),
                         t.get(productEntity.shippingLeadTime),
-                        t.get(4, String.class),
+                        t.get(6, String.class),
                         t.get(productEntity.basePrice),
                         t.get(productEntity.salePrice),
                         t.get(productSkuEntity.additionalPrice),

@@ -34,37 +34,37 @@ public class OrderEntity extends BaseTimeEntity {
     @Column(name = "phone_number", nullable = false, length = 20)
     private String phoneNumber;
 
-    @Column(name = "zipcode", nullable = false, length = 10)
-    private String zipcode;
-
     @Column(name = "base_address", nullable = false, length = 255)
     private String baseAddress;
 
     @Column(name = "detail_address", nullable = false, length = 255)
     private String detailAddress;
 
+    @Column(name = "shipping_instruction", length = 100)
+    private String shippingInstruction; // 배송 요청사항
+
     // 결제 금액 정보
-    @Column(nullable = false)
+    @Column(name = "total_product_price", nullable = false)
     private long totalProductPrice;   // 총 상품금액 (할인 전 합계)
 
-    @Column(nullable = false)
-    private long totalDiscountPrice;  // 총 할인 금액 (멤버십 할인 + 포인트 할인)
-
-    @Column(nullable = false)
+    @Column(name = "total_shipping_fee", nullable = false)
     private long totalShippingFee;    // 총 배송비
 
-    @Column(nullable = false)
+    @Column(name = "membership_discount", nullable = false)
+    private long membershipDiscount; // 아지트 멤버십 할인
+
+    @Column(name = "used_points", nullable = false)
     private long usedPoints;          // 사용한 포인트
 
-    @Column(nullable = false)
+    @Column(name = "total_payment_price", nullable = false)
     private long totalPaymentPrice;       // 최종 결제 금액
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod; // 결제 수단
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private OrderStatus status; // 주문 상태
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)

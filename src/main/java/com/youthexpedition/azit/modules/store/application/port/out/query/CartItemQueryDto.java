@@ -4,6 +4,8 @@ import java.util.List;
 
 public record CartItemQueryDto(
         Long cartItemId,
+        Long productId,
+        Long skuId,
         String brandName,        // 브랜드 이름
         String productName,      // 상품 이름
         Integer shippingLeadTime, // 배송 소요 시간

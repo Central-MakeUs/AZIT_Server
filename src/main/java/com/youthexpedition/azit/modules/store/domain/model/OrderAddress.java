@@ -10,7 +10,6 @@ import lombok.Getter;
 public class OrderAddress {
     String recipientName;
     String phoneNumber;
-    String zipcode;
     String baseAddress;
     String detailAddress;
 }

@@ -20,20 +20,23 @@ public class OrderItemEntity extends BaseTimeEntity {
     @JoinColumn(name = "order_id")
     private OrderEntity order;
 
-    @Column(nullable = false)
+    @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(nullable = false)
+    @Column(name = "sku_id", nullable = false)
     private Long skuId;
 
-    @Column(nullable = false)
+    @Column(name = "product_name", nullable = false)
     private String productName;      // 구매 당시 상품명
 
-    @Column(nullable = false)
+    @Column(name = "option_description", nullable = false)
     private String optionDescription; // 구매 당시 옵션 정보 (예: 색상: 블랙 / 사이즈: L)
 
-    @Column(nullable = false)
-    private long price;              // 구매 당시 개당 판매가
+    @Column(name = "base_price", nullable = false)
+    private long basePrice;              // 구매 당시 개당 판매가
+
+    @Column(name = "sale_price", nullable = false)
+    private long salePrice;              // 구매 당시 개당 할인가
 
     @Column(nullable = false)
     private int quantity;            // 구매 수량

@@ -15,10 +15,11 @@ public class OrderItem {
     private final Long skuId;
     private final String productName;
     private final String optionDescription;
-    private final long price;
+    private final long basePrice;
+    private final long salePrice;
     private final int quantity;
 
-    public static OrderItem create(Long productId, Long skuId, String productName, String optionDescription, long price, int quantity) {
+    public static OrderItem create(Long productId, Long skuId, String productName, String optionDescription, long basePrice, long salePrice, int quantity) {
         validateQuantity(quantity);
 
         return OrderItem.builder()
@@ -26,7 +27,8 @@ public class OrderItem {
                 .skuId(skuId)
                 .productName(productName)
                 .optionDescription(optionDescription)
-                .price(price)
+                .basePrice(basePrice)
+                .salePrice(salePrice)
                 .quantity(quantity)
                 .build();
     }
@@ -35,5 +37,13 @@ public class OrderItem {
         if (quantity <= 0) {
             throw new BusinessException(StoreErrorCode.INVALID_QUANTITY);
         }
+    }
+
+    public long getTotalBasePrice() {
+        return basePrice * quantity;
+    }
+
+    public long getTotalSalePrice() {
+        return salePrice * quantity;
     }
 }

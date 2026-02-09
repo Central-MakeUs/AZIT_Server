@@ -1,0 +1,62 @@
+package com.youthexpedition.azit.modules.store.adapter.in.web.dto;
+
+import com.youthexpedition.azit.modules.store.application.port.in.command.CreateOrderCommand;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
+
+import java.util.List;
+import java.util.Objects;
+
+public record CreateOrderRequest(
+        @Schema(description = "주문할 장바구니 아이템 ID 리스트")
+        @NotEmpty(message = "주문할 상품을 선택해주세요.")
+        List<Long> cartItemIds,
+
+        @Schema(description = "수령인")
+        @NotBlank(message = "수령인은 필수입니다.")
+        String recipientName,
+
+        @Schema(description = "수령인 연락처")
+        @NotBlank(message = "수령인 연락처는 필수입니다.")
+        @Pattern(regexp = "^\\d{2,3}-\\d{3,4}-\\d{4}$", message = "올바른 전화번호 형식이 아닙니다.")
+        String phoneNumber,
+
+        @Schema(description = "기본 주소")
+        @NotBlank(message = "기본 주소는 필수입니다.")
+        String baseAddress,
+
+        @Schema(description = "상세 주소")
+        @NotBlank(message = "상세 주소는 필수입니다.")
+        String detailAddress,
+
+        @Schema(description = "배송 요청사항")
+        @Size(max = 100, message = "배송 요청사항은 100자 이내로 입력해주세요.")
+        String shippingInstruction,
+
+        @Schema(description = "아지트 멤버십 할인")
+        @Min(0)
+        long membershipDiscount,
+
+        @Schema(description = "사용할 포인트")
+        @Min(0)
+        long usedPoints,
+
+        @Schema(description = "결제 수단")
+        @NotBlank(message = "결제 수단을 선택해주세요.")
+        String paymentMethod
+) {
+    public CreateOrderCommand toCommand(Long memberId) {
+        return CreateOrderCommand.of(
+                memberId,
+                cartItemIds.stream().filter(Objects::nonNull).toList(),
+                recipientName,
+                phoneNumber,
+                baseAddress,
+                detailAddress,
+                shippingInstruction,
+                membershipDiscount,
+                usedPoints,
+                paymentMethod
+        );
+    }
+}
