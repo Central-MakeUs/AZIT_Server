@@ -27,7 +27,7 @@ public class KakaoAuthAdapter implements SocialAuthPort {
 
     @Value("${oauth.kakao.client-id}")
     private String clientId;
-    @Value("${oauth.kakao.redirect-uri}")
+    @Value("${oauth.kakao.redirect-url}")
     private String redirectUri;
     @Value("${oauth.kakao.client-secret}")
     private String clientSecret;
