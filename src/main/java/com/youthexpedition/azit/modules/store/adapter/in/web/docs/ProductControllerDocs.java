@@ -17,10 +17,9 @@ public interface ProductControllerDocs {
     @Operation(
             summary = "상품 목록 조회 (무한 스크롤)",
             description = """
-            커서 기반 페이징을 사용하여 전체 상품 목록을 조회합니다. <br><br>
+            커서 기반 페이징을 사용하여 전체 상품 목록을 최신순으로 조회합니다. <br><br>
             
             **[참고 사항]** <br>
-            * 최신순 정렬: 가장 최근에 등록된 상품부터 정렬되어 반환됩니다.
             * 무한 스크롤 방식: hasNext를 통해 다음 페이지 존재 여부를 확인하고, lastId를 다음 요청의 cursorId로 호출하면 됩니다.
             """
     )
