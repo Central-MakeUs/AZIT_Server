@@ -6,9 +6,11 @@ import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExampl
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CreateOrderRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -79,4 +81,21 @@ public interface OrderControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CreateOrderResponse> createOrder(@CurrentMemberId Long memberId, @RequestBody @Valid CreateOrderRequest request);
+
+    @Operation(
+            summary = "주문 상세 조회",
+            description = """
+            특정 주문 번호를 기반으로 주문의 상세 내역을 조회합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 요청한 사용자가 해당 주문의 소유자인지 확인하며, 타인의 주문 조회 시 에러를 반환합니다. (FORBIDDEN_ERROR)
+            * 구매 당시의 상품명, 브랜드명, 옵션 정보, 이미지 및 수량이 반영된 가격 정보를 포함하는 '스냅샷' 정보를 제공합니다.
+            * API 호출 시에는 #이 없는 형태(예: AZ2602104434)를 사용합니다. 단, API 응답 시에는 UI 가독성을 위해 주문번호에 #을 접두어로 붙여 반환합니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "ORDER_NOT_FOUND", "FORBIDDEN_ERROR",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<OrderDetailResponse> getOrderDetail(@CurrentMemberId Long memberId, @PathVariable String orderNumber);
 }
