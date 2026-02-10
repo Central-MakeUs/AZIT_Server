@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CreateOrderRequ
 import com.youthexpedition.azit.modules.store.application.port.in.OrderUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +40,13 @@ public class OrderController implements OrderControllerDocs {
     @PostMapping
     public CommonResponse<CreateOrderResponse> createOrder(@CurrentMemberId Long memberId, @RequestBody @Valid CreateOrderRequest request) {
         CreateOrderResponse response = orderUseCase.createOrder(request.toCommand(memberId));
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/{orderNumber}")
+    public CommonResponse<OrderDetailResponse> getOrderDetail(@CurrentMemberId Long memberId, @PathVariable String orderNumber) {
+        OrderDetailResponse response = orderUseCase.getOrderDetail(memberId, orderNumber);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }

@@ -23,7 +23,8 @@ public enum StoreErrorCode implements BaseErrorCode {
     PAYMENT_METHOD_NOT_SUPPORTED("PAYMENT_METHOD_NOT_SUPPORTED", "지원하지 않는 결제 수단입니다.", HttpStatus.BAD_REQUEST),
     INVALID_ORDER_REQUEST("INVALID_ORDER_REQUEST", "유효하지 않은 결제 요청입니다.", HttpStatus.BAD_REQUEST),
     ORDER_PRODUCT_NOT_FOUND("ORDER_PRODUCT_NOT_FOUND", "주문할 상품 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    ORDER_NUMBER_GENERATION_FAILED("ORDER_NUMBER_GENERATION_FAILED", "주문 번호 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),;
+    ORDER_NUMBER_GENERATION_FAILED("ORDER_NUMBER_GENERATION_FAILED", "주문 번호 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    ORDER_NOT_FOUND("ORDER_NOT_FOUND", "주문 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),;
 
     private final String code;
     private final String message;

@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.store.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadDeliveryAddressPort;
@@ -12,6 +13,7 @@ import com.youthexpedition.azit.modules.store.application.port.in.OrderUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.CreateOrderCommand;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.*;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.application.service.mapper.OrderResponseMapper;
@@ -116,7 +118,9 @@ public class OrderService implements OrderUseCase {
                     return OrderItem.create(
                             productInfo.productId(),
                             productInfo.skuId(),
+                            productInfo.brandName(),
                             productInfo.productName(),
+                            productInfo.imageUrl(),
                             orderResponseMapper.formatOptionValues(productInfo.optionValues()), // 옵션 포맷팅
                             productInfo.basePrice() + productInfo.additionalPrice(),
                             productInfo.salePrice() + productInfo.additionalPrice(),
@@ -152,6 +156,20 @@ public class OrderService implements OrderUseCase {
         }
 
         return orderResponseMapper.toCreateOrderResponse(savedOrder);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDetailResponse getOrderDetail(Long memberId, String orderNumber) {
+        Order order = loadOrderPort.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new BusinessException(StoreErrorCode.ORDER_NOT_FOUND));
+
+        // 본인의 주문만 조회 가능
+        if (!order.getMemberId().equals(memberId)) {
+            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
+
+        return orderResponseMapper.toOrderDetailResponse(order);
     }
 
     private Member getMember(Long memberId) {

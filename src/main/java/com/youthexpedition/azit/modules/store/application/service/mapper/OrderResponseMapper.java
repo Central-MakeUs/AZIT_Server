@@ -24,6 +24,7 @@ public class OrderResponseMapper {
     private static final String BANK_NAME = "신한은행";
     private static final String ACCOUNT_NUMBER = "123-456-789012";
     private static final String ACCOUNT_HOLDER = "(주)아지트크루";
+    private static final String ORDER_NUMBER_PREFIX = "#";
 
     public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items,
                                                          long totalProductPrice, long membershipDiscount, long totalShippingFee) {
@@ -90,7 +91,7 @@ public class OrderResponseMapper {
         }
 
         return CreateOrderResponse.of(
-                order.getOrderNumber(),
+                buildFullOrderNumber(order.getOrderNumber()),
                 CreateOrderResponse.DeliveryAddressResponse.of(
                         order.getAddress().getRecipientName(),
                         order.getAddress().getPhoneNumber(),
@@ -140,7 +141,7 @@ public class OrderResponseMapper {
 
         return OrderDetailResponse.of(
                 order.getCreatedAt(),
-                order.getOrderNumber(),
+                buildFullOrderNumber(order.getOrderNumber()),
                 deliveryInfo,
                 shippingInfo,
                 items,
@@ -151,5 +152,9 @@ public class OrderResponseMapper {
     private String buildFullImageUrl(String imagePath) {
         if (imagePath == null) return null;
         return cloudFrontDomain + imagePath;
+    }
+
+    private String buildFullOrderNumber(String orderNumber) {
+        return ORDER_NUMBER_PREFIX + orderNumber;
     }
 }
