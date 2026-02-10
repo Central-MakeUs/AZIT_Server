@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record OrderDetailResponse(
+        @Schema(description = "주문 ID")
+        Long id,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         @Schema(description = "주문 날짜")
         LocalDateTime orderDate,
@@ -106,9 +108,10 @@ public record OrderDetailResponse(
                 }
         }
 
-        public static OrderDetailResponse of(LocalDateTime orderDate, String orderNumber, DeliveryAddressResponse deliveryInfo,
+        public static OrderDetailResponse of(Long id, LocalDateTime orderDate, String orderNumber, DeliveryAddressResponse deliveryInfo,
                                              ShippingResponse shippingInfo, List<OrderItemResponse> items, PaymentSummaryResponse summary) {
                 return new OrderDetailResponse(
+                        id,
                         orderDate,
                         orderNumber,
                         deliveryInfo,

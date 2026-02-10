@@ -19,7 +19,7 @@ public record CartListResponse(
 ) {
     public record CartItemDetail(
             @Schema(description = "장바구니 항목 ID")
-            Long cartItemId,
+            Long id,
             @Schema(description = "브랜드명")
             String brandName,
             @Schema(description = "상품명")

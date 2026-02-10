@@ -1,12 +1,15 @@
 package com.youthexpedition.azit.modules.store.adapter.in.web.docs;
 
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
+import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CreateOrderRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -98,4 +101,20 @@ public interface OrderControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<OrderDetailResponse> getOrderDetail(@CurrentMemberId Long memberId, @PathVariable String orderNumber);
+
+    @Operation(
+            summary = "주문 내역 목록 조회 (무한 스크롤)",
+            description = """
+            커서 기반 페이징을 사용하여 사용자의 전체 주문 내역을 최신순으로 조회합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 무한 스크롤 방식: hasNext를 통해 다음 페이지 존재 여부를 확인하고, lastId를 다음 요청의 cursorId로 호출하면 됩니다.
+            * 상품명, 브랜드명, 이미지 등은 구매 시점의 정보를 제공하므로 현재의 상품 정보와 다를 수 있습니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<SliceResponse<OrderListResponse>> getOrders(@CurrentMemberId Long memberId, CursorPageQuery query);
 }

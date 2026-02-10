@@ -5,7 +5,7 @@ import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.store.application.port.in.ProductUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.query.GetProductListQuery;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadProductPort;
 import com.youthexpedition.azit.modules.store.application.service.mapper.ProductResponseMapper;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
@@ -13,6 +13,8 @@ import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +25,14 @@ public class ProductService implements ProductUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public SliceResponse<ProductListResponse> getProducts(GetProductListQuery query) {
-        return loadProductPort.findProducts(query);
+    public SliceResponse<ProductListResponse> getProducts(CursorPageQuery query) {
+        SliceResponse<Product> productSlice = loadProductPort.findProducts(query);
+
+        List<ProductListResponse> responses = productSlice.content().stream()
+                .map(productResponseMapper::toListResponse)
+                .toList();
+
+        return new SliceResponse<>(responses, productSlice.hasNext(), productSlice.lastId());
     }
 
     @Override

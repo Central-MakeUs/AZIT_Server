@@ -17,7 +17,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 public class CurrentAccessTokenArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        // 파라미터에 @CurrentAccessToken 붙어 있는지 확인
+        // 파라미터에 @CurrentAccessToken 일 때만 동작
         return parameter.hasParameterAnnotation(CurrentAccessToken.class) &&
                 parameter.getParameterType().equals(String.class);
     }
