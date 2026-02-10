@@ -22,4 +22,9 @@ public class OrderPersistenceAdapter implements LoadOrderPort, SaveOrderPort {
         return orderMapper.toDomain(savedEntity);
     }
 
+    @Override
+    public boolean existsByOrderNumber(String orderNumber) {
+        return orderRepository.existsByOrderNumber(orderNumber);
+    }
+
 }

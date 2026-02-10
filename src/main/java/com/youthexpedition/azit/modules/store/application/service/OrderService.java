@@ -36,6 +36,7 @@ public class OrderService implements OrderUseCase {
     private final SaveProductPort saveProductPort;
     private final LoadCartPort loadCartPort;
     private final SaveCartPort saveCartPort;
+    private final LoadOrderPort loadOrderPort;
     private final SaveOrderPort saveOrderPort;
     private final OrderResponseMapper orderResponseMapper;
     private final DeliveryAddressResponseMapper deliveryAddressResponseMapper;
@@ -104,6 +105,9 @@ public class OrderService implements OrderUseCase {
         // 결제 수단 확인 및 처리
         handlePayment(paymentMethod);
 
+        // 주문 번호 중복 방어
+        String orderNumber = generateUniqueOrderNumber();
+
         List<OrderItem> orderItems = items.stream()
                 .map(productInfo -> {
                     // 재고 차감
@@ -122,7 +126,7 @@ public class OrderService implements OrderUseCase {
 
         Order order = Order.create(
                 command.memberId(),
-                Order.generateOrderNumber(),
+                orderNumber,
                 OrderAddress.builder()
                         .recipientName(command.recipientName())
                         .phoneNumber(command.phoneNumber())
@@ -200,6 +204,21 @@ public class OrderService implements OrderUseCase {
 
         // 지원하지 않는 결제수단 체크
         if (!paymentMethod.isEnabled()) throw new BusinessException(StoreErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
+    }
+
+    private String generateUniqueOrderNumber() {
+        final int MAX_RETRIES = 10;
+
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            String orderNumber = Order.generateOrderNumber();
+
+            // DB 조회하여 중복 여부 확인
+            if (!loadOrderPort.existsByOrderNumber(orderNumber)) {
+                return orderNumber;
+            }
+        }
+        // 최대 재시도 후에도 실패 시 예외 발생
+        throw new BusinessException(StoreErrorCode.ORDER_NUMBER_GENERATION_FAILED);
     }
 
 }
