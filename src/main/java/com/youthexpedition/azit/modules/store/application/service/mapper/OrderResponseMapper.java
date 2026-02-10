@@ -5,6 +5,7 @@ import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.Order;
 import com.youthexpedition.azit.modules.store.domain.model.PointPolicy;
@@ -71,14 +72,6 @@ public class OrderResponseMapper {
         );
     }
 
-    // 옵션 + / + 옵션 형식으로 조합하는 메서드
-    public String formatOptionValues(List<String> optionValues) {
-        if (optionValues == null || optionValues.isEmpty()) {
-            return "";
-        }
-        return String.join(" / ", optionValues);
-    }
-
     public CreateOrderResponse toCreateOrderResponse(Order order) {
         // 결제 수단이 무통장 입금일 경우 계좌 정보 생성
         CreateOrderResponse.DepositAccountResponse depositAccount = null;
@@ -140,6 +133,7 @@ public class OrderResponseMapper {
         );
 
         return OrderDetailResponse.of(
+                order.getId(),
                 order.getCreatedAt(),
                 buildFullOrderNumber(order.getOrderNumber()),
                 deliveryInfo,
@@ -147,6 +141,34 @@ public class OrderResponseMapper {
                 items,
                 summary
         );
+    }
+
+    public OrderListResponse toOrderListResponse(Order order) {
+        List<OrderListResponse.OrderItemSummaryResponse> itemSummaries = order.getOrderItems().stream()
+                .map(item -> OrderListResponse.OrderItemSummaryResponse.of(
+                        item.getBrandName(),
+                        item.getProductName(),
+                        item.getOptionDescription(),
+                        buildFullImageUrl(item.getProductImageUrl()),
+                        item.getSalePrice(),
+                        item.getQuantity()
+                )).toList();
+
+        return OrderListResponse.of(
+                order.getId(),
+                order.getCreatedAt(),
+                buildFullOrderNumber(order.getOrderNumber()),
+                order.getStatus(),
+                itemSummaries
+        );
+    }
+
+    // 옵션 + / + 옵션 형식으로 조합하는 메서드
+    public String formatOptionValues(List<String> optionValues) {
+        if (optionValues == null || optionValues.isEmpty()) {
+            return "";
+        }
+        return String.join(" / ", optionValues);
     }
 
     private String buildFullImageUrl(String imagePath) {

@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.modules.store.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
+import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
@@ -11,9 +13,7 @@ import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.store.application.port.in.OrderUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.CreateOrderCommand;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.store.application.port.out.*;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.application.service.mapper.OrderResponseMapper;
@@ -245,6 +245,18 @@ public class OrderService implements OrderUseCase {
         }
         // 최대 재시도 후에도 실패 시 예외 발생
         throw new BusinessException(StoreErrorCode.ORDER_NUMBER_GENERATION_FAILED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SliceResponse<OrderListResponse> getOrders(Long memberId, CursorPageQuery query) {
+        SliceResponse<Order> orderSlice = loadOrderPort.findOrdersByMemberId(memberId, query);
+
+        List<OrderListResponse> responses = orderSlice.content().stream()
+                .map(orderResponseMapper::toOrderListResponse)
+                .toList();
+
+        return new SliceResponse<>(responses, orderSlice.hasNext(), orderSlice.lastId());
     }
 
 }
