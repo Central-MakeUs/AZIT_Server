@@ -26,6 +26,8 @@ public class Order {
     private final long usedPoints;
     private final long totalPaymentPrice;
     private final PaymentMethod paymentMethod;
+    private final String courier; // 택배사
+    private final String trackingNumber; // 운송장 번호
     private OrderStatus status;
     private final List<OrderItem> orderItems;
     private final LocalDateTime createdAt;
