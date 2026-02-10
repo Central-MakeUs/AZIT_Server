@@ -2,8 +2,10 @@ package com.youthexpedition.azit.modules.store.application.service.mapper;
 
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
-import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
+import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
+import com.youthexpedition.azit.modules.store.domain.model.Order;
 import com.youthexpedition.azit.modules.store.domain.model.PointPolicy;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +20,12 @@ public class OrderResponseMapper {
     @Value("${spring.cloud.aws.cloudfront.domain}")
     private String cloudFrontDomain;
 
-    public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CartItemQueryDto> items, long shippingFee) {
+    private static final String BANK_NAME = "신한은행";
+    private static final String ACCOUNT_NUMBER = "123-456-789012";
+    private static final String ACCOUNT_HOLDER = "(주)아지트크루";
+
+    public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items,
+                                                         long totalProductPrice, long membershipDiscount, long totalShippingFee) {
         // 주문 상품 상세 목록 매핑
         List<OrderCheckoutResponse.CheckoutItemResponse> itemResponses = items.stream()
                 .map(this::toCheckoutItemResponse)
@@ -29,38 +36,28 @@ public class OrderResponseMapper {
                 .map(this::toPaymentMethodResponse)
                 .toList();
 
-        // 전체 상품 금액, 할인 금액 계산
-        long totalProductPrice = 0;
-        long totalSalePrice = 0;
-        for (CartItemQueryDto item : items) {
-            totalProductPrice += (item.basePrice() + item.additionalPrice()) * item.quantity();
-            totalSalePrice += (item.salePrice() + item.additionalPrice()) * item.quantity();
-        }
-
-        // 멤버십 할인액 계산 (정가 - 판매가)
-        long membershipDiscount = totalProductPrice - totalSalePrice;
-
         return OrderCheckoutResponse.of(
                 address,
                 itemResponses,
                 OrderCheckoutResponse.PointInfoResponse.of(member.getTotalPoints(), PointPolicy.MIN_POINT_USAGE, PointPolicy.POINT_UNIT),
                 paymentMethods,
-                OrderCheckoutResponse.CheckoutSummaryResponse.of(totalProductPrice, membershipDiscount, shippingFee)
+                OrderCheckoutResponse.CheckoutSummaryResponse.of(totalProductPrice, membershipDiscount, totalShippingFee)
         );
     }
 
-    private OrderCheckoutResponse.CheckoutItemResponse toCheckoutItemResponse(CartItemQueryDto item) {
+    private OrderCheckoutResponse.CheckoutItemResponse toCheckoutItemResponse(CheckoutItemDto item) {
         String fullImageUrl = (item.imageUrl() != null) ? cloudFrontDomain + item.imageUrl() : null;
 
         return OrderCheckoutResponse.CheckoutItemResponse.of(
-                item.cartItemId(),
                 item.brandName(),
                 item.productName(),
                 formatOptionValues(item.optionValues()),
                 fullImageUrl,
+                item.basePrice(),
+                item.salePrice(),
+                item.quantity(),
                 (item.basePrice() + item.additionalPrice()) * item.quantity(),
-                (item.salePrice() + item.additionalPrice()) * item.quantity(),
-                item.quantity()
+                (item.salePrice() + item.additionalPrice()) * item.quantity()
         );
     }
 
@@ -73,10 +70,39 @@ public class OrderResponseMapper {
     }
 
     // 옵션 + / + 옵션 형식으로 조합하는 메서드
-    private String formatOptionValues(List<String> optionValues) {
+    public String formatOptionValues(List<String> optionValues) {
         if (optionValues == null || optionValues.isEmpty()) {
             return "";
         }
         return String.join(" / ", optionValues);
+    }
+
+    public CreateOrderResponse toCreateOrderResponse(Order order) {
+        // 결제 수단이 무통장 입금일 경우 계좌 정보 생성
+        CreateOrderResponse.DepositAccountResponse depositAccount = null;
+        if (order.getPaymentMethod() == PaymentMethod.BANK_TRANSFER) {
+            depositAccount = CreateOrderResponse.DepositAccountResponse.of(
+                    BANK_NAME,
+                    ACCOUNT_NUMBER,
+                    ACCOUNT_HOLDER
+            );
+        }
+
+        return CreateOrderResponse.of(
+                order.getOrderNumber(),
+                CreateOrderResponse.DeliveryAddressResponse.of(
+                        order.getAddress().getRecipientName(),
+                        order.getAddress().getPhoneNumber(),
+                        order.getAddress().getBaseAddress(),
+                        order.getAddress().getDetailAddress()
+                ),
+                depositAccount,
+                CreateOrderResponse.CheckoutSummaryResponse.of(
+                        order.getTotalProductPrice(),
+                        order.getMembershipDiscount(),
+                        order.getUsedPoints(),
+                        order.getTotalShippingFee()
+                )
+        );
     }
 }

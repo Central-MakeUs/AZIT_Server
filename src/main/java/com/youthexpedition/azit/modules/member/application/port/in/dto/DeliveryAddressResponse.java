@@ -2,11 +2,10 @@ package com.youthexpedition.azit.modules.member.application.port.in.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "배송지 응답 정보")
 public record DeliveryAddressResponse(
         @Schema(description = "배송지 ID")
         Long id,
-        @Schema(description = "수령인 성함")
+        @Schema(description = "수령인 이름")
         String recipientName,
         @Schema(description = "수령인 연락처")
         String phoneNumber,

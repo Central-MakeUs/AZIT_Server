@@ -46,8 +46,6 @@ public class Member {
                 .status(MemberStatus.PENDING_TERMS)
                 .role(MemberRole.MEMBER)
                 .totalPoints(0L)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
     }
 

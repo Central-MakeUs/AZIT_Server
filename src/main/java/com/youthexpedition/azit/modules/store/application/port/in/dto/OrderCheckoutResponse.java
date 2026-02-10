@@ -18,8 +18,6 @@ public record OrderCheckoutResponse(
         CheckoutSummaryResponse summary
 ) {
         public record CheckoutItemResponse(
-                @Schema(description = "장바구니 항목 ID")
-                Long cartItemId,
                 @Schema(description = "브랜드명")
                 String brandName,
                 @Schema(description = "상품명")
@@ -33,19 +31,24 @@ public record OrderCheckoutResponse(
                 @Schema(description = "상품 판매가")
                 Long salePrice,
                 @Schema(description = "장바구니에 담은 수량")
-                int quantity
+                int quantity,
+                @Schema(description = "총 정가")
+                Long totalBasePrice,
+                @Schema(description = "총 판매가")
+                Long totalSalePrice
         ) {
-                public static CheckoutItemResponse of(Long cartItemId, String brandName, String productName, String optionDescription,
-                                                      String productImageUrl, Long basePrice, Long salePrice, int quantity) {
+                public static CheckoutItemResponse of(String brandName, String productName, String optionDescription, String productImageUrl,
+                                                      Long basePrice, Long salePrice, int quantity, Long totalBasePrice, Long totalSalePrice) {
                         return new CheckoutItemResponse(
-                                cartItemId,
                                 brandName,
                                 productName,
                                 optionDescription,
                                 productImageUrl,
                                 basePrice,
                                 salePrice,
-                                quantity
+                                quantity,
+                                totalBasePrice,
+                                totalSalePrice
                         );
                 }
         }
@@ -68,15 +71,15 @@ public record OrderCheckoutResponse(
         public record PaymentMethodResponse(
                 @Schema(description = "결제 수단 코드")
                 String code,
-                @Schema(description = "결제 수단 명칭")
-                String label,
+                @Schema(description = "결제 수단 설명")
+                String description,
                 @Schema(description = "활성화 여부")
                 boolean isEnabled
         ) {
-                public static PaymentMethodResponse of(String code, String label, boolean isEnabled) {
+                public static PaymentMethodResponse of(String code, String description, boolean isEnabled) {
                         return new PaymentMethodResponse(
                                 code,
-                                label,
+                                description,
                                 isEnabled
                         );
                 }

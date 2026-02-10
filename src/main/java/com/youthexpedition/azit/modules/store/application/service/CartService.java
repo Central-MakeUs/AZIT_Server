@@ -12,6 +12,7 @@ import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.application.service.mapper.CartResponseMapper;
 import com.youthexpedition.azit.modules.store.domain.model.CartItem;
+import com.youthexpedition.azit.modules.store.domain.model.OrderPricePolicy;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
 import com.youthexpedition.azit.modules.store.domain.model.ProductSku;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
@@ -19,9 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -92,27 +91,9 @@ public class CartService implements CartUseCase {
     public CartListResponse getCarts(Long memberId) {
         List<CartItemQueryDto> cartItems = loadCartPort.findCartDetailsByMemberId(memberId);
 
-        long totalProductPrice = 0;
-        long totalMembershipDiscount = 0;
-
-        // 브랜드별 최대 배송비 저장하는 맵
-        Map<Long, Long> brandMaxShippingFeesMap = new HashMap<>();
-
-        for (CartItemQueryDto cartItem : cartItems) {
-            long itemBasePrice = cartItem.basePrice() + cartItem.additionalPrice();
-            long itemSalePrice = cartItem.salePrice() + cartItem.additionalPrice();
-
-            totalProductPrice += itemBasePrice * cartItem.quantity();
-            totalMembershipDiscount += (itemBasePrice - itemSalePrice) * cartItem.quantity();
-
-            // 같은 브랜드의 배송비는 한 번만 반영되도록 맵에 저장
-            brandMaxShippingFeesMap.merge(cartItem.brandId(), cartItem.shippingFee(), Long::max);
-        }
-
-        // 브랜드별로 집계된 배송비의 총합 계산
-        long totalShippingFee = brandMaxShippingFeesMap.values().stream()
-                .mapToLong(Long::longValue)
-                .sum();
+        long totalProductPrice = OrderPricePolicy.calculateTotalProductPrice(cartItems);
+        long totalMembershipDiscount = OrderPricePolicy.calculateTotalMembershipDiscount(cartItems);
+        long totalShippingFee = OrderPricePolicy.calculateTotalShippingFee(cartItems);
 
         return cartResponseMapper.toCartListResponse(cartItems, totalProductPrice, totalMembershipDiscount, totalShippingFee);
     }
