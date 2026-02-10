@@ -72,7 +72,7 @@ public class OrderService implements OrderUseCase {
     @Override
     public CreateOrderResponse createOrder(CreateOrderCommand command) {
         // 포인트 사용 유효성 검증 및 회원 조회
-        Member member = validatePointUsage(command.memberId(), command.usedPoints());
+        Member member = validatePointUsageAndGetMember(command.memberId(), command.usedPoints());
 
         // 결제 타입 케이스별로 상품 아이템 조회
         List<CheckoutItemDto> items = switch (OrderType.from(command)) {
@@ -167,8 +167,8 @@ public class OrderService implements OrderUseCase {
         return orderResponseMapper.toOrderCheckoutResponse(member, address, items, totalProductPrice, membershipDiscount, totalShippingFee);
     }
 
-    // 포인트 사용 유효성 검증
-    public Member validatePointUsage(Long memberId, long usePoints) {
+    // 포인트 사용 유효성 검증 및 사용자 반환
+    public Member validatePointUsageAndGetMember(Long memberId, long usePoints) {
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
