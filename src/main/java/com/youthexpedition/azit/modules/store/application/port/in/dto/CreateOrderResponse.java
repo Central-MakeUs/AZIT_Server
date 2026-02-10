@@ -6,9 +6,9 @@ public record CreateOrderResponse(
         @Schema(description = "주문 번호")
         String orderNumber,
         @Schema(description = "배송지 정보")
-        DeliveryAddressResponse deliveryAddress,
+        DeliveryAddressResponse deliveryInfo,
         @Schema(description = "입금 계좌 정보")
-        DepositAccountResponse depositAccount,
+        DepositAccountResponse depositAccountInfo,
         @Schema(description = "최종 결제 금액 요약")
         CheckoutSummaryResponse summary
 ) {
