@@ -47,19 +47,6 @@ public class ProductPersistenceAdapter implements LoadProductPort, SaveProductPo
                 .map(productMapper::toDomain);
     }
 
-    private ProductListResponse resolveImageUrl(ProductListResponse dto) {
-        return ProductListResponse.of(dto.id(), dto.brandName(), dto.productName(), dto.basePrice(), dto.discountRate(), dto.salePrice(),
-                buildFullImageUrl(dto.thumbnailImageUrl())
-        );
-    }
-
-    private String buildFullImageUrl(String imagePath) {
-        if (imagePath == null || imagePath.isBlank()) {
-            return null;
-        }
-        return cloudFrontDomain + imagePath;
-    }
-
     @Override
     public Optional<Product> findByIdForCart(Long productId) {
         return productRepository.findByIdForCart(productId)
