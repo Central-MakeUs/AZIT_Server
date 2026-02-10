@@ -117,7 +117,7 @@ public class OrderResponseMapper {
                 order.getShippingInstruction()
         );
 
-        OrderDetailResponse.ShippingResponse shippingInfo = new OrderDetailResponse.ShippingResponse(
+        OrderDetailResponse.ShippingResponse shippingInfo = OrderDetailResponse.ShippingResponse.of(
                 order.getCourier(),
                 order.getTrackingNumber()
         );

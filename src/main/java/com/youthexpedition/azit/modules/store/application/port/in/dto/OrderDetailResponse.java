@@ -50,7 +50,11 @@ public record OrderDetailResponse(
                 String courier,
                 @Schema(description = "운송장 번호 (배송 전일 경우 null)")
                 String trackingNumber
-        ) {}
+        ) {
+                public static ShippingResponse of(String courier, String trackingNumber) {
+                        return new ShippingResponse(courier, trackingNumber);
+                }
+        }
 
         public record OrderItemResponse(
                 @Schema(description = "구매 당시 브랜드명")
