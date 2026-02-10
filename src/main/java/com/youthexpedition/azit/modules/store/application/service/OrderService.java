@@ -93,6 +93,11 @@ public class OrderService implements OrderUseCase {
             case INVALID -> throw new BusinessException(StoreErrorCode.INVALID_ORDER_REQUEST);
         };
 
+        // 결제할 상품이 하나도 없는 경우 예외 처리
+        if (items.isEmpty()) {
+            throw new BusinessException(StoreErrorCode.ORDER_PRODUCT_NOT_FOUND);
+        }
+
         // 배송비 계산
         long totalShippingFee = OrderPricePolicy.calculateTotalShippingFee(items);
 
