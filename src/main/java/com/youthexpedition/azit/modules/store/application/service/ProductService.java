@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,7 +26,13 @@ public class ProductService implements ProductUseCase {
     @Override
     @Transactional(readOnly = true)
     public SliceResponse<ProductListResponse> getProducts(CursorPageQuery query) {
-        return loadProductPort.findProducts(query);
+        SliceResponse<Product> productSlice = loadProductPort.findProducts(query);
+
+        List<ProductListResponse> responses = productSlice.content().stream()
+                .map(productResponseMapper::toListResponse)
+                .toList();
+
+        return new SliceResponse<>(responses, productSlice.hasNext(), productSlice.lastId());
     }
 
     @Override

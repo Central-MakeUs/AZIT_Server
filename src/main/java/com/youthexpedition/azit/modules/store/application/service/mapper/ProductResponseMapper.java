@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductDetailResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
 import com.youthexpedition.azit.modules.store.domain.model.*;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,14 +26,6 @@ public class ProductResponseMapper {
         );
     }
 
-    private List<String> filterAndResolveUrls(Product product, ProductImageType type) {
-        return product.getImages().stream()
-                .filter(img -> img.getImageType() == type)
-                .sorted(Comparator.comparing(ProductImage::getSortOrder))
-                .map(img -> cloudFrontDomain + img.getImageUrl())
-                .toList();
-    }
-
     private List<ProductDetailResponse.OptionGroupResponse> mapOptionGroups(Product product) {
         return product.getOptionGroups().stream()
                 .sorted(Comparator.comparing(ProductOptionGroup::getSortOrder)) // 그룹 정렬
@@ -54,5 +47,34 @@ public class ProductResponseMapper {
                                 .sorted(Comparator.comparing(opt -> opt.getOptionValue().getSortOrder()))
                                 .map(opt -> opt.getOptionValue().getId()).toList()
                 )).toList();
+    }
+
+    public ProductListResponse toListResponse(Product product) {
+        // 썸네일 이미지 추출
+        List<String> slideImages = filterAndResolveUrls(product, ProductImageType.SLIDE);
+        String thumbnailImageUrl = slideImages.isEmpty() ? null : slideImages.getFirst();
+
+        return ProductListResponse.of(
+                product.getId(),
+                product.getBrand().getName(),
+                product.getName(),
+                product.getBasePrice(),
+                product.getDiscountRate(),
+                product.getSalePrice(),
+                thumbnailImageUrl
+        );
+    }
+
+    private List<String> filterAndResolveUrls(Product product, ProductImageType type) {
+        return product.getImages().stream()
+                .filter(img -> img.getImageType() == type)
+                .sorted(Comparator.comparing(ProductImage::getSortOrder))
+                .map(img -> buildFullImageUrl(img.getImageUrl()))
+                .toList();
+    }
+
+    private String buildFullImageUrl(String imagePath) {
+        if (imagePath == null) return null;
+        return cloudFrontDomain + imagePath;
     }
 }

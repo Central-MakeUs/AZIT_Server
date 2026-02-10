@@ -30,35 +30,24 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public SliceResponse<ProductListResponse> findProducts(CursorPageQuery query) {
+    public SliceResponse<ProductEntity> findProducts(CursorPageQuery query) {
         // hasNext 판단을 위해 size + 1 개 조회
-        List<ProductListResponse> content = queryFactory
-                .select(Projections.constructor(ProductListResponse.class,
-                        productEntity.id,
-                        brandEntity.name,
-                        productEntity.name,
-                        productEntity.basePrice,
-                        productEntity.discountRate,
-                        productEntity.salePrice,
-                        productImageEntity.imageUrl
-                ))
-                .from(productEntity)
-                .join(productEntity.brand, brandEntity) // brand가 없는 상품은 없으므로 inner join
-                .leftJoin(productEntity.images, productImageEntity).on(
-                        productImageEntity.sortOrder.eq(1) // 노출 순서가 가장 먼저인 이미지
-                        .and(productImageEntity.imageType.eq(ProductImageType.SLIDE))
-                )
-                .where(ltCursorId(query.cursorId()))
-                .orderBy(productEntity.id.desc()) // 최신순 정렬
+        List<ProductEntity> content = queryFactory
+                .selectFrom(productEntity)
+                .join(productEntity.brand, brandEntity).fetchJoin() // Brand 정보 한 번에 조회
+                .where(
+                        ltCursorId(query.cursorId()))
+                .orderBy(productEntity.id.desc())
                 .limit((long) query.size() + 1)
                 .fetch();
 
-        boolean hasNext = content.size() > query.size();
-        if (hasNext) {
+        boolean hasNext = false;
+        if (content.size() > query.size()) {
+            hasNext = true;
             content.remove(query.size());
         }
 
-        Long lastId = content.isEmpty() ? null : content.getLast().id();
+        Long lastId = content.isEmpty() ? null : content.getLast().getId();
 
         return new SliceResponse<>(content, hasNext, lastId);
     }
