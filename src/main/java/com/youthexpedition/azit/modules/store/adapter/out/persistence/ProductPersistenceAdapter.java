@@ -76,6 +76,11 @@ public class ProductPersistenceAdapter implements LoadProductPort, SaveProductPo
     }
 
     @Override
+    public void increaseStock(Long skuId, int quantity) {
+        productSkuRepository.increaseStock(skuId, quantity);
+    }
+
+    @Override
     public Optional<CheckoutItemDto> findProductInfoBySkuId(Long skuId, int quantity) {
         return productRepository.findProductInfoBySkuId(skuId, quantity);
     }

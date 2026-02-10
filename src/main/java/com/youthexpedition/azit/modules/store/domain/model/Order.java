@@ -1,7 +1,9 @@
 package com.youthexpedition.azit.modules.store.domain.model;
 
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.store.domain.model.enums.OrderStatus;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
+import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -61,6 +63,15 @@ public class Order {
                 .status(OrderStatus.PENDING)
                 .orderItems(orderItems)
                 .build();
+    }
+
+    public void cancel() {
+        // 취소 가능 상태 확인
+        if (this.status != OrderStatus.PENDING && this.status != OrderStatus.PAID) {
+            throw new BusinessException(StoreErrorCode.CANNOT_CANCEL_ORDER);
+        }
+
+        this.status = OrderStatus.CANCELLED;
     }
 
     // 주문번호 생성 (규칙: AZ + YYMMDD + 4자리 난수)

@@ -16,4 +16,5 @@ public interface OrderUseCase {
     CreateOrderResponse createOrder(CreateOrderCommand command);
     OrderDetailResponse getOrderDetail(Long memberId, String orderNumber);
     SliceResponse<OrderListResponse> getOrders(Long memberId, CursorPageQuery query);
+    void cancelOrder(Long memberId, String orderNumber);
 }
