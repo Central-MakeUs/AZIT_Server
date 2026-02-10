@@ -40,7 +40,7 @@ class DeliveryAddressServiceTest {
     @DisplayName("주소 등록")
     class registerDeliveryAddress {
         @Test
-        @DisplayName("성공: 사용자의 첫 배송지 등록 시, 요청과 무관하게 기본 배송지로 설정된다.")
+        @DisplayName("사용자의 첫 배송지 등록 시, 요청과 무관하게 기본 배송지로 설정된다.")
         void registerAddress_first_time_is_always_default() {
             // given
             RegisterAddressCommand command = RegisterAddressCommand.of(
@@ -58,7 +58,7 @@ class DeliveryAddressServiceTest {
         }
 
         @Test
-        @DisplayName("성공: 새로운 주소를 기본 배송지로 등록하면, 기존 기본 배송지는 일반 주소로 변경된다.")
+        @DisplayName("새로운 주소를 기본 배송지로 등록하면, 기존 기본 배송지는 일반 주소로 변경된다.")
         void registerAddress_change_default() {
             // given
             Long memberId = 1L;
@@ -86,7 +86,7 @@ class DeliveryAddressServiceTest {
     @DisplayName("주소 수정")
     class updateDeliveryAddress {
         @Test
-        @DisplayName("성공: 본인의 주소를 정상적인 데이터로 수정하면 성공한다.")
+        @DisplayName("본인의 주소를 정상적인 데이터로 수정하면 성공한다.")
         void updateAddress_success() {
             // given
             Long memberId = 1L;
@@ -114,7 +114,7 @@ class DeliveryAddressServiceTest {
         }
 
         @Test
-        @DisplayName("실패: 타인의 주소를 수정하려고 하면 FORBIDDEN_ADDRESS_ACCESS 예외가 발생한다.")
+        @DisplayName("타인의 주소를 수정하려고 하면 FORBIDDEN_ADDRESS_ACCESS 예외가 발생한다.")
         void updateAddress_fail_forbidden() {
             // given
             Long memberId = 1L;
@@ -155,7 +155,7 @@ class DeliveryAddressServiceTest {
         }
 
         @Test
-        @DisplayName("성공: 일반 주소를 '기본 배송지'로 수정하면 기존 기본 배송지는 해제된다.")
+        @DisplayName("일반 주소를 '기본 배송지'로 수정하면 기존 기본 배송지는 해제된다.")
         void updateAddress_change_to_default() {
             // given
             Long memberId = 1L;
@@ -184,7 +184,7 @@ class DeliveryAddressServiceTest {
     @DisplayName("주소 삭제")
     class deleteDeliveryAddress {
         @Test
-        @DisplayName("성공: 본인의 배송지를 삭제하면 정상적으로 삭제 처리된다.")
+        @DisplayName("본인의 배송지를 삭제하면 정상적으로 삭제 처리된다.")
         void deleteAddress_success() {
             // given
             Long memberId = 1L;
@@ -206,8 +206,8 @@ class DeliveryAddressServiceTest {
         }
 
         @Test
-        @DisplayName("성공: MVP 정책에 따라 기본 배송지도 삭제가 가능하다.")
-        void deleteAddress_default_success() {
+        @DisplayName("기본 배송지는 삭제가 불가능하다.")
+        void deleteAddress_fail_default() {
             // given
             Long memberId = 1L;
             Long addressId = 100L;
@@ -221,14 +221,13 @@ class DeliveryAddressServiceTest {
             given(loadDeliveryAddressPort.findById(addressId)).willReturn(Optional.of(defaultDeliveryAddress));
 
             // when
-            deliveryAddressService.deleteDeliveryAddress(memberId, addressId);
-
-            // then
-            verify(saveDeliveryAddressPort).delete(defaultDeliveryAddress);
+            assertThatThrownBy(() -> deliveryAddressService.deleteDeliveryAddress(memberId, addressId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", DeliveryAddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS);
         }
 
         @Test
-        @DisplayName("실패: 타인의 배송지를 삭제하려고 시도할 경우 FORBIDDEN_ADDRESS_ACCESS 예외가 발생한다.")
+        @DisplayName("타인의 배송지를 삭제하려고 시도할 경우 FORBIDDEN_ADDRESS_ACCESS 예외가 발생한다.")
         void deleteAddress_fail_forbidden() {
             // given
             Long myId = 1L;
@@ -249,7 +248,7 @@ class DeliveryAddressServiceTest {
         }
 
         @Test
-        @DisplayName("실패: 존재하지 않는 주소를 삭제하려고 시도할 경우 ADDRESS_NOT_FOUND 예외가 발생한다.")
+        @DisplayName("존재하지 않는 주소를 삭제하려고 시도할 경우 ADDRESS_NOT_FOUND 예외가 발생한다.")
         void deleteAddress_fail_not_found() {
             // given
             Long addressId = 999L;

@@ -74,7 +74,8 @@ public interface OrderControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND", "OUT_OF_STOCK", "INVALID_POINT_USAGE", "INVALID_QUANTITY", "PAYMENT_METHOD_NOT_SUPPORTED", "INVALID_ORDER_REQUEST",
+            "MEMBER_NOT_FOUND", "OUT_OF_STOCK", "INVALID_POINT_USAGE", "INVALID_QUANTITY", "PAYMENT_METHOD_NOT_SUPPORTED",
+            "INVALID_ORDER_REQUEST", "ORDER_PRODUCT_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CreateOrderResponse> createOrder(@CurrentMemberId Long memberId, @RequestBody @Valid CreateOrderRequest request);

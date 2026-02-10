@@ -61,6 +61,9 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
     public void deleteDeliveryAddress(Long memberId, Long addressId) {
         DeliveryAddress deliveryAddress = getAddressValidated(addressId, memberId);
 
+        // 삭제 가능한지 확인 (기본 배송지는 삭제 불가)
+        deliveryAddress.validateDeletable();
+
         saveDeliveryAddressPort.delete(deliveryAddress);
     }
 
