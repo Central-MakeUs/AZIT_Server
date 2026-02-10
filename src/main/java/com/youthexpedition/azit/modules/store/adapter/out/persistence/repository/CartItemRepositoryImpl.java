@@ -1,8 +1,10 @@
 package com.youthexpedition.azit.modules.store.adapter.out.persistence.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QCartItemEntity;
@@ -64,6 +66,7 @@ public List<CheckoutItemDto> findCartDetailsByIds(List<Long> cartItemIds) {
     private List<CartItemQueryDto> fetchCartDetails(BooleanExpression condition) {
         // 서브쿼리에서 사용할 별칭
         QCartItemEntity subCartItem = new QCartItemEntity("subCartItem");
+        StringPath thumbnailImageUrl = Expressions.stringPath("thumbnailImageUrl");
 
         // 메인 정보 조회 (브랜드, 상품, SKU 정보 포함)
         List<Tuple> mainTuples = queryFactory
@@ -74,13 +77,16 @@ public List<CheckoutItemDto> findCartDetailsByIds(List<Long> cartItemIds) {
                         brandEntity.name,
                         productEntity.name,
                         productEntity.shippingLeadTime,
-                        JPAExpressions
-                                .select(productImageEntity.imageUrl)
-                                .from(productImageEntity)
-                                .where(productImageEntity.product.eq(productEntity)
-                                        .and(productImageEntity.imageType.eq(ProductImageType.SLIDE))
-                                        .and(productImageEntity.sortOrder.eq(1)))
-                                .limit(1),
+                        ExpressionUtils.as(
+                                JPAExpressions
+                                        .select(productImageEntity.imageUrl)
+                                        .from(productImageEntity)
+                                        .where(productImageEntity.product.eq(productEntity)
+                                                .and(productImageEntity.imageType.eq(ProductImageType.SLIDE))
+                                                .and(productImageEntity.sortOrder.eq(1)))
+                                        .limit(1),
+                                thumbnailImageUrl
+                        ),
                         productEntity.basePrice,
                         productEntity.salePrice,
                         productSkuEntity.additionalPrice,
@@ -140,7 +146,7 @@ public List<CheckoutItemDto> findCartDetailsByIds(List<Long> cartItemIds) {
                         t.get(brandEntity.name),
                         t.get(productEntity.name),
                         t.get(productEntity.shippingLeadTime),
-                        t.get(6, String.class),
+                        t.get(thumbnailImageUrl),
                         t.get(productEntity.basePrice),
                         t.get(productEntity.salePrice),
                         t.get(productSkuEntity.additionalPrice),
