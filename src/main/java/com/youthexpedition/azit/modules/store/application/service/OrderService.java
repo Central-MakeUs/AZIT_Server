@@ -22,6 +22,9 @@ import com.youthexpedition.azit.modules.store.domain.model.enums.OrderType;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,6 +76,11 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
+    @Retryable(
+            retryFor = {DataIntegrityViolationException.class}, // db 에러 시 재시도
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100)
+    )
     public CreateOrderResponse createOrder(CreateOrderCommand command) {
         // 포인트 사용 유효성 검증 및 회원 조회
         Member member = validatePointUsageAndGetMember(command.memberId(), command.usedPoints());
