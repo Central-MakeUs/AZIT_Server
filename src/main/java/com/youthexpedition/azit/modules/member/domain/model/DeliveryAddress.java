@@ -72,4 +72,11 @@ public class DeliveryAddress {
             throw new BusinessException(DeliveryAddressErrorCode.INVALID_ADDRESS_INPUT);
         }
     }
+
+    // 삭제 가능 여부 확인
+    public void validateDeletable() {
+        if (this.isDefault) {
+            throw new BusinessException(DeliveryAddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS);
+        }
+    }
 }
