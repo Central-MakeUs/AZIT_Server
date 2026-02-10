@@ -6,7 +6,7 @@ import com.youthexpedition.azit.modules.store.adapter.out.persistence.mapper.Pro
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.repository.ProductRepository;
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.repository.ProductSkuRepository;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.query.GetProductListQuery;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadProductPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveProductPort;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
@@ -30,7 +30,7 @@ public class ProductPersistenceAdapter implements LoadProductPort, SaveProductPo
     private String cloudFrontDomain;
 
     @Override
-    public SliceResponse<ProductListResponse> findProducts(GetProductListQuery query) {
+    public SliceResponse<ProductListResponse> findProducts(CursorPageQuery query) {
         SliceResponse<ProductListResponse> response = productRepository.findProducts(query);
 
         List<ProductListResponse> content = response.content().stream()

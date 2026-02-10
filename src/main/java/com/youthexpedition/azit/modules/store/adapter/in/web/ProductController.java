@@ -8,7 +8,7 @@ import com.youthexpedition.azit.modules.store.adapter.in.web.mapper.ProductWebMa
 import com.youthexpedition.azit.modules.store.application.port.in.ProductUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.query.GetProductListQuery;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +22,7 @@ public class ProductController implements ProductControllerDocs {
     @GetMapping
     public CommonResponse<SliceResponse<ProductListResponse>> getProducts(
             @RequestParam(required = false) Long cursorId, @RequestParam(defaultValue = "20") int size) {
-        GetProductListQuery query = productWebMapper.toQuery(cursorId, size);
+        CursorPageQuery query = productWebMapper.toQuery(cursorId, size);
         SliceResponse<ProductListResponse> result = productUseCase.getProducts(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, result);

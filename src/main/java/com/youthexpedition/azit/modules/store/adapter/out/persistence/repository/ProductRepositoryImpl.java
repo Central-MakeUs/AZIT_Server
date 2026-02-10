@@ -8,7 +8,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.ProductEntity;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.query.GetProductListQuery;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public SliceResponse<ProductListResponse> findProducts(GetProductListQuery query) {
+    public SliceResponse<ProductListResponse> findProducts(CursorPageQuery query) {
         // hasNext 판단을 위해 size + 1 개 조회
         List<ProductListResponse> content = queryFactory
                 .select(Projections.constructor(ProductListResponse.class,
