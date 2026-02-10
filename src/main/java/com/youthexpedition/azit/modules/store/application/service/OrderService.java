@@ -74,7 +74,16 @@ public class OrderService implements OrderUseCase {
         // 포인트 사용 유효성 검증 및 회원 조회
         Member member = validatePointUsageAndGetMember(command.memberId(), command.usedPoints());
 
-        // 결제 타입 케이스별로 상품 아이템 조회
+        // 결제 타입 유효성 체크
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(command.paymentMethod());
+        } catch (IllegalArgumentException e) {
+            // 유효하지 않은 문자열일 경우 예외처리
+            throw new BusinessException(StoreErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
+        }
+
+        // 결제 타입별로 상품 아이템 조회
         List<CheckoutItemDto> items = switch (OrderType.from(command)) {
             case CART -> loadCartPort.findCartDetailsByIds(command.cartItemIds());
 
@@ -87,8 +96,8 @@ public class OrderService implements OrderUseCase {
         // 배송비 계산
         long totalShippingFee = OrderPricePolicy.calculateTotalShippingFee(items);
 
-        // 결제 수단 확인 및 처리 (MVP에서는 무통장 입금만 지원)
-        handlePayment(PaymentMethod.valueOf(command.paymentMethod()));
+        // 결제 수단 확인 및 처리
+        handlePayment(paymentMethod);
 
         List<OrderItem> orderItems = items.stream()
                 .map(productInfo -> {
