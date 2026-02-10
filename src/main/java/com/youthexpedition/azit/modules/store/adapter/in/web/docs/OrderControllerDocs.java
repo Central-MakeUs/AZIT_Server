@@ -117,4 +117,21 @@ public interface OrderControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<SliceResponse<OrderListResponse>> getOrders(@CurrentMemberId Long memberId, CursorPageQuery query);
+
+    @Operation(
+            summary = "주문 취소",
+            description = """
+            주문 상태가 결제 대기(PENDING) 혹은 결제 완료(PAID)인 경우에만 취소가 가능합니다. <br><br>
+            
+            **[내부 로직]** <br>
+            1. 주문 상태를 CANCELLED(주문 취소)로 변경합니다.
+            2. 주문했던 상품의 재고를 주문 수량만큼 다시 증가시킵니다.
+            3. 사용했던 포인트를 사용자 계정으로 전액 환불합니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "ORDER_NOT_FOUND", "FORBIDDEN_ERROR", "CANNOT_CANCEL_ORDER",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> cancelOrder(@CurrentMemberId Long memberId, @PathVariable String orderNumber);
 }
