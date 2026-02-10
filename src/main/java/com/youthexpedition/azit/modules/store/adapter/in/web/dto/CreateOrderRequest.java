@@ -38,10 +38,6 @@ public record CreateOrderRequest(
         @Size(max = 100, message = "배송 요청사항은 100자 이내로 입력해주세요.")
         String shippingInstruction,
 
-        @Schema(description = "아지트 멤버십 할인")
-        @Min(0)
-        long membershipDiscount,
-
         @Schema(description = "사용할 포인트")
         @Min(0)
         long usedPoints,
@@ -63,7 +59,6 @@ public record CreateOrderRequest(
                 baseAddress,
                 detailAddress,
                 shippingInstruction,
-                membershipDiscount,
                 usedPoints,
                 paymentMethod
         );
