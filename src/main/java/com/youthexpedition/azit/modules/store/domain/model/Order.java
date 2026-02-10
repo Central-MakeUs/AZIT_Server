@@ -63,10 +63,10 @@ public class Order {
                 .build();
     }
 
-    // 주문번호 생성 (규칙: #AZ + YYMMDD + 4자리 난수)
+    // 주문번호 생성 (규칙: AZ + YYMMDD + 4자리 난수)
     public static String generateOrderNumber() {
         String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         int randomNumber = ThreadLocalRandom.current().nextInt(10000);
-        return String.format("#AZ%s%04d", datePart, randomNumber);
+        return String.format("AZ%s%04d", datePart, randomNumber);
     }
 }
