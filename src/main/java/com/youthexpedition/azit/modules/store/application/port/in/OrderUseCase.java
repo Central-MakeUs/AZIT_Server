@@ -7,7 +7,7 @@ import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheck
 import java.util.List;
 
 public interface OrderUseCase {
-    OrderCheckoutResponse getCheckoutInfoFromCart(Long memberId, List<Long> cartItemIds);
-    OrderCheckoutResponse getCheckoutInfoDirect(Long memberId, Long skuId, Integer quantity);
+    OrderCheckoutResponse getCheckoutInfoFromCart(Long memberId, List<Long> cartItemIds, Long deliveryAddressId);
+    OrderCheckoutResponse getCheckoutInfoDirect(Long memberId, Long skuId, Integer quantity, Long deliveryAddressId);
     CreateOrderResponse createOrder(CreateOrderCommand command);
 }

@@ -42,31 +42,31 @@ public class OrderService implements OrderUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderCheckoutResponse getCheckoutInfoFromCart(Long memberId, List<Long> cartItemIds) {
+    public OrderCheckoutResponse getCheckoutInfoFromCart(Long memberId, List<Long> cartItemIds, Long deliveryAddressId) {
         Member member = getMember(memberId);
 
         // 기본 배송지 조회
-        DeliveryAddressResponse defaultAddress = getDefaultAddress(memberId);
+        DeliveryAddressResponse address = getDeliveryAddress(memberId, deliveryAddressId);
 
         // 주문할 장바구니 아이템 상세 조회
         List<CheckoutItemDto> items = loadCartPort.findCartDetailsByIds(cartItemIds);
 
-        return createCheckoutResponse(member, defaultAddress, items);
+        return createCheckoutResponse(member, address, items);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public OrderCheckoutResponse getCheckoutInfoDirect(Long memberId, Long skuId, Integer quantity) {
+    public OrderCheckoutResponse getCheckoutInfoDirect(Long memberId, Long skuId, Integer quantity, Long deliveryAddressId) {
         Member member = getMember(memberId);
 
         // 기본 배송지 조회
-        DeliveryAddressResponse defaultAddress = getDefaultAddress(memberId);
+        DeliveryAddressResponse address = getDeliveryAddress(memberId, deliveryAddressId);
 
         // 주문할 상품 상세 조회
         CheckoutItemDto item = loadProductPort.findProductInfoBySkuId(skuId, quantity)
                 .orElseThrow(() -> new BusinessException(StoreErrorCode.SKU_NOT_FOUND));
 
-        return createCheckoutResponse(member, defaultAddress, List.of(item));
+        return createCheckoutResponse(member, address, List.of(item));
     }
 
     @Override
@@ -139,6 +139,17 @@ public class OrderService implements OrderUseCase {
     private Member getMember(Long memberId) {
         return loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    // 배송지 조회
+    private DeliveryAddressResponse getDeliveryAddress(Long memberId, Long deliveryAddressId) {
+        if (deliveryAddressId != null) {
+            return loadDeliveryAddressPort.findById(deliveryAddressId)
+                    .map(deliveryAddressResponseMapper::toAddressResponse)
+                    .orElseThrow(() -> new BusinessException(MemberErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
+        }
+        // deliveryAddressId가 없으면 기본 배송지 조회
+        return getDefaultAddress(memberId);
     }
 
     // 기본 배송지 조회 (없으면 null)

@@ -21,15 +21,17 @@ public class OrderController implements OrderControllerDocs {
     private final OrderUseCase orderUseCase;
 
     @GetMapping("/checkout/cart")
-    public CommonResponse<OrderCheckoutResponse> getCheckoutInfoFromCart(@CurrentMemberId Long memberId, @RequestParam List<Long> cartItemIds) {
-        OrderCheckoutResponse response = orderUseCase.getCheckoutInfoFromCart(memberId, cartItemIds);
+    public CommonResponse<OrderCheckoutResponse> getCheckoutInfoFromCart(
+            @CurrentMemberId Long memberId, @RequestParam List<Long> cartItemIds, @RequestParam(required = false) Long deliveryAddressId) {
+        OrderCheckoutResponse response = orderUseCase.getCheckoutInfoFromCart(memberId, cartItemIds, deliveryAddressId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
     @GetMapping("/checkout/direct")
-    public CommonResponse<OrderCheckoutResponse> getCheckoutInfoDirect(@CurrentMemberId Long memberId, @RequestParam Long skuId, @RequestParam Integer quantity) {
-        OrderCheckoutResponse response = orderUseCase.getCheckoutInfoDirect(memberId, skuId, quantity);
+    public CommonResponse<OrderCheckoutResponse> getCheckoutInfoDirect(
+            @CurrentMemberId Long memberId, @RequestParam Long skuId, @RequestParam Integer quantity, @RequestParam(required = false) Long deliveryAddressId) {
+        OrderCheckoutResponse response = orderUseCase.getCheckoutInfoDirect(memberId, skuId, quantity, deliveryAddressId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
