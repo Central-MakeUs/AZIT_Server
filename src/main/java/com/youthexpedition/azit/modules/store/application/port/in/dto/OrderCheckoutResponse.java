@@ -31,10 +31,14 @@ public record OrderCheckoutResponse(
                 @Schema(description = "상품 판매가")
                 Long salePrice,
                 @Schema(description = "장바구니에 담은 수량")
-                int quantity
+                int quantity,
+                @Schema(description = "총 정가")
+                Long totalBasePrice,
+                @Schema(description = "총 판매가")
+                Long totalSalePrice
         ) {
-                public static CheckoutItemResponse of(String brandName, String productName, String optionDescription,
-                                                      String productImageUrl, Long basePrice, Long salePrice, int quantity) {
+                public static CheckoutItemResponse of(String brandName, String productName, String optionDescription, String productImageUrl,
+                                                      Long basePrice, Long salePrice, int quantity, Long totalBasePrice, Long totalSalePrice) {
                         return new CheckoutItemResponse(
                                 brandName,
                                 productName,
@@ -42,7 +46,9 @@ public record OrderCheckoutResponse(
                                 productImageUrl,
                                 basePrice,
                                 salePrice,
-                                quantity
+                                quantity,
+                                totalBasePrice,
+                                totalSalePrice
                         );
                 }
         }

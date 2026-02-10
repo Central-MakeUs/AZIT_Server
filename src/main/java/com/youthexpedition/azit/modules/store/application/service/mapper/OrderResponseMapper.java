@@ -53,9 +53,11 @@ public class OrderResponseMapper {
                 item.productName(),
                 formatOptionValues(item.optionValues()),
                 fullImageUrl,
+                item.basePrice(),
+                item.salePrice(),
+                item.quantity(),
                 (item.basePrice() + item.additionalPrice()) * item.quantity(),
-                (item.salePrice() + item.additionalPrice()) * item.quantity(),
-                item.quantity()
+                (item.salePrice() + item.additionalPrice()) * item.quantity()
         );
     }
 
