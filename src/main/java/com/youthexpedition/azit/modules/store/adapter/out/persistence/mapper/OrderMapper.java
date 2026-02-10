@@ -29,6 +29,8 @@ public class OrderMapper {
                 .usedPoints(entity.getUsedPoints())
                 .totalPaymentPrice(entity.getTotalPaymentPrice())
                 .paymentMethod(entity.getPaymentMethod())
+                .courier(entity.getCourier())
+                .trackingNumber(entity.getTrackingNumber())
                 .status(entity.getStatus())
                 .orderItems(toOrderItems(entity.getOrderItems()))
                 .createdAt(entity.getCreatedAt())
@@ -68,6 +70,8 @@ public class OrderMapper {
                 .usedPoints(domain.getUsedPoints())
                 .totalPaymentPrice(domain.getTotalPaymentPrice())
                 .paymentMethod(domain.getPaymentMethod())
+                .courier(domain.getCourier())
+                .trackingNumber(domain.getTrackingNumber())
                 .status(domain.getStatus())
                 .build();
 
