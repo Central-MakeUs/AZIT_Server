@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import jakarta.annotation.Nonnull;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -24,8 +25,8 @@ public class CursorPageArgumentResolver implements HandlerMethodArgumentResolver
         String cursorIdParam = webRequest.getParameter("cursorId");
         String sizeParam = webRequest.getParameter("size");
 
-        Long cursorId = (cursorIdParam != null) ? Long.valueOf(cursorIdParam) : null;
-        Integer size = (sizeParam != null) ? Integer.valueOf(sizeParam) : null;
+        Long cursorId = (StringUtils.hasText(cursorIdParam)) ? Long.valueOf(cursorIdParam) : null;
+        Integer size = (StringUtils.hasText(sizeParam)) ? Integer.valueOf(sizeParam) : null;
 
         return CursorPageQuery.of(cursorId, size);
     }
