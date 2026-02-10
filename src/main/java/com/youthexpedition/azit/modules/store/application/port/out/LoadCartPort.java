@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.store.application.port.out;
 
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
+import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.CartItem;
 
 import java.util.List;
@@ -10,5 +11,5 @@ public interface LoadCartPort {
     Optional<CartItem> findByMemberIdAndSkuId(Long memberId, Long productSkuId);
     long countByMemberId(Long memberId);
     List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId);
-    List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds);
+    List<CheckoutItemDto> findCartDetailsByIds(List<Long> cartItemIds);
 }

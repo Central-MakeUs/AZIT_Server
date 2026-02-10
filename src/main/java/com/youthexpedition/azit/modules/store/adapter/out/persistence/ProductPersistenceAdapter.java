@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductLis
 import com.youthexpedition.azit.modules.store.application.port.in.query.GetProductListQuery;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadProductPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveProductPort;
+import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -71,5 +72,10 @@ public class ProductPersistenceAdapter implements LoadProductPort, SaveProductPo
             // 업데이트된 행이 0개일 경우: 재고가 부족하거나 SKU가 없음
             throw new BusinessException(StoreErrorCode.OUT_OF_STOCK);
         }
+    }
+
+    @Override
+    public Optional<CheckoutItemDto> findProductInfoBySkuId(Long skuId, int quantity) {
+        return productRepository.findProductInfoBySkuId(skuId, quantity);
     }
 }

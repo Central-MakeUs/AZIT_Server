@@ -13,7 +13,7 @@ public record CreateOrderResponse(
         CheckoutSummaryResponse summary
 ) {
         public record DeliveryAddressResponse(
-                @Schema(description = "수령인 성함")
+                @Schema(description = "수령인 이름")
                 String recipientName,
                 @Schema(description = "수령인 연락처")
                 String phoneNumber,

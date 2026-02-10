@@ -20,9 +20,16 @@ import java.util.List;
 public class OrderController implements OrderControllerDocs {
     private final OrderUseCase orderUseCase;
 
-    @GetMapping("/checkout")
-    public CommonResponse<OrderCheckoutResponse> getCheckoutInfo(@CurrentMemberId Long memberId, @RequestParam List<Long> cartItemIds) {
-        OrderCheckoutResponse response = orderUseCase.getCheckoutInfo(memberId, cartItemIds);
+    @GetMapping("/checkout/cart")
+    public CommonResponse<OrderCheckoutResponse> getCheckoutInfoFromCart(@CurrentMemberId Long memberId, @RequestParam List<Long> cartItemIds) {
+        OrderCheckoutResponse response = orderUseCase.getCheckoutInfoFromCart(memberId, cartItemIds);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/checkout/direct")
+    public CommonResponse<OrderCheckoutResponse> getCheckoutInfoDirect(@CurrentMemberId Long memberId, @RequestParam Long skuId, @RequestParam Integer quantity) {
+        OrderCheckoutResponse response = orderUseCase.getCheckoutInfoDirect(memberId, skuId, quantity);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }

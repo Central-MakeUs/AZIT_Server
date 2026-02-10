@@ -2,9 +2,8 @@ package com.youthexpedition.azit.modules.store.application.port.out.query;
 
 import java.util.List;
 
-// 장바구니용
-public record CartItemQueryDto(
-        Long cartItemId,
+// 주문서 및 주문/결제용
+public record CheckoutItemDto(
         Long productId,
         Long skuId,
         String brandName,        // 브랜드 이름

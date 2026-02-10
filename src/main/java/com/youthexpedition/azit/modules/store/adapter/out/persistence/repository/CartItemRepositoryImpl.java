@@ -7,6 +7,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.QCartItemEntity;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
+import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -36,11 +37,27 @@ public class CartItemRepositoryImpl implements CartItemRepositoryCustom {
     }
 
     @Override
-    public List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds) {
+public List<CheckoutItemDto> findCartDetailsByIds(List<Long> cartItemIds) {
         if (cartItemIds == null || cartItemIds.isEmpty()) {
             return Collections.emptyList();
         }
-        return fetchCartDetails(cartItemEntity.id.in(cartItemIds));
+        return fetchCartDetails(cartItemEntity.id.in(cartItemIds)).stream()
+                .map(it -> new CheckoutItemDto(
+                        it.productId(),
+                        it.skuId(),
+                        it.brandName(),
+                        it.productName(),
+                        it.shippingLeadTime(),
+                        it.imageUrl(),
+                        it.basePrice(),
+                        it.salePrice(),
+                        it.additionalPrice(),
+                        it.quantity(),
+                        it.stockQuantity(),
+                        it.brandId(),
+                        it.shippingFee(),
+                        it.optionValues()
+                )).toList();
     }
 
 

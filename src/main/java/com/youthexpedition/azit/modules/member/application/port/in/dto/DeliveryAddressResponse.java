@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record DeliveryAddressResponse(
         @Schema(description = "배송지 ID")
         Long id,
-        @Schema(description = "수령인 성함")
+        @Schema(description = "수령인 이름")
         String recipientName,
         @Schema(description = "수령인 연락처")
         String phoneNumber,

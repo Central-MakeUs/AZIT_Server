@@ -12,13 +12,11 @@ import com.youthexpedition.azit.modules.store.application.port.in.OrderUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.CreateOrderCommand;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
-import com.youthexpedition.azit.modules.store.application.port.out.LoadCartPort;
-import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
-import com.youthexpedition.azit.modules.store.application.port.out.SaveOrderPort;
-import com.youthexpedition.azit.modules.store.application.port.out.SaveProductPort;
-import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
+import com.youthexpedition.azit.modules.store.application.port.out.*;
+import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.application.service.mapper.OrderResponseMapper;
 import com.youthexpedition.azit.modules.store.domain.model.*;
+import com.youthexpedition.azit.modules.store.domain.model.enums.OrderType;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +32,7 @@ public class OrderService implements OrderUseCase {
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
     private final LoadDeliveryAddressPort loadDeliveryAddressPort;
+    private final LoadProductPort loadProductPort;
     private final SaveProductPort saveProductPort;
     private final LoadCartPort loadCartPort;
     private final SaveCartPort saveCartPort;
@@ -43,23 +42,31 @@ public class OrderService implements OrderUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderCheckoutResponse getCheckoutInfo(Long memberId, List<Long> cartItemIds) {
-        Member member = loadMemberPort.findById(memberId)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+    public OrderCheckoutResponse getCheckoutInfoFromCart(Long memberId, List<Long> cartItemIds) {
+        Member member = getMember(memberId);
 
-        // 기본 배송지 조회 (없으면 null)
-        DeliveryAddressResponse defaultAddress = loadDeliveryAddressPort.findDefaultByMemberId(memberId)
-                .map(deliveryAddressResponseMapper::toAddressResponse)
-                .orElse(null);
+        // 기본 배송지 조회
+        DeliveryAddressResponse defaultAddress = getDefaultAddress(memberId);
 
         // 주문할 장바구니 아이템 상세 조회
-        List<CartItemQueryDto> cartItems = loadCartPort.findCartDetailsByIds(cartItemIds);
+        List<CheckoutItemDto> items = loadCartPort.findCartDetailsByIds(cartItemIds);
 
-        long totalProductPrice = OrderPricePolicy.calculateTotalProductPrice(cartItems);
-        long membershipDiscount = OrderPricePolicy.calculateTotalMembershipDiscount(cartItems);
-        long totalShippingFee = OrderPricePolicy.calculateTotalShippingFee(cartItems);
+        return createCheckoutResponse(member, defaultAddress, items);
+    }
 
-        return orderResponseMapper.toOrderCheckoutResponse(member, defaultAddress, cartItems, totalProductPrice, membershipDiscount, totalShippingFee);
+    @Override
+    @Transactional(readOnly = true)
+    public OrderCheckoutResponse getCheckoutInfoDirect(Long memberId, Long skuId, Integer quantity) {
+        Member member = getMember(memberId);
+
+        // 기본 배송지 조회
+        DeliveryAddressResponse defaultAddress = getDefaultAddress(memberId);
+
+        // 주문할 상품 상세 조회
+        CheckoutItemDto item = loadProductPort.findProductInfoBySkuId(skuId, quantity)
+                .orElseThrow(() -> new BusinessException(StoreErrorCode.SKU_NOT_FOUND));
+
+        return createCheckoutResponse(member, defaultAddress, List.of(item));
     }
 
     @Override
@@ -67,27 +74,35 @@ public class OrderService implements OrderUseCase {
         // 포인트 사용 유효성 검증 및 회원 조회
         Member member = validatePointUsage(command.memberId(), command.usedPoints());
 
-        // 장바구니 상세 정보 조회
-        List<CartItemQueryDto> cartItems = loadCartPort.findCartDetailsByIds(command.cartItemIds());
-        long totalShippingFee = OrderPricePolicy.calculateTotalShippingFee(cartItems);
+        // 결제 타입 케이스별로 상품 아이템 조회
+        List<CheckoutItemDto> items = switch (OrderType.from(command)) {
+            case CART -> loadCartPort.findCartDetailsByIds(command.cartItemIds());
+
+            case DIRECT -> List.of(loadProductPort.findProductInfoBySkuId(command.skuId(), command.quantity())
+                    .orElseThrow(() -> new BusinessException(StoreErrorCode.SKU_NOT_FOUND)));
+
+            case INVALID -> throw new BusinessException(StoreErrorCode.INVALID_ORDER_REQUEST);
+        };
+
+        // 배송비 계산
+        long totalShippingFee = OrderPricePolicy.calculateTotalShippingFee(items);
 
         // 결제 수단 확인 및 처리 (MVP에서는 무통장 입금만 지원)
-        PaymentMethod paymentMethod = PaymentMethod.valueOf(command.paymentMethod());
-        handlePayment(paymentMethod);
+        handlePayment(PaymentMethod.valueOf(command.paymentMethod()));
 
-        List<OrderItem> orderItems = cartItems.stream()
-                .map(item -> {
+        List<OrderItem> orderItems = items.stream()
+                .map(productInfo -> {
                     // 재고 차감
-                    saveProductPort.decreaseStock(item.skuId(), item.quantity());
+                    saveProductPort.decreaseStock(productInfo.skuId(), productInfo.quantity());
 
                     return OrderItem.create(
-                            item.productId(),
-                            item.skuId(),
-                            item.productName(),
-                            orderResponseMapper.formatOptionValues(item.optionValues()), // 옵션 포맷팅 재활용
-                            item.basePrice() + item.additionalPrice(),
-                            item.salePrice() + item.additionalPrice(),
-                            item.quantity()
+                            productInfo.productId(),
+                            productInfo.skuId(),
+                            productInfo.productName(),
+                            orderResponseMapper.formatOptionValues(productInfo.optionValues()), // 옵션 포맷팅
+                            productInfo.basePrice() + productInfo.additionalPrice(),
+                            productInfo.salePrice() + productInfo.additionalPrice(),
+                            productInfo.quantity()
                     );
                 }).toList();
 
@@ -113,10 +128,32 @@ public class OrderService implements OrderUseCase {
         member.deductPoints(command.usedPoints());
         saveMemberPort.save(member);
 
-        // 장바구니 비우기
-        saveCartPort.deleteAllByMemberIdAndIds(command.memberId(), command.cartItemIds());
+        // cartItems Id가 있을 경우 장바구니 비우기
+        if (command.cartItemIds() != null && !command.cartItemIds().isEmpty()) {
+            saveCartPort.deleteAllByMemberIdAndIds(command.memberId(), command.cartItemIds());
+        }
 
         return orderResponseMapper.toCreateOrderResponse(savedOrder);
+    }
+
+    private Member getMember(Long memberId) {
+        return loadMemberPort.findById(memberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    // 기본 배송지 조회 (없으면 null)
+    private DeliveryAddressResponse getDefaultAddress(Long memberId) {
+        return loadDeliveryAddressPort.findDefaultByMemberId(memberId)
+                .map(deliveryAddressResponseMapper::toAddressResponse)
+                .orElse(null);
+    }
+
+    private OrderCheckoutResponse createCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items) {
+        long totalProductPrice = OrderPricePolicy.calculateTotalProductPrice(items);
+        long membershipDiscount = OrderPricePolicy.calculateTotalMembershipDiscount(items);
+        long totalShippingFee = OrderPricePolicy.calculateTotalShippingFee(items);
+
+        return orderResponseMapper.toOrderCheckoutResponse(member, address, items, totalProductPrice, membershipDiscount, totalShippingFee);
     }
 
     // 포인트 사용 유효성 검증

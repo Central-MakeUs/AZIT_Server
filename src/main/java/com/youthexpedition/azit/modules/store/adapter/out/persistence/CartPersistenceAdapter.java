@@ -6,6 +6,7 @@ import com.youthexpedition.azit.modules.store.adapter.out.persistence.repository
 import com.youthexpedition.azit.modules.store.application.port.out.LoadCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
+import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.CartItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -53,7 +54,7 @@ public class CartPersistenceAdapter implements LoadCartPort, SaveCartPort {
     }
 
     @Override
-    public List<CartItemQueryDto> findCartDetailsByIds(List<Long> cartItemIds) {
+    public List<CheckoutItemDto> findCartDetailsByIds(List<Long> cartItemIds) {
         if (cartItemIds == null || cartItemIds.isEmpty()) {
             return Collections.emptyList();
         }

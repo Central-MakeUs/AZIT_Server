@@ -4,7 +4,7 @@ import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryA
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
-import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
+import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.Order;
 import com.youthexpedition.azit.modules.store.domain.model.PointPolicy;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
@@ -24,7 +24,7 @@ public class OrderResponseMapper {
     private static final String ACCOUNT_NUMBER = "123-456-789012";
     private static final String ACCOUNT_HOLDER = "(주)아지트크루";
 
-    public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CartItemQueryDto> items,
+    public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items,
                                                          long totalProductPrice, long membershipDiscount, long totalShippingFee) {
         // 주문 상품 상세 목록 매핑
         List<OrderCheckoutResponse.CheckoutItemResponse> itemResponses = items.stream()
@@ -45,11 +45,10 @@ public class OrderResponseMapper {
         );
     }
 
-    private OrderCheckoutResponse.CheckoutItemResponse toCheckoutItemResponse(CartItemQueryDto item) {
+    private OrderCheckoutResponse.CheckoutItemResponse toCheckoutItemResponse(CheckoutItemDto item) {
         String fullImageUrl = (item.imageUrl() != null) ? cloudFrontDomain + item.imageUrl() : null;
 
         return OrderCheckoutResponse.CheckoutItemResponse.of(
-                item.cartItemId(),
                 item.brandName(),
                 item.productName(),
                 formatOptionValues(item.optionValues()),
