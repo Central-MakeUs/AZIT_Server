@@ -25,6 +25,9 @@ import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPo
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +46,11 @@ public class CrewService implements CrewUseCase {
     private final CrewMemberResponseMapper crewMemberResponseMapper;
 
     @Override
+    @Retryable(
+            retryFor = {DataIntegrityViolationException.class}, // db 에러 시 재시도
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100)
+    )
     public CreateCrewResponse createCrew(CreateCrewCommand command) {
         // 초대 코드 생성
         String invitationCode = generateUniqueInvitationCode();

@@ -13,19 +13,24 @@ public class OrderItem {
     private final Long id;
     private final Long productId;
     private final Long skuId;
+    private final String brandName;
     private final String productName;
+    private final String productImageUrl;
     private final String optionDescription;
     private final long basePrice;
     private final long salePrice;
     private final int quantity;
 
-    public static OrderItem create(Long productId, Long skuId, String productName, String optionDescription, long basePrice, long salePrice, int quantity) {
+    public static OrderItem create(
+            Long productId, Long skuId, String brandName, String productName, String productImageUrl, String optionDescription, long basePrice, long salePrice, int quantity) {
         validateQuantity(quantity);
 
         return OrderItem.builder()
                 .productId(productId)
                 .skuId(skuId)
+                .brandName(brandName)
                 .productName(productName)
+                .productImageUrl(productImageUrl)
                 .optionDescription(optionDescription)
                 .basePrice(basePrice)
                 .salePrice(salePrice)

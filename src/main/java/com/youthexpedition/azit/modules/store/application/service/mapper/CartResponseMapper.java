@@ -35,6 +35,7 @@ public class CartResponseMapper {
                 cartItem.brandName(),
                 cartItem.productName(),
                 Product.calculateExpectedShippingDate(cartItem.shippingLeadTime()),
+                cartItem.skuId(),
                 formatOptionValues(cartItem.optionValues()),
                 fullImageUrl,
                 (cartItem.basePrice() + cartItem.additionalPrice()) * cartItem.quantity(),

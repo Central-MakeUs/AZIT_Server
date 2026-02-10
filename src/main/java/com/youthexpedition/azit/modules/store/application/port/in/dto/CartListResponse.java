@@ -26,6 +26,8 @@ public record CartListResponse(
             String productName,
             @Schema(description = "예상 발송 시작일")
             LocalDate expectedShippingDate,
+            @Schema(description = "상품 sku ID")
+            Long productSkuId,
             @Schema(description = "선택 옵션 정보")
             String optionDescription,
             @Schema(description = "상품 대표 이미지 URL")

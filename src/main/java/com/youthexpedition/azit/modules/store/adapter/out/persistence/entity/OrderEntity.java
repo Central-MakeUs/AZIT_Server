@@ -63,6 +63,12 @@ public class OrderEntity extends BaseTimeEntity {
     @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod; // 결제 수단
 
+    @Column(name = "courier", length = 50)
+    private String courier; // 택배사
+
+    @Column(name = "tracking_number", length = 50)
+    private String trackingNumber; // 운송장 번호
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private OrderStatus status; // 주문 상태

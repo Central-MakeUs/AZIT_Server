@@ -7,7 +7,7 @@ import java.util.List;
 
 public record OrderCheckoutResponse(
         @Schema(description = "배송지 정보 (기본 배송지 우선, 없으면 null)")
-        DeliveryAddressResponse deliveryAddress,
+        DeliveryAddressResponse deliveryInfo,
         @Schema(description = "주문할 상품 목록")
         List<CheckoutItemResponse> items,
         @Schema(description = "포인트 정보")

@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.store.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadDeliveryAddressPort;
@@ -12,6 +13,7 @@ import com.youthexpedition.azit.modules.store.application.port.in.OrderUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.CreateOrderCommand;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.*;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.application.service.mapper.OrderResponseMapper;
@@ -20,6 +22,9 @@ import com.youthexpedition.azit.modules.store.domain.model.enums.OrderType;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +41,7 @@ public class OrderService implements OrderUseCase {
     private final SaveProductPort saveProductPort;
     private final LoadCartPort loadCartPort;
     private final SaveCartPort saveCartPort;
+    private final LoadOrderPort loadOrderPort;
     private final SaveOrderPort saveOrderPort;
     private final OrderResponseMapper orderResponseMapper;
     private final DeliveryAddressResponseMapper deliveryAddressResponseMapper;
@@ -70,6 +76,11 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
+    @Retryable(
+            retryFor = {DataIntegrityViolationException.class}, // db 에러 시 재시도
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100)
+    )
     public CreateOrderResponse createOrder(CreateOrderCommand command) {
         // 포인트 사용 유효성 검증 및 회원 조회
         Member member = validatePointUsageAndGetMember(command.memberId(), command.usedPoints());
@@ -104,6 +115,9 @@ public class OrderService implements OrderUseCase {
         // 결제 수단 확인 및 처리
         handlePayment(paymentMethod);
 
+        // 주문 번호 중복 방어
+        String orderNumber = generateUniqueOrderNumber();
+
         List<OrderItem> orderItems = items.stream()
                 .map(productInfo -> {
                     // 재고 차감
@@ -112,7 +126,9 @@ public class OrderService implements OrderUseCase {
                     return OrderItem.create(
                             productInfo.productId(),
                             productInfo.skuId(),
+                            productInfo.brandName(),
                             productInfo.productName(),
+                            productInfo.imageUrl(),
                             orderResponseMapper.formatOptionValues(productInfo.optionValues()), // 옵션 포맷팅
                             productInfo.basePrice() + productInfo.additionalPrice(),
                             productInfo.salePrice() + productInfo.additionalPrice(),
@@ -122,7 +138,7 @@ public class OrderService implements OrderUseCase {
 
         Order order = Order.create(
                 command.memberId(),
-                Order.generateOrderNumber(),
+                orderNumber,
                 OrderAddress.builder()
                         .recipientName(command.recipientName())
                         .phoneNumber(command.phoneNumber())
@@ -148,6 +164,20 @@ public class OrderService implements OrderUseCase {
         }
 
         return orderResponseMapper.toCreateOrderResponse(savedOrder);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDetailResponse getOrderDetail(Long memberId, String orderNumber) {
+        Order order = loadOrderPort.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new BusinessException(StoreErrorCode.ORDER_NOT_FOUND));
+
+        // 본인의 주문만 조회 가능
+        if (!order.getMemberId().equals(memberId)) {
+            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
+
+        return orderResponseMapper.toOrderDetailResponse(order);
     }
 
     private Member getMember(Long memberId) {
@@ -200,6 +230,21 @@ public class OrderService implements OrderUseCase {
 
         // 지원하지 않는 결제수단 체크
         if (!paymentMethod.isEnabled()) throw new BusinessException(StoreErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
+    }
+
+    private String generateUniqueOrderNumber() {
+        final int MAX_RETRIES = 10;
+
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            String orderNumber = Order.generateOrderNumber();
+
+            // DB 조회하여 중복 여부 확인
+            if (!loadOrderPort.existsByOrderNumber(orderNumber)) {
+                return orderNumber;
+            }
+        }
+        // 최대 재시도 후에도 실패 시 예외 발생
+        throw new BusinessException(StoreErrorCode.ORDER_NUMBER_GENERATION_FAILED);
     }
 
 }

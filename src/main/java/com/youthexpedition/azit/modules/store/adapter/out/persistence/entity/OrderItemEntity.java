@@ -26,8 +26,14 @@ public class OrderItemEntity extends BaseTimeEntity {
     @Column(name = "sku_id", nullable = false)
     private Long skuId;
 
+    @Column(name = "brand_name", nullable = false)
+    private String brandName;      // 구매 당시 브랜드명
+
     @Column(name = "product_name", nullable = false)
     private String productName;      // 구매 당시 상품명
+
+    @Column(name = "product_image_url")
+    private String productImageUrl; // 구매 당시 상품 대표 이미지 url
 
     @Column(name = "option_description", nullable = false)
     private String optionDescription; // 구매 당시 옵션 정보 (예: 색상: 블랙 / 사이즈: L)

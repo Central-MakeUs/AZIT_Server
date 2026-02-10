@@ -4,6 +4,7 @@ import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryA
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.Order;
 import com.youthexpedition.azit.modules.store.domain.model.PointPolicy;
@@ -23,6 +24,7 @@ public class OrderResponseMapper {
     private static final String BANK_NAME = "신한은행";
     private static final String ACCOUNT_NUMBER = "123-456-789012";
     private static final String ACCOUNT_HOLDER = "(주)아지트크루";
+    private static final String ORDER_NUMBER_PREFIX = "#";
 
     public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items,
                                                          long totalProductPrice, long membershipDiscount, long totalShippingFee) {
@@ -46,7 +48,7 @@ public class OrderResponseMapper {
     }
 
     private OrderCheckoutResponse.CheckoutItemResponse toCheckoutItemResponse(CheckoutItemDto item) {
-        String fullImageUrl = (item.imageUrl() != null) ? cloudFrontDomain + item.imageUrl() : null;
+        String fullImageUrl = buildFullImageUrl(item.imageUrl());
 
         return OrderCheckoutResponse.CheckoutItemResponse.of(
                 item.brandName(),
@@ -89,7 +91,7 @@ public class OrderResponseMapper {
         }
 
         return CreateOrderResponse.of(
-                order.getOrderNumber(),
+                buildFullOrderNumber(order.getOrderNumber()),
                 CreateOrderResponse.DeliveryAddressResponse.of(
                         order.getAddress().getRecipientName(),
                         order.getAddress().getPhoneNumber(),
@@ -104,5 +106,55 @@ public class OrderResponseMapper {
                         order.getTotalShippingFee()
                 )
         );
+    }
+
+    public OrderDetailResponse toOrderDetailResponse(Order order) {
+        OrderDetailResponse.DeliveryAddressResponse deliveryInfo = OrderDetailResponse.DeliveryAddressResponse.of(
+                order.getAddress().getRecipientName(),
+                order.getAddress().getPhoneNumber(),
+                order.getAddress().getBaseAddress(),
+                order.getAddress().getDetailAddress(),
+                order.getShippingInstruction()
+        );
+
+        OrderDetailResponse.ShippingResponse shippingInfo = OrderDetailResponse.ShippingResponse.of(
+                order.getCourier(),
+                order.getTrackingNumber()
+        );
+
+        List<OrderDetailResponse.OrderItemResponse> items = order.getOrderItems().stream()
+                .map(item -> OrderDetailResponse.OrderItemResponse.of(
+                        item.getBrandName(),
+                        item.getProductName(),
+                        item.getOptionDescription(),
+                        buildFullImageUrl(item.getProductImageUrl()),
+                        item.getTotalSalePrice(),
+                        item.getQuantity()
+                )).toList();
+
+        var summary = OrderDetailResponse.PaymentSummaryResponse.of(
+                order.getTotalProductPrice(),
+                order.getMembershipDiscount(),
+                order.getUsedPoints(),
+                order.getTotalShippingFee()
+        );
+
+        return OrderDetailResponse.of(
+                order.getCreatedAt(),
+                buildFullOrderNumber(order.getOrderNumber()),
+                deliveryInfo,
+                shippingInfo,
+                items,
+                summary
+        );
+    }
+
+    private String buildFullImageUrl(String imagePath) {
+        if (imagePath == null) return null;
+        return cloudFrontDomain + imagePath;
+    }
+
+    private String buildFullOrderNumber(String orderNumber) {
+        return ORDER_NUMBER_PREFIX + orderNumber;
     }
 }
