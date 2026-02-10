@@ -71,7 +71,7 @@ public List<CheckoutItemDto> findCartDetailsByIds(List<Long> cartItemIds) {
         // 메인 정보 조회 (브랜드, 상품, SKU 정보 포함)
         List<Tuple> mainTuples = queryFactory
                 .select(
-                        cartItemEntity.id,
+                        cartItemEntity.id.as("car"),
                         productEntity.id,
                         productSkuEntity.id,
                         brandEntity.name,
