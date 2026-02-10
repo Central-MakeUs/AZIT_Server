@@ -60,11 +60,11 @@ public interface DeliveryAddressControllerDocs {
             
             **[참고 사항]** <br>
             * 본인의 배송지만 삭제 가능합니다. (FORBIDDEN_ADDRESS_ACCESS)
-            * MVP 정책: 기본 배송지 여부와 상관없이 삭제가 가능합니다.
+            * 기본 배송지일 경우 삭제가 불가능합니다. (CANNOT_DELETE_DEFAULT_ADDRESS)
             """
     )
     @ApiErrorCodeExamples({
-            "ADDRESS_NOT_FOUND", "FORBIDDEN_ADDRESS_ACCESS",
+            "ADDRESS_NOT_FOUND", "FORBIDDEN_ADDRESS_ACCESS", "CANNOT_DELETE_DEFAULT_ADDRESS",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> deleteDeliveryAddress(@Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long addressId);
