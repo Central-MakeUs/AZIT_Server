@@ -5,10 +5,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
@@ -154,10 +151,16 @@ public class CrewService implements CrewUseCase {
         // 가입 대기 중인 대상자 조회
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
-
         // 가입 승인
         targetCrewMember.approve();
         saveCrewMemberPort.save(targetCrewMember);
+
+        // 크루 인원 수 증가
+        // TODO: 원자성 체크 필요
+        Crew crew = loadCrewPort.findById(command.crewId())
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+        crew.addMember(); // 인원 수 +1
+        saveCrewPort.save(crew);
 
         // 해당 유저의 회원 상태를 APPROVED_PENDING_CONFIRM 로 변경 (온보딩 완료 처리)
         Member member = loadMemberPort.findById(command.targetMemberId())

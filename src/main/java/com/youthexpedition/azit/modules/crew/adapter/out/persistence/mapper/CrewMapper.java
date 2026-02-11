@@ -16,6 +16,7 @@ public class CrewMapper {
                 .category(entity.getCategory())
                 .region(entity.getRegion())
                 .invitationCode(entity.getInvitationCode())
+                .memberCount(entity.getMemberCount())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -28,6 +29,7 @@ public class CrewMapper {
                 .category(domain.getCategory())
                 .region(domain.getRegion())
                 .invitationCode(domain.getInvitationCode())
+                .memberCount(domain.getMemberCount())
                 .build();
     }
 }
