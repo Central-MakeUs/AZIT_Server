@@ -16,7 +16,8 @@ public enum CrewErrorCode implements BaseErrorCode {
     ALREADY_PROCESSED_JOIN_REQUEST("ALREADY_PROCESSED_JOIN_REQUEST", "이미 승인 또는 거절된 가입 요청입니다.", HttpStatus.BAD_REQUEST),
     JOIN_REQUEST_NOT_FOUND("JOIN_REQUEST_NOT_FOUND", "존재하지 않는 가입 요청입니다.", HttpStatus.NOT_FOUND),
     NOT_CREW_LEADER("NOT_CREW_LEADER", "해당 크루의 리더 권한이 없습니다.", HttpStatus.FORBIDDEN),
-    NOT_A_CREW_MEMBER("NOT_A_CREW_MEMBER", "해당 크루의 멤버가 아닙니다.", HttpStatus.FORBIDDEN);
+    NOT_A_CREW_MEMBER("NOT_A_CREW_MEMBER", "해당 크루의 멤버가 아닙니다.", HttpStatus.FORBIDDEN),
+    CREW_MEMBER_NOT_FOUND("CREW_MEMBER_NOT_FOUND", "가입한 크루가 없습니다.", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;

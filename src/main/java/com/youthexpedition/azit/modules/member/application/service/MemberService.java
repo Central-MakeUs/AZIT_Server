@@ -7,7 +7,7 @@ import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
-import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
@@ -100,11 +100,10 @@ public class MemberService implements MemberUseCase {
     public MyInfoResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
 
-        CrewMemberRole crewRole = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)
-                .map(CrewMember::getRole)
-                .orElse(null);
+        CrewMember crewMember = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_MEMBER_NOT_FOUND));
 
-        return memberResponseMapper.toMyPageResponse(member, crewRole);
+        return memberResponseMapper.toMyPageResponse(member, crewMember);
     }
 
     private Member getMember(Long memberId) {
