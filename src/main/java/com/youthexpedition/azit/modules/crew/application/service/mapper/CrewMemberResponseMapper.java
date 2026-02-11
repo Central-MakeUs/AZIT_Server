@@ -38,6 +38,7 @@ public class CrewMemberResponseMapper {
     public CrewMemberDetailResponse toDetailResponse(CrewMemberInfoDto crewMemberInfoDto) {
         return new CrewMemberDetailResponse(
                 crewMemberInfoDto.id(),
+                crewMemberInfoDto.memberId(),
                 crewMemberInfoDto.nickname(),
                 crewMemberInfoDto.profileImageUrl(),
                 crewMemberInfoDto.role(),

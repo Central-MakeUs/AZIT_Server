@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record CrewMemberInfoDto(
         Long id,
+        Long memberId,
         String nickname,
         String profileImageUrl,
         CrewMemberRole role,
