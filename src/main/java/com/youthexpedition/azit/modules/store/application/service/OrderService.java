@@ -203,6 +203,10 @@ public class OrderService implements OrderUseCase {
             throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
         }
 
+        // 주문 취소 가능한 상태인지 확인
+        if (!order.isCancellable()) {
+            throw new BusinessException(StoreErrorCode.CANNOT_CANCEL_ORDER);
+        }
         // 주문 취소 상태로 변경
         order.cancel();
 
