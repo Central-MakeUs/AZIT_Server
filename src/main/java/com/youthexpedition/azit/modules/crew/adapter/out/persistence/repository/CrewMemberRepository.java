@@ -19,4 +19,5 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
     @Query("UPDATE CrewMemberEntity cm SET cm.status = :status WHERE cm.memberId = :memberId")
     void updateAllStatusByMemberId(@Param("memberId") Long memberId, @Param("status") CrewMemberStatus status);
 
+    long countByMemberIdAndStatus(Long memberId, CrewMemberStatus status);
 }
