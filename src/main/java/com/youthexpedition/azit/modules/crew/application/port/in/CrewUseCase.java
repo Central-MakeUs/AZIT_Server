@@ -14,6 +14,6 @@ public interface CrewUseCase {
     CrewJoinStatusResponse getCrewJoinStatus(Long crewId, Long memberId);
     void approveJoinRequest(ProcessJoinCommand command);
     void rejectJoinRequest(ProcessJoinCommand command);
-    List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long leaderId);
-    CrewMemberListResponse getCrewMembers(Long crewId);
+    List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long memberId);
+    CrewMemberListResponse getCrewMembers(Long crewId, Long memberId);
 }

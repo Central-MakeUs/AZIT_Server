@@ -2,6 +2,7 @@ package com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,29 @@ public class CrewMemberRepositoryImpl implements CrewMemberRepositoryCustom {
                         crewMemberEntity.status.eq(CrewMemberStatus.REQUESTED) // 대기 중인 신청만 조회
                 )
                 .orderBy(crewMemberEntity.createdAt.asc()) // 먼저 신청한 순서대로 정렬
+                .fetch();
+    }
+
+    @Override
+    public List<CrewMemberInfoDto> findAllJoinedMembersByCrewId(Long crewId) {
+        return queryFactory
+                .select(Projections.constructor(CrewMemberInfoDto.class,
+                        memberEntity.id,
+                        memberEntity.nickname,
+                        memberEntity.profileImageUrl,
+                        crewMemberEntity.role,
+                        crewMemberEntity.createdAt
+                ))
+                .from(crewMemberEntity)
+                .join(memberEntity).on(crewMemberEntity.memberId.eq(memberEntity.id))
+                .where(
+                        crewMemberEntity.crew.id.eq(crewId),
+                        crewMemberEntity.status.eq(CrewMemberStatus.JOINED) // 가입 완료 상태만 조회
+                )
+                .orderBy(
+                        crewMemberEntity.role.asc(),    // 리더를 가장 먼저 정렬
+                        crewMemberEntity.createdAt.desc() // 최신 가입일 순 정렬
+                )
                 .fetch();
     }
 }
