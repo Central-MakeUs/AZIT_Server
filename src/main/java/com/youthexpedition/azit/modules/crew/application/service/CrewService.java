@@ -216,6 +216,31 @@ public class CrewService implements CrewUseCase {
         return crewMemberResponseMapper.toCrewMemberListResponse(crew.getMemberCount(), crewMemberSlice);
     }
 
+    @Override
+    @Transactional
+    public void deleteCrewMember(Long crewId, Long leaderId, Long targetMemberId) {
+        validateLeader(crewId, leaderId);
+
+        // 리더 본인은 방출 불가
+        if (leaderId.equals(targetMemberId)) {
+            throw new BusinessException(CrewErrorCode.CANNOT_KICK_SELF);
+        }
+
+        // 방출 대상이 현재 해당 크루의 정회원(JOINED)인지 확인
+        CrewMember targetMember = validateMember(crewId, targetMemberId);
+
+        // 멤버 상태 EXITED 변경
+        targetMember.exit();
+        saveCrewMemberPort.save(targetMember);
+
+        // 크루 인원 수 1명 감소
+        // TODO: 동시성 이슈 고려 필요
+        Crew crew = loadCrewPort.findById(crewId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+        crew.removeMember();
+        saveCrewPort.save(crew);
+    }
+
     // 리더 여부 체크
     private void validateLeader(Long crewId, Long memberId) {
         CrewMember crewMember = validateMember(crewId, memberId);

@@ -147,4 +147,21 @@ public interface CrewControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId, CursorPageQuery query);
+
+    @Operation(
+            summary = "크루 멤버 방출",
+            description = """
+            크루 리더가 특정 멤버를 크루에서 방출(탈퇴 처리)합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 해당 크루의 리더(LEADER)만 이 API를 호출할 수 있습니다. (NOT_CREW_LEADER)
+            * 리더 본인은 스스로를 방출할 수 없습니다. (CANNOT_KICK_SELF)
+            * 가입 완료(JOINED) 상태인 멤버만 방출 가능합니다. (NOT_A_CREW_MEMBER)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "NOT_CREW_LEADER", "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "CANNOT_KICK_SELF",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN"
+    })
+    CommonResponse<Void> deleteCrewMember(@PathVariable Long crewId, @PathVariable Long targetMemberId, @Parameter(hidden = true) @CurrentMemberId Long leaderId);
 }

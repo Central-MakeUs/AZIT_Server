@@ -80,4 +80,11 @@ public class CrewController implements CrewControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
+    @DeleteMapping("/{crewId}/members/{targetMemberId}")
+    public CommonResponse<Void> deleteCrewMember(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId) {
+        crewUseCase.deleteCrewMember(crewId, leaderId, targetMemberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
 }
