@@ -239,6 +239,7 @@ public class CrewService implements CrewUseCase {
         saveCrewMemberPort.save(targetMember);
 
         // 크루 인원 수 1명 감소
+        // TODO: 동시성 이슈 고려 필요
         Crew crew = loadCrewPort.findById(crewId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
         crew.removeMember();
