@@ -138,6 +138,15 @@ public class Member {
         this.status = MemberStatus.PENDING_ONBOARDING; // 추후 기획 확인 필요
     }
 
+    // 가입된 모든 크루에서 탈퇴하거나 방출되었을 경우, 앱 사용 제한을 위해 다시 크루 가입 단계로 되돌림
+    public void resetToOnboarding() {
+        // 탈퇴한 회원이 아닌 경우에만 상태 변경
+        if (this.status == MemberStatus.WITHDRAWN) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+        }
+        this.status = MemberStatus.PENDING_ONBOARDING;
+    }
+
     // 포인트가 충분한지 체크
     public boolean hasEnoughPoints(long points) {
         return this.totalPoints >= points;

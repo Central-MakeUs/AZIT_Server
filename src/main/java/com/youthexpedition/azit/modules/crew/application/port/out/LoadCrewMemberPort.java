@@ -17,4 +17,5 @@ public interface LoadCrewMemberPort {
     List<JoinRequestDto> findJoinRequestsByCrewId(Long crewId);
     Optional<CrewMember> findRecentJoinedCrewMember(Long memberId);
     SliceResponse<CrewMemberInfoDto> findAllJoinedMembersByCrewId(Long crewId, CursorPageQuery query);
+    long countJoinedCrewsByMemberId(Long memberId);
 }

@@ -239,6 +239,17 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
         crew.removeMember();
         saveCrewPort.save(crew);
+
+        // 가입된 잔여 크루 확인 멤버 상태 변경
+        long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(targetMemberId);
+
+        if (joinedCrewCount == 0) {
+            Member member = loadMemberPort.findById(targetMemberId)
+                    .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+            member.resetToOnboarding();
+            saveMemberPort.save(member);
+        }
     }
 
     // 리더 여부 체크

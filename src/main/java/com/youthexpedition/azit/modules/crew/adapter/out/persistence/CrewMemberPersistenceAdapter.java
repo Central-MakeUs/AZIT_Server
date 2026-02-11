@@ -69,4 +69,10 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     public SliceResponse<CrewMemberInfoDto> findAllJoinedMembersByCrewId(Long crewId, CursorPageQuery query) {
         return crewMemberRepository.findAllJoinedMembersByCrewId(crewId, query);
     }
+
+    @Override
+    public long countJoinedCrewsByMemberId(Long memberId) {
+        // JOINED 상태인 데이터만 카운트합니다.
+        return crewMemberRepository.countByMemberIdAndStatus(memberId, CrewMemberStatus.JOINED);
+    }
 }
