@@ -8,10 +8,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewReques
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -69,9 +66,17 @@ public class CrewController implements CrewControllerDocs {
     }
 
     @GetMapping("/{crewId}/join-requests")
-    public CommonResponse<List<JoinRequestMemberResponse>> getJoinRequests(@PathVariable Long crewId, @CurrentMemberId Long leaderId) {
-        List<JoinRequestMemberResponse> responses = crewUseCase.getJoinRequests(crewId, leaderId);
+    public CommonResponse<List<JoinRequestMemberResponse>> getJoinRequests(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        List<JoinRequestMemberResponse> responses = crewUseCase.getJoinRequests(crewId, memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, responses);
     }
+
+    @GetMapping("/{crewId}/members")
+    public CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        CrewMemberListResponse response = crewUseCase.getCrewMembers(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
 }

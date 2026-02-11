@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.crew.application.port.out;
 
-import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 
@@ -13,4 +14,5 @@ public interface LoadCrewMemberPort {
     Optional<CrewMemberStatus> findStatusByCrewIdAndMemberId(Long crewId, Long memberId);
     List<JoinRequestDto> findJoinRequestsByCrewId(Long crewId);
     Optional<CrewMember> findRecentJoinedCrewMember(Long memberId);
+    List<CrewMemberInfoDto> findAllJoinedMembersByCrewId(Long crewId);
 }

@@ -6,10 +6,12 @@ import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
-import com.youthexpedition.azit.modules.member.application.port.in.dto.MyPageResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.application.service.mapper.MemberResponseMapper;
@@ -95,11 +97,11 @@ public class MemberService implements MemberUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public MyPageResponse getMyPageInfo(Long memberId) {
+    public MyInfoResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
 
-        String crewRole = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)
-                .map(crewMember -> crewMember.getRole().getDescription())
+        CrewMemberRole crewRole = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)
+                .map(CrewMember::getRole)
                 .orElse(null);
 
         return memberResponseMapper.toMyPageResponse(member, crewRole);

@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.crew.application.port.out.model;
+package com.youthexpedition.azit.modules.crew.application.port.out.query;
 
 import java.time.LocalDateTime;
 

@@ -5,14 +5,12 @@ import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
@@ -154,10 +152,16 @@ public class CrewService implements CrewUseCase {
         // 가입 대기 중인 대상자 조회
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
-
         // 가입 승인
         targetCrewMember.approve();
         saveCrewMemberPort.save(targetCrewMember);
+
+        // 크루 인원 수 증가
+        // TODO: 원자성 체크 필요
+        Crew crew = loadCrewPort.findById(command.crewId())
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+        crew.addMember(); // 인원 수 +1
+        saveCrewPort.save(crew);
 
         // 해당 유저의 회원 상태를 APPROVED_PENDING_CONFIRM 로 변경 (온보딩 완료 처리)
         Member member = loadMemberPort.findById(command.targetMemberId())
@@ -189,20 +193,45 @@ public class CrewService implements CrewUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long leaderId) {
-        validateLeader(crewId, leaderId);
+    public List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long memberId) {
+        validateLeader(crewId, memberId);
 
         return loadCrewMemberPort.findJoinRequestsByCrewId(crewId).stream()
                 .map(crewMemberResponseMapper::toResponse)
                 .toList();
     }
 
-    private void validateLeader(Long crewId, Long leaderId) {
-        CrewMember requester = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+    @Override
+    @Transactional(readOnly = true)
+    public CrewMemberListResponse getCrewMembers(Long crewId, Long memberId) {
+        if (!loadCrewPort.existsById(crewId)) {
+            throw new BusinessException(CrewErrorCode.CREW_NOT_FOUND);
+        }
 
-        if (requester.getRole() != CrewMemberRole.LEADER) {
+        validateMember(crewId, memberId);
+        List<CrewMemberInfoDto> memberInfos = loadCrewMemberPort.findAllJoinedMembersByCrewId(crewId);
+
+        return crewMemberResponseMapper.toCrewMemberListResponse(memberInfos);
+    }
+
+    // 리더 여부 체크
+    private void validateLeader(Long crewId, Long memberId) {
+        CrewMember crewMember = validateMember(crewId, memberId);
+
+        if (crewMember.getRole() != CrewMemberRole.LEADER) {
             throw new BusinessException(CrewErrorCode.NOT_CREW_LEADER);
         }
+    }
+
+    // 가입한 크루인지 체크
+    private CrewMember validateMember(Long crewId, Long memberId) {
+        CrewMember crewMember = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+
+        if (crewMember.getStatus() != CrewMemberStatus.JOINED) {
+            throw new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER);
+        }
+
+        return crewMember;
     }
 }

@@ -18,6 +18,7 @@ public class Crew {
     private Region region;
     private String profileImageUrl;
     private String invitationCode; // 초대 코드
+    private Integer memberCount;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -31,6 +32,7 @@ public class Crew {
                 .category(category)
                 .region(region)
                 .invitationCode(invitationCode)
+                .memberCount(1)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -43,6 +45,16 @@ public class Crew {
             sb.append(CHARACTERS.charAt(RANDOM.nextInt(CHARACTERS.length())));
         }
         return sb.toString();
+    }
+
+    public void addMember() {
+        this.memberCount++;
+    }
+
+    public void removeMember() {
+        if (this.memberCount > 1) {
+            this.memberCount--;
+        }
     }
 
 }

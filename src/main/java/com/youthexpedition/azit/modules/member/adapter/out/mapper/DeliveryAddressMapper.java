@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.member.adapter.out.mapper;
 
 import com.youthexpedition.azit.modules.member.adapter.out.persistence.entity.DeliveryAddressEntity;
+import com.youthexpedition.azit.modules.member.adapter.out.persistence.entity.MemberEntity;
 import com.youthexpedition.azit.modules.member.domain.model.DeliveryAddress;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +12,7 @@ public class DeliveryAddressMapper {
 
         return DeliveryAddress.builder()
                 .id(entity.getId())
-                .memberId(entity.getMemberId())
+                .memberId(entity.getMember().getId())
                 .recipientName(entity.getRecipientName())
                 .phoneNumber(entity.getPhoneNumber())
                 .zipcode(entity.getZipcode())
@@ -24,9 +25,11 @@ public class DeliveryAddressMapper {
     }
 
     public DeliveryAddressEntity toEntity(DeliveryAddress domain) {
+        if (domain == null) return null;
+
         return DeliveryAddressEntity.builder()
                 .id(domain.getId())
-                .memberId(domain.getMemberId())
+                .member(MemberEntity.builder().id(domain.getMemberId()).build())
                 .recipientName(domain.getRecipientName())
                 .phoneNumber(domain.getPhoneNumber())
                 .zipcode(domain.getZipcode())

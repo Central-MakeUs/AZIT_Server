@@ -34,4 +34,8 @@ public class CrewEntity extends BaseTimeEntity {
 
     @Column(name = "invitation_code", nullable = false, unique = true, length = 20)
     private String invitationCode;
+
+    @Builder.Default
+    @Column(name = "member_count", nullable = false)
+    private Integer memberCount = 1;
 }

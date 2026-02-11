@@ -19,7 +19,7 @@ public class DeliveryAddressRepositoryImpl implements DeliveryAddressRepositoryC
     public List<DeliveryAddressEntity> findAllByMemberIdOrderByDefaultDescCreatedAtDesc(Long memberId) {
         return queryFactory
                 .selectFrom(deliveryAddressEntity)
-                .where(deliveryAddressEntity.memberId.eq(memberId))
+                .where(deliveryAddressEntity.member.id.eq(memberId))
                 .orderBy(
                         deliveryAddressEntity.isDefault.desc(), // 1순위: 기본 배송지 (true -> false 순)
                         deliveryAddressEntity.createdAt.desc()  // 2순위: 최신 등록순
