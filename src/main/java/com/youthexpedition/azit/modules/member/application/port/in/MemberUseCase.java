@@ -10,5 +10,5 @@ public interface MemberUseCase {
     void withdrawBySocialInfo(String socialProviderId, SocialProvider socialProvider);
     void updateEmailSharingStatus(String socialProviderId, SocialProvider socialProvider, boolean isEnabled);
     void confirmMemberStatus(Long memberId);
-    MyPageResponse getMyPageInfo(Long memberId);
+    MyPageResponse getMyInfo(Long memberId);
 }

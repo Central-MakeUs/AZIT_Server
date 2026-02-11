@@ -40,8 +40,8 @@ public class MemberController implements MemberControllerDocs {
     }
 
     @GetMapping("/me")
-    public CommonResponse<MyPageResponse> getMyPageInfo(@CurrentMemberId Long memberId) {
-        MyPageResponse response = memberUseCase.getMyPageInfo(memberId);
+    public CommonResponse<MyPageResponse> getMyInfo(@CurrentMemberId Long memberId) {
+        MyPageResponse response = memberUseCase.getMyInfo(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }

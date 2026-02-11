@@ -95,7 +95,7 @@ public class MemberService implements MemberUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public MyPageResponse getMyPageInfo(Long memberId) {
+    public MyPageResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
 
         String crewRole = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)

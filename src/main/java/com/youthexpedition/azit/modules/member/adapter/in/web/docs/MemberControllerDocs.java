@@ -62,9 +62,9 @@ public interface MemberControllerDocs {
     CommonResponse<Void> confirmMemberStatus(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
-            summary = "마이페이지 정보 조회",
+            summary = "내 정보 조회(마이페이지)",
             description = """
-            로그인한 사용자의 마이페이지 정보를 조회합니다. <br><br>
+            로그인한 사용자의 기본 정보를 조회합니다. <br><br>
             
             **[참고 사항]** <br>
             * 소속 크루가 없으면 null을 반환합니다.
@@ -74,7 +74,7 @@ public interface MemberControllerDocs {
             "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<MyPageResponse> getMyPageInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId
+    CommonResponse<MyPageResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
 
