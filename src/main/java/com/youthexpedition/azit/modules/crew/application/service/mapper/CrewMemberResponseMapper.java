@@ -1,7 +1,7 @@
 package com.youthexpedition.azit.modules.crew.application.service.mapper;
 
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
-import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import org.springframework.stereotype.Component;
 
 @Component

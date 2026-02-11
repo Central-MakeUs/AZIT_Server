@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.modules.crew.application.port.out;
 
-import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 

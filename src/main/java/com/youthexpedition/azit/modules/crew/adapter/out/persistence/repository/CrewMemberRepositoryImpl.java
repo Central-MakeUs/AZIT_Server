@@ -2,7 +2,7 @@ package com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

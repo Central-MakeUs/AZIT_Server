@@ -5,7 +5,7 @@ import com.youthexpedition.azit.modules.crew.adapter.out.persistence.mapper.Crew
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository.CrewMemberRepository;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
-import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.RequiredArgsConstructor;

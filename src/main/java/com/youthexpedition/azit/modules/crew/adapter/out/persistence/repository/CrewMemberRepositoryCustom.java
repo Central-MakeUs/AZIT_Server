@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository;
 
-import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 
 import java.util.List;
 
