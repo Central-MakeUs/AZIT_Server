@@ -223,9 +223,15 @@ public class CrewService implements CrewUseCase {
         }
     }
 
-    // 본인 크루인지 체크
+    // 가입한 크루인지 체크
     private CrewMember validateMember(Long crewId, Long memberId) {
-        return loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)
+        CrewMember crewMember = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+
+        if (crewMember.getStatus() != CrewMemberStatus.JOINED) {
+            throw new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER);
+        }
+
+        return crewMember;
     }
 }
