@@ -1,33 +1,23 @@
 package com.youthexpedition.azit.modules.crew.application.port.in.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record CrewMemberListResponse(
-        @Schema(description = "총 멤버 수")
+        @Schema(description = "전체 멤버 수")
         long totalCount,
-        @Schema(description = "멤버 목록")
-        List<CrewMemberDetailResponse> memberList
-) {
-    public static CrewMemberListResponse of(List<CrewMemberDetailResponse> members) {
-        return new CrewMemberListResponse(members.size(), members);
-    }
 
-    public record CrewMemberDetailResponse(
-            @Schema(description = "멤버 ID")
-            Long id,
-            @Schema(description = "닉네임")
-            String nickname,
-            @Schema(description = "프로필 이미지 URL")
-            String profileImageUrl,
-            @Schema(description = "크루 내 역할")
-            CrewMemberRole role,
-            @Schema(description = "가입일")
-            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-            LocalDateTime joinedDate
-    ) {}
+        @Schema(description = "멤버 목록")
+        List<CrewMemberDetailResponse> content,
+
+        @Schema(description = "남은 페이지가 있는지 여부 (false면 마지막 페이지)")
+        boolean hasNext,
+
+        @Schema(description = "마지막 데이터의 ID, 다음 페이지 호출 시 해당 id를 cursorId에 넣어서 호출")
+        Long lastId
+) {
+    public static CrewMemberListResponse of(long totalCount, List<CrewMemberDetailResponse> content, boolean hasNext, Long lastId) {
+        return new CrewMemberListResponse(totalCount, content, hasNext, lastId);
+    }
 }

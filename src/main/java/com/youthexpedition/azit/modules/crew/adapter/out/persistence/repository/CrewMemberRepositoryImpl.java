@@ -1,7 +1,10 @@
 package com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
+import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
@@ -38,8 +41,8 @@ public class CrewMemberRepositoryImpl implements CrewMemberRepositoryCustom {
     }
 
     @Override
-    public List<CrewMemberInfoDto> findAllJoinedMembersByCrewId(Long crewId) {
-        return queryFactory
+    public SliceResponse<CrewMemberInfoDto> findAllJoinedMembersByCrewId(Long crewId, CursorPageQuery query) {
+        List<CrewMemberInfoDto> content = queryFactory
                 .select(Projections.constructor(CrewMemberInfoDto.class,
                         memberEntity.id,
                         memberEntity.nickname,
@@ -51,12 +54,26 @@ public class CrewMemberRepositoryImpl implements CrewMemberRepositoryCustom {
                 .join(memberEntity).on(crewMemberEntity.memberId.eq(memberEntity.id))
                 .where(
                         crewMemberEntity.crew.id.eq(crewId),
-                        crewMemberEntity.status.eq(CrewMemberStatus.JOINED) // 가입 완료 상태만 조회
+                        crewMemberEntity.status.eq(CrewMemberStatus.JOINED),
+                        ltCursorId(query.cursorId())
                 )
                 .orderBy(
-                        crewMemberEntity.role.asc(),    // 리더를 가장 먼저 정렬
-                        crewMemberEntity.createdAt.desc() // 최신 가입일 순 정렬
+                        crewMemberEntity.role.asc(),    // 리더 우선
+                        crewMemberEntity.updatedAt.desc()      // 최신 가입 순
                 )
+                .limit(query.size() + 1) // 다음 페이지 확인을 위해 size + 1 조회
                 .fetch();
+
+        boolean hasNext = content.size() > query.size();
+        if (hasNext) {
+            content.remove(query.size());
+        }
+
+        Long lastId = content.isEmpty() ? null : content.getLast().id();
+        return new SliceResponse<>(content, hasNext, lastId);
+    }
+
+    private BooleanExpression ltCursorId(Long cursorId) {
+        return cursorId == null ? null : crewMemberEntity.id.lt(cursorId);
     }
 }

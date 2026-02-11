@@ -30,14 +30,12 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
                 .orderBy(orderEntity.id.desc())
                 .fetch();
 
-        boolean hasNext = false;
-        if (content.size() > query.size()) {
-            hasNext = true;
+        boolean hasNext = content.size() > query.size();
+        if (hasNext) {
             content.remove(query.size());
         }
 
         Long lastId = content.isEmpty() ? null : content.getLast().getId();
-
         return new SliceResponse<>(content, hasNext, lastId);
     }
 

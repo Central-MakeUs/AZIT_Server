@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.crew.adapter.in.web;
 
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.docs.CrewControllerDocs;
@@ -73,8 +74,8 @@ public class CrewController implements CrewControllerDocs {
     }
 
     @GetMapping("/{crewId}/members")
-    public CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
-        CrewMemberListResponse response = crewUseCase.getCrewMembers(crewId, memberId);
+    public CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId, CursorPageQuery query) {
+        CrewMemberListResponse response = crewUseCase.getCrewMembers(crewId, memberId, query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }

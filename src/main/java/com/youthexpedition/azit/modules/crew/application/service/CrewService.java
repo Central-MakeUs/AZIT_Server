@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.modules.crew.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
+import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
@@ -203,15 +205,15 @@ public class CrewService implements CrewUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public CrewMemberListResponse getCrewMembers(Long crewId, Long memberId) {
-        if (!loadCrewPort.existsById(crewId)) {
-            throw new BusinessException(CrewErrorCode.CREW_NOT_FOUND);
-        }
+    public CrewMemberListResponse getCrewMembers(Long crewId, Long memberId, CursorPageQuery query) {
+        Crew crew = loadCrewPort.findById(crewId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
         validateMember(crewId, memberId);
-        List<CrewMemberInfoDto> memberInfos = loadCrewMemberPort.findAllJoinedMembersByCrewId(crewId);
 
-        return crewMemberResponseMapper.toCrewMemberListResponse(memberInfos);
+        SliceResponse<CrewMemberInfoDto> crewMemberSlice = loadCrewMemberPort.findAllJoinedMembersByCrewId(crewId, query);
+
+        return crewMemberResponseMapper.toCrewMemberListResponse(crew.getMemberCount(), crewMemberSlice);
     }
 
     // 리더 여부 체크

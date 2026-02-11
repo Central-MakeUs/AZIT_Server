@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.modules.crew.adapter.out.persistence;
 
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
+import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewMemberEntity;
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.mapper.CrewMemberMapper;
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository.CrewMemberRepository;
@@ -64,7 +66,7 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
-    public List<CrewMemberInfoDto> findAllJoinedMembersByCrewId(Long crewId) {
-        return crewMemberRepository.findAllJoinedMembersByCrewId(crewId);
+    public SliceResponse<CrewMemberInfoDto> findAllJoinedMembersByCrewId(Long crewId, CursorPageQuery query) {
+        return crewMemberRepository.findAllJoinedMembersByCrewId(crewId, query);
     }
 }

@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.crew.adapter.in.web.docs;
 
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
@@ -133,16 +134,17 @@ public interface CrewControllerDocs {
     @Operation(
             summary = "크루 멤버 목록 조회",
             description = """
-            해당 크루에 가입되어 있는 모든 멤버의 목록을 조회합니다. <br><br>
+            커서 기반 페이징을 사용하여 해당 크루에 가입되어 있는 모든 멤버의 목록을 조회합니다. <br><br>
             
             **[참고 사항]** <br>
             * 해당 크루에 가입된 멤버(JOINED 상태)만 이 API를 호출할 수 있습니다. (NOT_A_CREW_MEMBER)
             * 리더가 목록 최상단으로 정렬되고, 그 외 멤버는 가입일이 최신인 순서대로 정렬됩니다.
+            * 무한 스크롤 방식: hasNext를 통해 다음 페이지 존재 여부를 확인하고, lastId를 다음 요청의 cursorId로 호출하면 됩니다.
             """
     )
     @ApiErrorCodeExamples({
             "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId);
+    CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId, CursorPageQuery query);
 }

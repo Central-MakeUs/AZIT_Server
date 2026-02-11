@@ -1,8 +1,9 @@
 package com.youthexpedition.azit.modules.crew.application.port.in;
 
-import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 
 import java.util.List;
@@ -15,5 +16,5 @@ public interface CrewUseCase {
     void approveJoinRequest(ProcessJoinCommand command);
     void rejectJoinRequest(ProcessJoinCommand command);
     List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long memberId);
-    CrewMemberListResponse getCrewMembers(Long crewId, Long memberId);
+    CrewMemberListResponse getCrewMembers(Long crewId, Long memberId, CursorPageQuery query);
 }
