@@ -3,7 +3,7 @@ package com.youthexpedition.azit.modules.member.application.port.in.dto;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record MyPageResponse(
+public record MyInfoResponse(
         @Schema(description = "사용자 ID")
         Long id,
         @Schema(description = "닉네임")
@@ -17,7 +17,7 @@ public record MyPageResponse(
         @Schema(description = "포인트")
         Long totalPoints
 ) {
-    public static MyPageResponse of(Long id, String nickname, CrewMemberRole crewMemberRole, String profileImageUrl, Integer totalAttendanceCount, Long totalPoints) {
-        return new MyPageResponse(id, nickname, crewMemberRole, profileImageUrl, totalAttendanceCount, totalPoints);
+    public static MyInfoResponse of(Long id, String nickname, CrewMemberRole crewMemberRole, String profileImageUrl, Integer totalAttendanceCount, Long totalPoints) {
+        return new MyInfoResponse(id, nickname, crewMemberRole, profileImageUrl, totalAttendanceCount, totalPoints);
     }
 }

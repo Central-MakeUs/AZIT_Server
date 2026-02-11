@@ -11,7 +11,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
-import com.youthexpedition.azit.modules.member.application.port.in.dto.MyPageResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.application.service.mapper.MemberResponseMapper;
@@ -97,7 +97,7 @@ public class MemberService implements MemberUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public MyPageResponse getMyInfo(Long memberId) {
+    public MyInfoResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
 
         CrewMemberRole crewRole = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)

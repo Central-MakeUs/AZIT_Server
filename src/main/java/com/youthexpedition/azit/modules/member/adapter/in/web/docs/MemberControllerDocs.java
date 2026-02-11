@@ -5,7 +5,7 @@ import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
-import com.youthexpedition.azit.modules.member.application.port.in.dto.MyPageResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -74,7 +74,7 @@ public interface MemberControllerDocs {
             "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<MyPageResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId
+    CommonResponse<MyInfoResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
 
