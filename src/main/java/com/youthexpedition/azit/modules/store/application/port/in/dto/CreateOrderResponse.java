@@ -6,13 +6,13 @@ public record CreateOrderResponse(
         @Schema(description = "주문 번호")
         String orderNumber,
         @Schema(description = "배송지 정보")
-        DeliveryAddressResponse deliveryInfo,
+        OrderDeliveryInfoResponse deliveryInfo,
         @Schema(description = "입금 계좌 정보")
-        DepositAccountResponse depositAccountInfo,
+        DepositAccountInfoResponse depositAccountInfo,
         @Schema(description = "최종 결제 금액 요약")
         CheckoutSummaryResponse summary
 ) {
-        public record DeliveryAddressResponse(
+        public record OrderDeliveryInfoResponse(
                 @Schema(description = "수령인 이름")
                 String recipientName,
                 @Schema(description = "수령인 연락처")
@@ -22,12 +22,12 @@ public record CreateOrderResponse(
                 @Schema(description = "상세 주소")
                 String detailAddress
         ) {
-                public static DeliveryAddressResponse of(String recipientName, String phoneNumber, String baseAddress, String detailAddress) {
-                        return new DeliveryAddressResponse(recipientName, phoneNumber, baseAddress, detailAddress);
+                public static OrderDeliveryInfoResponse of(String recipientName, String phoneNumber, String baseAddress, String detailAddress) {
+                        return new OrderDeliveryInfoResponse(recipientName, phoneNumber, baseAddress, detailAddress);
                 }
         }
 
-        public record DepositAccountResponse(
+        public record DepositAccountInfoResponse(
                 @Schema(description = "은행명")
                 String bankName,
                 @Schema(description = "계좌번호")
@@ -35,8 +35,8 @@ public record CreateOrderResponse(
                 @Schema(description = "예금주")
                 String accountHolder
         ) {
-                public static DepositAccountResponse of(String bankName, String accountNumber, String accountHolder) {
-                        return new DepositAccountResponse(bankName, accountNumber, accountHolder);
+                public static DepositAccountInfoResponse of(String bankName, String accountNumber, String accountHolder) {
+                        return new DepositAccountInfoResponse(bankName, accountNumber, accountHolder);
                 }
         }
 
@@ -63,8 +63,8 @@ public record CreateOrderResponse(
                 }
         }
 
-        public static CreateOrderResponse of(String orderNumber, DeliveryAddressResponse deliveryAddress,
-                                             DepositAccountResponse depositAccount, CheckoutSummaryResponse summary) {
-                return new CreateOrderResponse(orderNumber, deliveryAddress, depositAccount, summary);
+        public static CreateOrderResponse of(String orderNumber, OrderDeliveryInfoResponse deliveryInfo,
+                                             DepositAccountInfoResponse depositAccountInfo, CheckoutSummaryResponse summary) {
+                return new CreateOrderResponse(orderNumber, deliveryInfo, depositAccountInfo, summary);
         }
 }

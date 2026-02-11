@@ -15,7 +15,7 @@ public record OrderDetailResponse(
         @Schema(description = "주문 번호")
         String orderNumber,
         @Schema(description = "배송지 정보")
-        DeliveryAddressResponse deliveryInfo,
+        OrderDetailDeliveryInfoResponse deliveryInfo,
         @Schema(description = "배송 정보")
         ShippingResponse shippingInfo,
         @Schema(description = "주문 상품 목록")
@@ -23,7 +23,7 @@ public record OrderDetailResponse(
         @Schema(description = "결제 금액 요약")
         PaymentSummaryResponse summary
 ) {
-        public record DeliveryAddressResponse(
+        public record OrderDetailDeliveryInfoResponse(
                 @Schema(description = "수령인 이름")
                 String recipientName,
                 @Schema(description = "수령인 연락처")
@@ -35,9 +35,9 @@ public record OrderDetailResponse(
                 @Schema(description = "배송 요청사항")
                 String shippingInstruction
         ) {
-                public static DeliveryAddressResponse of(
+                public static OrderDetailDeliveryInfoResponse of(
                         String recipientName, String phoneNumber, String baseAddress, String detailAddress, String shippingInstruction) {
-                        return new DeliveryAddressResponse(
+                        return new OrderDetailDeliveryInfoResponse(
                                 recipientName,
                                 phoneNumber,
                                 baseAddress,
@@ -108,7 +108,7 @@ public record OrderDetailResponse(
                 }
         }
 
-        public static OrderDetailResponse of(Long id, LocalDateTime orderDate, String orderNumber, DeliveryAddressResponse deliveryInfo,
+        public static OrderDetailResponse of(Long id, LocalDateTime orderDate, String orderNumber, OrderDetailDeliveryInfoResponse deliveryInfo,
                                              ShippingResponse shippingInfo, List<OrderItemResponse> items, PaymentSummaryResponse summary) {
                 return new OrderDetailResponse(
                         id,

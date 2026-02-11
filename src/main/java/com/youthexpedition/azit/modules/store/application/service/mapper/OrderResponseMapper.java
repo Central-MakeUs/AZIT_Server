@@ -74,9 +74,9 @@ public class OrderResponseMapper {
 
     public CreateOrderResponse toCreateOrderResponse(Order order) {
         // 결제 수단이 무통장 입금일 경우 계좌 정보 생성
-        CreateOrderResponse.DepositAccountResponse depositAccount = null;
+        CreateOrderResponse.DepositAccountInfoResponse depositAccount = null;
         if (order.getPaymentMethod() == PaymentMethod.BANK_TRANSFER) {
-            depositAccount = CreateOrderResponse.DepositAccountResponse.of(
+            depositAccount = CreateOrderResponse.DepositAccountInfoResponse.of(
                     BANK_NAME,
                     ACCOUNT_NUMBER,
                     ACCOUNT_HOLDER
@@ -85,7 +85,7 @@ public class OrderResponseMapper {
 
         return CreateOrderResponse.of(
                 buildFullOrderNumber(order.getOrderNumber()),
-                CreateOrderResponse.DeliveryAddressResponse.of(
+                CreateOrderResponse.OrderDeliveryInfoResponse.of(
                         order.getAddress().getRecipientName(),
                         order.getAddress().getPhoneNumber(),
                         order.getAddress().getBaseAddress(),
@@ -102,7 +102,7 @@ public class OrderResponseMapper {
     }
 
     public OrderDetailResponse toOrderDetailResponse(Order order) {
-        OrderDetailResponse.DeliveryAddressResponse deliveryInfo = OrderDetailResponse.DeliveryAddressResponse.of(
+        OrderDetailResponse.OrderDetailDeliveryInfoResponse deliveryInfo = OrderDetailResponse.OrderDetailDeliveryInfoResponse.of(
                 order.getAddress().getRecipientName(),
                 order.getAddress().getPhoneNumber(),
                 order.getAddress().getBaseAddress(),
