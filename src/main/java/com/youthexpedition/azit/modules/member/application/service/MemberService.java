@@ -4,12 +4,15 @@ import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialRevokeCommand;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyPageResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.service.mapper.MemberResponseMapper;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
@@ -24,10 +27,13 @@ public class MemberService implements MemberUseCase {
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
     private final SaveCrewMemberPort saveCrewMemberPort;
+    private final LoadCrewMemberPort loadCrewMemberPort;
     private final SocialAuthPort socialAuthPort;
     private final TokenPort tokenPort;
+    private final MemberResponseMapper memberResponseMapper;
 
     private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
+    private static final String DEFAULT_CREW_MEMBER_ROLE = "일반";
 
     @Override
     public void agreeToTerms(Long memberId, AgreeToTermsCommand command) {
@@ -86,6 +92,18 @@ public class MemberService implements MemberUseCase {
         member.confirmStatus();
 
         saveMemberPort.save(member);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyPageResponse getMyPageInfo(Long memberId) {
+        Member member = getMember(memberId);
+
+        String crewRole = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)
+                .map(crewMember -> crewMember.getRole().getDescription())
+                .orElse(null);
+
+        return memberResponseMapper.toMyPageResponse(member, crewRole);
     }
 
     private Member getMember(Long memberId) {
