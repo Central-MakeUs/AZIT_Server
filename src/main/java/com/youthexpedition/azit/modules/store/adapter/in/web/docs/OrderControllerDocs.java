@@ -11,6 +11,7 @@ import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheck
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderListResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,7 +43,7 @@ public interface OrderControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<OrderCheckoutResponse> getCheckoutInfoFromCart(
-            @CurrentMemberId Long memberId, @RequestParam List<Long> cartItemIds, @RequestParam(required = false) Long deliveryAddressId);
+            @Parameter(hidden = true) @CurrentMemberId Long memberId, @RequestParam List<Long> cartItemIds, @RequestParam(required = false) Long deliveryAddressId);
 
     @Operation(
             summary = "주문서 조회(바로 구매)",
@@ -64,7 +65,7 @@ public interface OrderControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<OrderCheckoutResponse> getCheckoutInfoDirect(
-            @CurrentMemberId Long memberId, @RequestParam Long skuId, @RequestParam Integer quantity, @RequestParam(required = false) Long deliveryAddressId);
+            @Parameter(hidden = true) @CurrentMemberId Long memberId, @RequestParam Long skuId, @RequestParam Integer quantity, @RequestParam(required = false) Long deliveryAddressId);
 
     @Operation(
             summary = "주문 생성 (결제)",
@@ -83,7 +84,7 @@ public interface OrderControllerDocs {
             "INVALID_ORDER_REQUEST", "ORDER_PRODUCT_NOT_FOUND", "ORDER_NUMBER_GENERATION_FAILED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<CreateOrderResponse> createOrder(@CurrentMemberId Long memberId, @RequestBody @Valid CreateOrderRequest request);
+    CommonResponse<CreateOrderResponse> createOrder(@Parameter(hidden = true) @CurrentMemberId Long memberId, @RequestBody @Valid CreateOrderRequest request);
 
     @Operation(
             summary = "주문 상세 조회",
@@ -100,7 +101,7 @@ public interface OrderControllerDocs {
             "ORDER_NOT_FOUND", "FORBIDDEN_ERROR",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<OrderDetailResponse> getOrderDetail(@CurrentMemberId Long memberId, @PathVariable String orderNumber);
+    CommonResponse<OrderDetailResponse> getOrderDetail(@Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable String orderNumber);
 
     @Operation(
             summary = "주문 내역 목록 조회 (무한 스크롤)",
@@ -116,7 +117,7 @@ public interface OrderControllerDocs {
             "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<SliceResponse<OrderListResponse>> getOrders(@CurrentMemberId Long memberId, CursorPageQuery query);
+    CommonResponse<SliceResponse<OrderListResponse>> getOrders(@Parameter(hidden = true) @CurrentMemberId Long memberId, CursorPageQuery query);
 
     @Operation(
             summary = "주문 취소",
@@ -133,5 +134,5 @@ public interface OrderControllerDocs {
             "ORDER_NOT_FOUND", "FORBIDDEN_ERROR", "CANNOT_CANCEL_ORDER",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> cancelOrder(@CurrentMemberId Long memberId, @PathVariable String orderNumber);
+    CommonResponse<Void> cancelOrder(@Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable String orderNumber);
 }
