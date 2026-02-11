@@ -227,12 +227,7 @@ public class CrewService implements CrewUseCase {
         }
 
         // 방출 대상이 현재 해당 크루의 정회원(JOINED)인지 확인
-        CrewMember targetMember = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, targetMemberId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
-
-        if (targetMember.getStatus() != CrewMemberStatus.JOINED) {
-            throw new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER);
-        }
+        CrewMember targetMember = validateMember(crewId, targetMemberId);
 
         // 멤버 상태 EXITED 변경
         targetMember.exit();
