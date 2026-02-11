@@ -49,8 +49,8 @@ public interface CartControllerDocs {
                 """
     )
     @ApiErrorCodeExamples({
-            "CART_ITEM_NOT_FOUND", "OUT_OF_STOCK", "INVALID_QUANTITY",
-            "UNAUTHORIZED", "FORBIDDEN_ERROR"
+            "CART_ITEM_NOT_FOUND", "OUT_OF_STOCK", "INVALID_QUANTITY", "FORBIDDEN_ERROR",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> updateCartItemQuantity(
             @Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long cartItemId, @RequestBody @Valid UpdateCartItemQuantityRequest request);
