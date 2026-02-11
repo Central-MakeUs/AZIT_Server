@@ -63,10 +63,20 @@ public class Order {
                 .build();
     }
 
-    // 주문번호 생성 (규칙: AZ + YYMMDD + 4자리 난수)
+    // 취소 가능한 상태인지 확인
+    public boolean isCancellable() {
+        return this.status == OrderStatus.PENDING || this.status == OrderStatus.PAID;
+    }
+
+    // 주문 취소
+    public void cancel() {
+        this.status = OrderStatus.CANCELLED;
+    }
+
+    // 주문번호 생성 (규칙: AZ + YYMMDD + 6자리 난수)
     public static String generateOrderNumber() {
         String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        int randomNumber = ThreadLocalRandom.current().nextInt(10000);
+        int randomNumber = ThreadLocalRandom.current().nextInt(1000000);
         return String.format("AZ%s%04d", datePart, randomNumber);
     }
 }

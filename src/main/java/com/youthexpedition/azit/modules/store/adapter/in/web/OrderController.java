@@ -60,4 +60,11 @@ public class OrderController implements OrderControllerDocs {
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
+
+    @PatchMapping("/{orderNumber}/cancel")
+    public CommonResponse<Void> cancelOrder(@CurrentMemberId Long memberId, @PathVariable String orderNumber) {
+        orderUseCase.cancelOrder(memberId, orderNumber);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
 }

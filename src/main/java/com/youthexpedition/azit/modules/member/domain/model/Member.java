@@ -159,4 +159,13 @@ public class Member {
         }
         this.totalPoints -= points;
     }
+
+    // 포인트 적립
+    public void addPoints(long points) {
+        if (points < 0) {
+            throw new BusinessException(MemberErrorCode.INVALID_POINT_VALUE);
+        }
+
+        this.totalPoints += points;
+    }
 }

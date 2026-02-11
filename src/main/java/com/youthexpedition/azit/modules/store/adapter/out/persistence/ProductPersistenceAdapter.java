@@ -47,19 +47,6 @@ public class ProductPersistenceAdapter implements LoadProductPort, SaveProductPo
                 .map(productMapper::toDomain);
     }
 
-    private ProductListResponse resolveImageUrl(ProductListResponse dto) {
-        return ProductListResponse.of(dto.id(), dto.brandName(), dto.productName(), dto.basePrice(), dto.discountRate(), dto.salePrice(),
-                buildFullImageUrl(dto.thumbnailImageUrl())
-        );
-    }
-
-    private String buildFullImageUrl(String imagePath) {
-        if (imagePath == null || imagePath.isBlank()) {
-            return null;
-        }
-        return cloudFrontDomain + imagePath;
-    }
-
     @Override
     public Optional<Product> findByIdForCart(Long productId) {
         return productRepository.findByIdForCart(productId)
@@ -73,6 +60,11 @@ public class ProductPersistenceAdapter implements LoadProductPort, SaveProductPo
             // 업데이트된 행이 0개일 경우: 재고가 부족하거나 SKU가 없음
             throw new BusinessException(StoreErrorCode.OUT_OF_STOCK);
         }
+    }
+
+    @Override
+    public void increaseStock(Long skuId, int quantity) {
+        productSkuRepository.increaseStock(skuId, quantity);
     }
 
     @Override

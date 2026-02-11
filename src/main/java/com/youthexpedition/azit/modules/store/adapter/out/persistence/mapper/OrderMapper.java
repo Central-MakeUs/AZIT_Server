@@ -59,6 +59,7 @@ public class OrderMapper {
         if (domain == null) return null;
 
         OrderEntity orderEntity = OrderEntity.builder()
+                .id(domain.getId())
                 .memberId(domain.getMemberId())
                 .orderNumber(domain.getOrderNumber())
                 .recipientName(domain.getAddress().getRecipientName())

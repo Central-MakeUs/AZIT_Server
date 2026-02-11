@@ -180,6 +180,51 @@ public class OrderService implements OrderUseCase {
         return orderResponseMapper.toOrderDetailResponse(order);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public SliceResponse<OrderListResponse> getOrders(Long memberId, CursorPageQuery query) {
+        SliceResponse<Order> orderSlice = loadOrderPort.findOrdersByMemberId(memberId, query);
+
+        List<OrderListResponse> responses = orderSlice.content().stream()
+                .map(orderResponseMapper::toOrderListResponse)
+                .toList();
+
+        return new SliceResponse<>(responses, orderSlice.hasNext(), orderSlice.lastId());
+    }
+
+    @Override
+    @Transactional
+    public void cancelOrder(Long memberId, String orderNumber) {
+        Order order = loadOrderPort.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new BusinessException(StoreErrorCode.ORDER_NOT_FOUND));
+
+        // 로그인한 사용자 주문인지 확인
+        if (!order.getMemberId().equals(memberId)) {
+            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
+
+        // 주문 취소 가능한 상태인지 확인
+        if (!order.isCancellable()) {
+            throw new BusinessException(StoreErrorCode.CANNOT_CANCEL_ORDER);
+        }
+        // 주문 취소 상태로 변경
+        order.cancel();
+
+        // 재고 복구
+        order.getOrderItems().forEach(item ->
+                saveProductPort.increaseStock(item.getSkuId(), item.getQuantity())
+        );
+
+        // 포인트 환불
+        if (order.getUsedPoints() > 0) {
+            Member member = getMember(memberId);
+            member.addPoints(order.getUsedPoints()); // 사용한 포인트만큼 복구
+            saveMemberPort.save(member);
+        }
+
+        saveOrderPort.save(order);
+    }
+
     private Member getMember(Long memberId) {
         return loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -245,18 +290,6 @@ public class OrderService implements OrderUseCase {
         }
         // 최대 재시도 후에도 실패 시 예외 발생
         throw new BusinessException(StoreErrorCode.ORDER_NUMBER_GENERATION_FAILED);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public SliceResponse<OrderListResponse> getOrders(Long memberId, CursorPageQuery query) {
-        SliceResponse<Order> orderSlice = loadOrderPort.findOrdersByMemberId(memberId, query);
-
-        List<OrderListResponse> responses = orderSlice.content().stream()
-                .map(orderResponseMapper::toOrderListResponse)
-                .toList();
-
-        return new SliceResponse<>(responses, orderSlice.hasNext(), orderSlice.lastId());
     }
 
 }
