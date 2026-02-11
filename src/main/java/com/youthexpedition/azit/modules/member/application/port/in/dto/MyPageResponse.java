@@ -9,7 +9,7 @@ public record MyPageResponse(
         String nickname,
         @Schema(description = "크루 내 역할")
         String crewMemberRole,
-        @Schema(description = "프로필 이미지 url")
+        @Schema(description = "프로필 이미지 URL")
         String profileImageUrl,
         @Schema(description = "누적 출석 횟수")
         Integer totalAttendanceCount,
