@@ -157,7 +157,7 @@ public interface CrewControllerDocs {
             * 해당 크루의 리더(LEADER)만 이 API를 호출할 수 있습니다. (NOT_CREW_LEADER)
             * 리더 본인은 스스로를 방출할 수 없습니다. (CANNOT_KICK_SELF)
             * 가입 완료(JOINED) 상태인 멤버만 방출 가능합니다. (NOT_A_CREW_MEMBER)
-            * 방출된 멤버의 잔여 크루 수를 조회했을 때 가입 상태의 크루가 없을 경우, 앱 사용 제한을 위해 PENDING_ONBOARDING 상태로 변경됩니다.
+            * 방출 후 해당 멤버가 더 이상 어떤 크루에도 가입되어 있지 않다면, 앱 사용 제한을 위해 PENDING_ONBOARDING 상태로 변경됩니다.
             """
     )
     @ApiErrorCodeExamples({
