@@ -29,7 +29,7 @@ public class CrewMemberRepositoryImpl implements CrewMemberRepositoryCustom {
                 .from(crewMemberEntity)
                 .join(memberEntity).on(crewMemberEntity.memberId.eq(memberEntity.id))
                 .where(
-                        crewMemberEntity.crewId.eq(crewId),
+                        crewMemberEntity.crew.id.eq(crewId),
                         crewMemberEntity.status.eq(CrewMemberStatus.REQUESTED) // 대기 중인 신청만 조회
                 )
                 .orderBy(crewMemberEntity.createdAt.asc()) // 먼저 신청한 순서대로 정렬
