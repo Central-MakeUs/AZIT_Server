@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.store.application.port.in.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.youthexpedition.azit.modules.store.domain.model.enums.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -14,8 +15,12 @@ public record OrderDetailResponse(
         LocalDateTime orderDate,
         @Schema(description = "주문 번호")
         String orderNumber,
+        @Schema(description = "주문 상태")
+        OrderStatus status,
         @Schema(description = "배송지 정보")
         OrderDetailDeliveryInfoResponse deliveryInfo,
+        @Schema(description = "입금 계좌 정보")
+        DepositAccountInfoResponse depositAccountInfo,
         @Schema(description = "배송 정보")
         ShippingResponse shippingInfo,
         @Schema(description = "주문 상품 목록")
@@ -108,13 +113,16 @@ public record OrderDetailResponse(
                 }
         }
 
-        public static OrderDetailResponse of(Long id, LocalDateTime orderDate, String orderNumber, OrderDetailDeliveryInfoResponse deliveryInfo,
+        public static OrderDetailResponse of(Long id, LocalDateTime orderDate, String orderNumber, OrderStatus status,
+                                             OrderDetailDeliveryInfoResponse deliveryInfo, DepositAccountInfoResponse depositAccountInfo,
                                              ShippingResponse shippingInfo, List<OrderItemResponse> items, PaymentSummaryResponse summary) {
                 return new OrderDetailResponse(
                         id,
                         orderDate,
                         orderNumber,
+                        status,
                         deliveryInfo,
+                        depositAccountInfo,
                         shippingInfo,
                         items,
                         summary

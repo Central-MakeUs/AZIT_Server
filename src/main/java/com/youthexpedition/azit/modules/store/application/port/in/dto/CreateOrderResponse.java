@@ -27,19 +27,6 @@ public record CreateOrderResponse(
                 }
         }
 
-        public record DepositAccountInfoResponse(
-                @Schema(description = "은행명")
-                String bankName,
-                @Schema(description = "계좌번호")
-                String accountNumber,
-                @Schema(description = "예금주")
-                String accountHolder
-        ) {
-                public static DepositAccountInfoResponse of(String bankName, String accountNumber, String accountHolder) {
-                        return new DepositAccountInfoResponse(bankName, accountNumber, accountHolder);
-                }
-        }
-
         public record CheckoutSummaryResponse(
                 @Schema(description = "총 상품금액 (할인 전 합계)")
                 long totalProductPrice,
