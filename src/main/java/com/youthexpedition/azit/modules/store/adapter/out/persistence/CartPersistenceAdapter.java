@@ -39,6 +39,12 @@ public class CartPersistenceAdapter implements LoadCartPort, SaveCartPort {
     }
 
     @Override
+    public Optional<CartItem> findById(Long cartItemId) {
+        return cartItemRepository.findById(cartItemId)
+                .map(cartMapper::toDomain);
+    }
+
+    @Override
     public void deleteAllByMemberIdAndIds(Long memberId, List<Long> cartItemIds) {
         cartItemRepository.deleteAllByMemberIdAndIds(memberId, cartItemIds);
     }

@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface LoadCartPort {
     Optional<CartItem> findByMemberIdAndSkuId(Long memberId, Long productSkuId);
+    Optional<CartItem> findById(Long cartItemId);
     long countByMemberId(Long memberId);
     List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId);
     List<CheckoutItemDto> findCartDetailsByIds(List<Long> cartItemIds);

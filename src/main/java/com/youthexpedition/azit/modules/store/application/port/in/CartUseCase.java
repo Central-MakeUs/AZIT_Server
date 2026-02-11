@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListRe
 
 public interface CartUseCase {
     void addOrUpdateCartItem(AddToCartCommand command);
+    void updateCartItemQuantity(Long memberId, Long cartItemId, int quantity);
     void deleteCartItems(Long memberId, CartItemDeleteCommand command);
     CartItemCountResponse getCartItemCount(Long memberId);
     CartListResponse getCarts(Long memberId);

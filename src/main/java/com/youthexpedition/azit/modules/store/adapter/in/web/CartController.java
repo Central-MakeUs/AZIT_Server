@@ -6,6 +6,7 @@ import com.youthexpedition.azit.infrastructure.common.response.code.CommonSucces
 import com.youthexpedition.azit.modules.store.adapter.in.web.docs.CartControllerDocs;
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.AddToCartRequest;
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CartItemDeleteRequest;
+import com.youthexpedition.azit.modules.store.adapter.in.web.dto.UpdateCartItemQuantityRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.CartUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListResponse;
@@ -22,6 +23,14 @@ public class CartController implements CartControllerDocs {
     @PostMapping("/items")
     public CommonResponse<Void> addCartItem(@CurrentMemberId Long memberId, @RequestBody @Valid AddToCartRequest request) {
         cartUseCase.addOrUpdateCartItem(request.toCommand(memberId));
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @PatchMapping("/items/{cartItemId}")
+    public CommonResponse<Void> updateCartItemQuantity(
+            @CurrentMemberId Long memberId, @PathVariable Long cartItemId, @RequestBody @Valid UpdateCartItemQuantityRequest request) {
+        cartUseCase.updateCartItemQuantity(memberId, cartItemId, request.quantity());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }

@@ -28,4 +28,11 @@ public class CartItem {
                 .quantity(quantity)
                 .build();
     }
+
+    public void updateQuantity(int newQuantity) {
+        if (newQuantity < 1) {
+            throw new BusinessException(StoreErrorCode.INVALID_QUANTITY); // 수량은 1개 이상이어야 함
+        }
+        this.quantity = newQuantity;
+    }
 }
