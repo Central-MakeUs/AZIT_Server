@@ -5,10 +5,7 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -131,5 +128,21 @@ public interface CrewControllerDocs {
             "NOT_CREW_LEADER", "FORBIDDEN_ERROR"
     })
     CommonResponse<List<JoinRequestMemberResponse>> getJoinRequests(
-            @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long leaderId);
+            @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "크루 멤버 목록 조회",
+            description = """
+            해당 크루에 가입되어 있는 모든 멤버의 목록을 조회합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 해당 크루에 가입된 멤버(JOINED 상태)만 이 API를 호출할 수 있습니다. (NOT_A_CREW_MEMBER)
+            * 리더가 목록 최상단으로 정렬되고, 그 외 멤버는 가입일이 최신인 순서대로 정렬됩니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId);
 }
