@@ -76,6 +76,7 @@ public interface OrderControllerDocs {
             * 주문 시점에 각 SKU의 재고가 즉시 차감됩니다.
             * 보유 포인트 잔액과 최소 사용 단위(1,000P)를 검증합니다. (INVALID_POINT_USAGE)
             * 결제 수단 (MVP): 현재 '무통장 입금(BANK_TRANSFER)'만 지원합니다. 그 외 수단은 에러를 반환합니다. (PAYMENT_METHOD_NOT_SUPPORTED)
+            * 무통장 입금으로 주문 시, 입금자명은 필수입니다. (INVALID_ORDER_REQUEST)
             * 주문이 성공하면 선택한 장바구니 아이템들은 자동으로 삭제됩니다.
             """
     )

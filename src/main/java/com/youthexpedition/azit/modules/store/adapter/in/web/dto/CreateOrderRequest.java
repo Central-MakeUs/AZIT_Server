@@ -44,7 +44,12 @@ public record CreateOrderRequest(
 
         @Schema(description = "결제 수단")
         @NotBlank(message = "결제 수단을 선택해주세요.")
-        String paymentMethod
+        String paymentMethod,
+
+        @Schema(description = "입금자명(무통장입금)")
+        @Size(max = 50, message = "입금자명은 최대 50자까지 입력 가능합니다.")
+        String depositorName
+
 ) {
     public CreateOrderCommand toCommand(Long memberId) {
         return CreateOrderCommand.of(
@@ -60,7 +65,8 @@ public record CreateOrderRequest(
                 detailAddress,
                 shippingInstruction,
                 usedPoints,
-                paymentMethod
+                paymentMethod,
+                depositorName.trim()
         );
     }
 }

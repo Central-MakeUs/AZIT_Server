@@ -13,13 +13,14 @@ public record CreateOrderCommand(
         String detailAddress,
         String shippingInstruction,
         long usedPoints,
-        String paymentMethod
+        String paymentMethod,
+        String depositorName
 ) {
     public static CreateOrderCommand of(Long memberId, List<Long> cartItemIds, Long skuId, Integer quantity, String recipientName, String phoneNumber,
-                                        String baseAddress, String detailAddress, String shippingInstruction, long usedPoints, String paymentMethod
+                                        String baseAddress, String detailAddress, String shippingInstruction, long usedPoints, String paymentMethod, String depositorName
     ) {
         return new CreateOrderCommand(memberId, cartItemIds, skuId, quantity, recipientName, phoneNumber, baseAddress,
-                detailAddress, shippingInstruction, usedPoints, paymentMethod
+                detailAddress, shippingInstruction, usedPoints, paymentMethod, depositorName
         );
     }
 }
