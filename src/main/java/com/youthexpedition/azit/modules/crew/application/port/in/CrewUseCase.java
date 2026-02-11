@@ -17,4 +17,5 @@ public interface CrewUseCase {
     void rejectJoinRequest(ProcessJoinCommand command);
     List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long memberId);
     CrewMemberListResponse getCrewMembers(Long crewId, Long memberId, CursorPageQuery query);
+    void deleteCrewMember(Long crewId, Long leaderId, Long targetMemberId);
 }
