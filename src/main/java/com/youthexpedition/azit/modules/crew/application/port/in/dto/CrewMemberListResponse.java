@@ -10,8 +10,8 @@ import java.util.List;
 public record CrewMemberListResponse(
         @Schema(description = "총 멤버 수")
         long totalCount,
-        @Schema(description = "멤버 상세 목록")
-        List<CrewMemberDetailResponse> members
+        @Schema(description = "멤버 목록")
+        List<CrewMemberDetailResponse> memberList
 ) {
     public static CrewMemberListResponse of(List<CrewMemberDetailResponse> members) {
         return new CrewMemberListResponse(members.size(), members);
