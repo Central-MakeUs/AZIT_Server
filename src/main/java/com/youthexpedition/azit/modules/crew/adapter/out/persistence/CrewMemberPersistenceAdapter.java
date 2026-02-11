@@ -5,7 +5,7 @@ import com.youthexpedition.azit.modules.crew.adapter.out.persistence.mapper.Crew
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository.CrewMemberRepository;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
-import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestQueryResult;
+import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.RequiredArgsConstructor;
@@ -52,14 +52,13 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
-    public List<JoinRequestQueryResult> findJoinRequestsByCrewId(Long crewId) {
+    public List<JoinRequestDto> findJoinRequestsByCrewId(Long crewId) {
         return crewMemberRepository.findJoinRequestsByCrewId(crewId);
     }
 
     @Override
-    public Optional<Long> findRecentCrewIdByMemberId(Long memberId) {
-        // ID가 가장 큰 것(최근 가입)을 조회
+    public Optional<CrewMember> findRecentJoinedCrewMember(Long memberId) {
         return crewMemberRepository.findFirstByMemberIdAndStatusInOrderByIdDesc(memberId, ACTIVE_STATUSES)
-                .map(CrewMemberEntity::getCrewId);
+                .map(crewMemberMapper::toDomain);
     }
 }

@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
@@ -58,7 +59,8 @@ public class TokenManagementService implements TokenUseCase {
         Long crewId = null;
         // 크루 ID 필요한지 체크 후 가장 최근에 가입한 크루 조회
         if (member.getStatus().isCrewInfoRequired()) {
-            crewId = loadCrewMemberPort.findRecentCrewIdByMemberId(member.getId())
+            crewId = loadCrewMemberPort.findRecentJoinedCrewMember(member.getId())
+                    .map(CrewMember::getCrewId)
                     .orElse(null);
         }
 

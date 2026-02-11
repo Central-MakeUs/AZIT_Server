@@ -7,12 +7,10 @@ import com.youthexpedition.azit.infrastructure.common.response.code.CommonSucces
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyPageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/members")
@@ -39,5 +37,12 @@ public class MemberController implements MemberControllerDocs {
         memberUseCase.confirmMemberStatus(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @GetMapping("/me")
+    public CommonResponse<MyPageResponse> getMyPageInfo(@CurrentMemberId Long memberId) {
+        MyPageResponse response = memberUseCase.getMyPageInfo(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 }

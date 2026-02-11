@@ -2,7 +2,7 @@ package com.youthexpedition.azit.modules.crew.application.port.out.model;
 
 import java.time.LocalDateTime;
 
-public record JoinRequestQueryResult(
+public record JoinRequestDto(
         Long memberId,
         String nickname,
         String profileImageUrl,
