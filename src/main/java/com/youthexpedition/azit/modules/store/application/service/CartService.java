@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.store.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.store.application.port.in.CartUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.AddToCartCommand;
@@ -67,6 +68,32 @@ public class CartService implements CartUseCase {
         // 업데이트 또는 저장
         CartItem newItem = CartItem.create(command.memberId(), product, sku, command.quantity());
         saveCartPort.save(newItem);
+    }
+
+    @Override
+    @Transactional
+    public void updateCartItemQuantity(Long memberId, Long cartItemId, int quantity) {
+        // 최소 수량 확인
+        if (quantity < 1) {
+            throw new BusinessException(StoreErrorCode.INVALID_QUANTITY);
+        }
+
+        CartItem cartItem = loadCartPort.findById(cartItemId)
+                .orElseThrow(() -> new BusinessException(StoreErrorCode.CART_ITEM_NOT_FOUND));
+
+        // 본인의 장바구니 아이템인지 확인
+        if (!cartItem.getMemberId().equals(memberId)) {
+            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
+
+        // 재고 확인
+        if (cartItem.getSku().getStockQuantity() < quantity) {
+            throw new BusinessException(StoreErrorCode.OUT_OF_STOCK);
+        }
+
+        // 수량 업데이트
+        cartItem.updateQuantity(quantity);
+        saveCartPort.save(cartItem);
     }
 
     @Override

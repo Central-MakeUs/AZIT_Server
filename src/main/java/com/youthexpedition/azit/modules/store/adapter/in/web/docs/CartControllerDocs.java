@@ -5,21 +5,24 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.AddToCartRequest;
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CartItemDeleteRequest;
+import com.youthexpedition.azit.modules.store.adapter.in.web.dto.UpdateCartItemQuantityRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Cart" , description = "장바구니 API")
 public interface CartControllerDocs {
 
     @Operation(
-            summary = "장바구니 항목 추가 및 수량 변경",
+            summary = "장바구니 담기 및 수량 추가(상품 상세)",
             description = """
-            상품의 특정 옵션(SKU)을 장바구니에 담거나 기존 항목의 수량을 추가합니다. <br><br>
+            상품 상세 페이지에서 상품의 특정 옵션(SKU)을 장바구니에 담거나 기존 항목의 수량을 추가합니다. <br><br>
             
             **[참고 사항]** <br>
             * 장바구니에 해당 SKU가 없는 경우 새로운 항목으로 등록됩니다.
@@ -34,6 +37,23 @@ public interface CartControllerDocs {
     })
     CommonResponse<Void> addCartItem(@Parameter(hidden = true) @CurrentMemberId Long memberId, @RequestBody @Valid AddToCartRequest request);
 
+    @Operation(
+            summary = "장바구니 아이템 수량 변경",
+            description = """
+                장바구니에 담긴 특정 아이템의 수량을 변경(절대값)합니다. <br><br>
+                
+                **[참고 사항]** <br>
+                * 변경하려는 수량이 상품의 재고보다 많을 수 없습니다. (OUT_OF_STOCK)
+                * 변경하려는 수량은 최소 1개 이상이어야 합니다. (INVALID_QUANTITY)
+                * 본인의 장바구니 항목만 수정할 수 있습니다. (FORBIDDEN_ERROR)
+                """
+    )
+    @ApiErrorCodeExamples({
+            "CART_ITEM_NOT_FOUND", "OUT_OF_STOCK", "INVALID_QUANTITY", "FORBIDDEN_ERROR",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> updateCartItemQuantity(
+            @Parameter(hidden = true) @CurrentMemberId Long memberId, @PathVariable Long cartItemId, @RequestBody @Valid UpdateCartItemQuantityRequest request);
 
     @Operation(
             summary = "장바구니 항목 삭제",

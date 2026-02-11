@@ -1,7 +1,5 @@
 package com.youthexpedition.azit.modules.store.domain.model;
 
-import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,5 +25,9 @@ public class CartItem {
                 .sku(sku)
                 .quantity(quantity)
                 .build();
+    }
+
+    public void updateQuantity(int newQuantity) {
+        this.quantity = newQuantity;
     }
 }
