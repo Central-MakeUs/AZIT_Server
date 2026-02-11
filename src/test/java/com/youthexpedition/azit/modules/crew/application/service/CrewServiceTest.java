@@ -10,7 +10,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMember
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
-import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestQueryResult;
+import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
@@ -33,7 +33,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -329,8 +329,8 @@ class CrewServiceTest {
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)).willReturn(Optional.of(leader));
 
             // 가입 신청 목록 모킹
-            JoinRequestQueryResult result1 = new JoinRequestQueryResult(2L, "러너A", "img1.png", LocalDateTime.now());
-            JoinRequestQueryResult result2 = new JoinRequestQueryResult(3L, "러너B", "img2.png", LocalDateTime.now());
+            JoinRequestDto result1 = new JoinRequestDto(2L, "러너A", "img1.png", LocalDateTime.now());
+            JoinRequestDto result2 = new JoinRequestDto(3L, "러너B", "img2.png", LocalDateTime.now());
             given(loadCrewMemberPort.findJoinRequestsByCrewId(crewId)).willReturn(List.of(result1, result2));
 
             JoinRequestMemberResponse response1 = new JoinRequestMemberResponse(2L, "러너A", "img1.png", LocalDateTime.now());
@@ -344,7 +344,7 @@ class CrewServiceTest {
             List<JoinRequestMemberResponse> responses = crewService.getJoinRequests(crewId, leaderId);
 
             // then
-            assertThat(responses.size()).isEqualTo(2);
+            assertThat(responses).hasSize(2);
             assertThat(responses.getFirst().nickname()).isEqualTo("러너A");
             verify(loadCrewMemberPort, times(1)).findJoinRequestsByCrewId(crewId);
         }

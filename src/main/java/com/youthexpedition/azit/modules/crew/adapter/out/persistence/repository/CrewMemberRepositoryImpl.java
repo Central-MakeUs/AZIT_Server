@@ -2,7 +2,7 @@ package com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestQueryResult;
+import com.youthexpedition.azit.modules.crew.application.port.out.model.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -18,9 +18,9 @@ public class CrewMemberRepositoryImpl implements CrewMemberRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<JoinRequestQueryResult> findJoinRequestsByCrewId(Long crewId) {
+    public List<JoinRequestDto> findJoinRequestsByCrewId(Long crewId) {
         return queryFactory
-                .select(Projections.constructor(JoinRequestQueryResult.class,
+                .select(Projections.constructor(JoinRequestDto.class,
                         memberEntity.id,
                         memberEntity.nickname,
                         memberEntity.profileImageUrl,
