@@ -57,6 +57,10 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name = "total_points", nullable = false)
     private Long totalPoints = 0L;
 
+    @Builder.Default
+    @Column(name = "total_attendance_count", nullable = false)
+    private Integer totalAttendanceCount = 0;
+
     @Column(name = "essential_terms_agreed_at")
     private LocalDateTime essentialTermsAgreedAt; // 필수 약관(전체) 동의 시점
 

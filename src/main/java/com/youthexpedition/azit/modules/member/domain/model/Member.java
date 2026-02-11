@@ -26,6 +26,7 @@ public class Member {
     private MemberStatus status;
     private MemberRole role;
     private Long totalPoints;
+    private Integer totalAttendanceCount;
     private LocalDateTime essentialTermsAgreedAt; // 필수 약관(전체) 동의 시점
     private boolean isMarketingTermsAgreed; // 마케팅 동의 여부
     private LocalDateTime marketingTermsAgreedAt; // 마케팅 동의 시점
@@ -46,6 +47,7 @@ public class Member {
                 .status(MemberStatus.PENDING_TERMS)
                 .role(MemberRole.MEMBER)
                 .totalPoints(0L)
+                .totalAttendanceCount(0)
                 .build();
     }
 
@@ -63,20 +65,17 @@ public class Member {
         }
 
         this.status = MemberStatus.PENDING_ONBOARDING; // 약관 완료 후 온보딩 대기 상태로 변경
-        this.updatedAt = LocalDateTime.now();
     }
 
     // 애플 리프레시 토큰 업데이트
     public void updateAppleRefreshToken(String appleRefreshToken) {
         if (this.socialProvider == SocialProvider.APPLE) {
             this.appleRefreshToken = appleRefreshToken;
-            this.updatedAt = LocalDateTime.now();
         }
     }
 
     public void updateEmailSharingStatus(boolean isEnabled) {
         this.isEmailSharingEnabled = isEnabled;
-        this.updatedAt = LocalDateTime.now();
     }
 
     // 리더가 크루 생성 완료했을 경우 상태 변경 (ACTIVE)
@@ -85,7 +84,6 @@ public class Member {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
         this.status = MemberStatus.ACTIVE;
-        this.updatedAt = LocalDateTime.now();
     }
 
     // 크루원이 초대 코드 입력 후 승인 대기할 경우 상태 변경 (WAITING_FOR_APPROVE)
@@ -94,7 +92,6 @@ public class Member {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
         this.status = MemberStatus.WAITING_FOR_APPROVE;
-        this.updatedAt = LocalDateTime.now();
     }
 
     // 리더가 가입 신청을 승인했을 경우 상태 변경 (ACTIVE)
@@ -103,7 +100,6 @@ public class Member {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
         this.status = MemberStatus.APPROVED_PENDING_CONFIRM;
-        this.updatedAt = LocalDateTime.now();
     }
 
     // 리더가 가입 신청을 거절했을 경우 상태 변경 (PENDING_ONBOARDING)
@@ -112,7 +108,6 @@ public class Member {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
         this.status = MemberStatus.REJECTED_PENDING_CONFIRM;
-        this.updatedAt = LocalDateTime.now();
     }
 
     // 승인/거절 결과 확인 후 상태 확정
@@ -122,8 +117,6 @@ public class Member {
             case REJECTED_PENDING_CONFIRM -> MemberStatus.PENDING_ONBOARDING; // 거절 확인 시 다시 크루 선택 전 단계로 변경
             default -> throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS); // 그 외 상태는 예외 처리
         };
-
-        this.updatedAt = LocalDateTime.now();
     }
 
     // 탈퇴 상태로 변경
@@ -134,7 +127,6 @@ public class Member {
 
         this.status = MemberStatus.WITHDRAWN;
         this.appleRefreshToken = null;
-        this.updatedAt = LocalDateTime.now();
     }
 
     // 탈퇴 상태에서 재로그인 할 경우 ACTIVE 처리
@@ -144,7 +136,6 @@ public class Member {
         }
 
         this.status = MemberStatus.PENDING_ONBOARDING; // 추후 기획 확인 필요
-        this.updatedAt = LocalDateTime.now();
     }
 
     // 포인트가 충분한지 체크
