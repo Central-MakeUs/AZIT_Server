@@ -33,7 +33,6 @@ public class MemberService implements MemberUseCase {
     private final MemberResponseMapper memberResponseMapper;
 
     private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
-    private static final String DEFAULT_CREW_MEMBER_ROLE = "일반";
 
     @Override
     public void agreeToTerms(Long memberId, AgreeToTermsCommand command) {
