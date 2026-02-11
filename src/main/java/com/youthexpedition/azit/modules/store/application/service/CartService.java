@@ -73,6 +73,11 @@ public class CartService implements CartUseCase {
     @Override
     @Transactional
     public void updateCartItemQuantity(Long memberId, Long cartItemId, int quantity) {
+        // 최소 수량 확인
+        if (quantity < 1) {
+            throw new BusinessException(StoreErrorCode.INVALID_QUANTITY);
+        }
+
         CartItem cartItem = loadCartPort.findById(cartItemId)
                 .orElseThrow(() -> new BusinessException(StoreErrorCode.CART_ITEM_NOT_FOUND));
 

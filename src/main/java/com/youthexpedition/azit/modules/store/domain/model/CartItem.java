@@ -1,7 +1,5 @@
 package com.youthexpedition.azit.modules.store.domain.model;
 
-import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,9 +28,6 @@ public class CartItem {
     }
 
     public void updateQuantity(int newQuantity) {
-        if (newQuantity < 1) {
-            throw new BusinessException(StoreErrorCode.INVALID_QUANTITY); // 수량은 1개 이상이어야 함
-        }
         this.quantity = newQuantity;
     }
 }
