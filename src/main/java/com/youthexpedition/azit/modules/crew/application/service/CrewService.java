@@ -1,11 +1,10 @@
 package com.youthexpedition.azit.modules.crew.application.service;
 
-import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
@@ -200,10 +199,10 @@ public class CrewService implements CrewUseCase {
 
     private void validateLeader(Long crewId, Long leaderId) {
         CrewMember requester = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_CREW_LEADER));
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
 
         if (requester.getRole() != CrewMemberRole.LEADER) {
-            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+            throw new BusinessException(CrewErrorCode.NOT_CREW_LEADER);
         }
     }
 }
