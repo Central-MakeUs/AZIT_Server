@@ -126,10 +126,7 @@ public class CrewService implements CrewUseCase {
         Crew crew = loadCrewPort.findByInvitationCode(invitationCode)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
-        // 멤버 수 조회
-        long memberCount = loadCrewMemberPort.countJoinedMembersByCrewId(crew.getId());
-
-        return CrewInvitationResponse.of(crew, memberCount);
+        return CrewInvitationResponse.of(crew, crew.getMemberCount());
     }
 
     @Override
