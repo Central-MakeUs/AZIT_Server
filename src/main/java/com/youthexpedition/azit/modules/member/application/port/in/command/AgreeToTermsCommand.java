@@ -20,7 +20,10 @@ public record AgreeToTermsCommand(
 
     // 모든 필수 약관에 동의했는지 검증
     public void validateRequired() {
-        if (!serviceTermsAgreed || !privacyPolicyAgreed || !locationServiceAgreed || !thirdPartyInfoAgreed) {
+//        if (!serviceTermsAgreed || !privacyPolicyAgreed || !locationServiceAgreed || !thirdPartyInfoAgreed) {
+//            throw new BusinessException(MemberErrorCode.REQUIRED_TERMS_NOT_AGREED);
+//        }
+        if (!serviceTermsAgreed || !privacyPolicyAgreed || !thirdPartyInfoAgreed) {
             throw new BusinessException(MemberErrorCode.REQUIRED_TERMS_NOT_AGREED);
         }
     }
