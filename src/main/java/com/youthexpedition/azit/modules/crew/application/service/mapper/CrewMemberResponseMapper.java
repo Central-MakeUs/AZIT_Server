@@ -6,6 +6,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewMemberL
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,12 +14,15 @@ import java.util.List;
 @Component
 public class CrewMemberResponseMapper {
 
-    public JoinRequestMemberResponse toResponse(JoinRequestDto result) {
+    @Value("${spring.cloud.aws.cloudfront.domain}")
+    private String cloudFrontDomain;
+
+    public JoinRequestMemberResponse toResponse(JoinRequestDto joinRequestDto) {
         return new JoinRequestMemberResponse(
-                result.memberId(),
-                result.nickname(),
-                result.profileImageUrl(),
-                result.requestedAt()
+                joinRequestDto.memberId(),
+                joinRequestDto.nickname(),
+                buildFullImageUrl(joinRequestDto.profileImageUrl()),
+                joinRequestDto.requestedAt()
         );
     }
 
@@ -40,9 +44,14 @@ public class CrewMemberResponseMapper {
                 crewMemberInfoDto.id(),
                 crewMemberInfoDto.memberId(),
                 crewMemberInfoDto.nickname(),
-                crewMemberInfoDto.profileImageUrl(),
+                buildFullImageUrl(crewMemberInfoDto.profileImageUrl()),
                 crewMemberInfoDto.role(),
                 crewMemberInfoDto.joinedAt()
         );
+    }
+
+    private String buildFullImageUrl(String imagePath) {
+        if (imagePath == null) return null;
+        return cloudFrontDomain + imagePath;
     }
 }
