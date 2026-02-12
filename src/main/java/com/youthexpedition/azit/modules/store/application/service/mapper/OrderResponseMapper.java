@@ -187,7 +187,8 @@ public class OrderResponseMapper {
             return null;
         }
 
-        LocalDateTime paymentDeadline = order.getCreatedAt().plusDays(1);
+        // 입금 기한 계산
+        LocalDateTime paymentDeadline = order.calculatePaymentDeadline();
 
         return DepositAccountInfoResponse.of(
                 bankName,
