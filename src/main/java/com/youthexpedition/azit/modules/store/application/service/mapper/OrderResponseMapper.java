@@ -5,7 +5,7 @@ import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.Order;
-import com.youthexpedition.azit.modules.store.domain.model.PointPolicy;
+import com.youthexpedition.azit.modules.store.domain.model.policy.PointPolicy;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
