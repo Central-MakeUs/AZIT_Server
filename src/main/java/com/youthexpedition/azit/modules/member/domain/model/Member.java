@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
 @Builder
@@ -35,6 +37,15 @@ public class Member {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private static final List<String> DEFAULT_PROFILE_IMAGES = List.of(
+            "/profiles/default/default_1.svg",
+            "/profiles/default/default_2.png",
+            "/profiles/default/default_3.png",
+            "/profiles/default/default_4.png",
+            "/profiles/default/default_5.png",
+            "/profiles/default/default_6.png"
+    );
+
     public static Member create(SocialProvider provider, String socialProviderId,
                                 String nickname, String email, boolean isEmailSharingEnabled, String profileImageUrl) {
         return Member.builder()
@@ -43,7 +54,7 @@ public class Member {
                 .nickname(nickname)
                 .email(email)
                 .isEmailSharingEnabled(isEmailSharingEnabled)
-                .profileImageUrl(profileImageUrl)
+                .profileImageUrl((profileImageUrl == null || profileImageUrl.isBlank()) ? getRandomDefaultImage() : profileImageUrl)
                 .status(MemberStatus.PENDING_TERMS)
                 .role(MemberRole.MEMBER)
                 .totalPoints(0L)
@@ -76,6 +87,12 @@ public class Member {
 
     public void updateEmailSharingStatus(boolean isEnabled) {
         this.isEmailSharingEnabled = isEnabled;
+    }
+
+    // 기본 이미지 랜덤 선택
+    private static String getRandomDefaultImage() {
+        int randomIndex = ThreadLocalRandom.current().nextInt(DEFAULT_PROFILE_IMAGES.size());
+        return DEFAULT_PROFILE_IMAGES.get(randomIndex);
     }
 
     // 리더가 크루 생성 완료했을 경우 상태 변경 (ACTIVE)
