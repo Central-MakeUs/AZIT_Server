@@ -124,6 +124,7 @@ public class CrewService implements CrewUseCase {
     @Transactional(readOnly = true)
     public CrewInvitationResponse getCrewInfoByInvitationCode(String invitationCode) {
         Crew crew = loadCrewPort.findByInvitationCode(invitationCode)
+                .filter(c -> c.getInvitationCode().equals(invitationCode)) // 초대코드가 완벽히 일치하는지 확인 (대소문자 체크)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
         // 멤버 수 조회
