@@ -7,7 +7,7 @@ import java.util.List;
 
 public record CartListResponse(
         @Schema(description = "장바구니 상품 목록")
-        List<CartItemDetail> items,
+        List<CartItemDetailResponse> items,
         @Schema(description = "총 상품금액 (할인 전 합계)")
         long totalProductPrice,
         @Schema(description = "아지트 멤버십 할인 금액")
@@ -17,7 +17,7 @@ public record CartListResponse(
         @Schema(description = "최종 결제 예정 금액")
         long totalPaymentPrice
 ) {
-    public record CartItemDetail(
+    public record CartItemDetailResponse(
             @Schema(description = "장바구니 항목 ID")
             Long id,
             @Schema(description = "브랜드명")
@@ -42,7 +42,7 @@ public record CartListResponse(
             boolean isOutOfStock
     ) {
     }
-        public static CartListResponse of(List<CartItemDetail> items, long totalProductPrice, long membershipDiscount, long shippingFee) {
+        public static CartListResponse of(List<CartItemDetailResponse> items, long totalProductPrice, long membershipDiscount, long shippingFee) {
             long totalPaymentPrice = totalProductPrice - membershipDiscount + shippingFee;
                 return new CartListResponse(
                         items,

@@ -28,7 +28,7 @@ public class OrderResponseMapper {
     public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items,
                                                          long totalProductPrice, long membershipDiscount, long totalShippingFee) {
         // 주문 상품 상세 목록 매핑
-        List<OrderCheckoutResponse.CheckoutItemResponse> itemResponses = items.stream()
+        List<OrderCheckoutResponse.CheckoutItemDetailResponse> itemResponses = items.stream()
                 .map(this::toCheckoutItemResponse)
                 .toList();
 
@@ -46,16 +46,14 @@ public class OrderResponseMapper {
         );
     }
 
-    private OrderCheckoutResponse.CheckoutItemResponse toCheckoutItemResponse(CheckoutItemDto item) {
-        String fullImageUrl = buildFullImageUrl(item.imageUrl());
-
-        return OrderCheckoutResponse.CheckoutItemResponse.of(
+    private OrderCheckoutResponse.CheckoutItemDetailResponse toCheckoutItemResponse(CheckoutItemDto item) {
+        return OrderCheckoutResponse.CheckoutItemDetailResponse.of(
                 item.productId(),
                 item.skuId(),
                 item.brandName(),
                 item.productName(),
                 formatOptionValues(item.optionValues()),
-                fullImageUrl,
+                buildFullImageUrl(item.imageUrl()),
                 item.basePrice(),
                 item.salePrice(),
                 item.quantity(),

@@ -9,7 +9,7 @@ public record OrderCheckoutResponse(
         @Schema(description = "배송지 정보 (기본 배송지 우선, 없으면 null)")
         DeliveryAddressResponse deliveryInfo,
         @Schema(description = "주문할 상품 목록")
-        List<CheckoutItemResponse> items,
+        List<CheckoutItemDetailResponse> items,
         @Schema(description = "포인트 정보")
         PointInfoResponse pointInfo,
         @Schema(description = "사용 가능한 결제 수단 목록")
@@ -17,7 +17,7 @@ public record OrderCheckoutResponse(
         @Schema(description = "최종 결제 금액 요약")
         OrderSummaryResponse summary
 ) {
-        public record CheckoutItemResponse(
+        public record CheckoutItemDetailResponse(
                 @Schema(description = "상품 ID")
                 Long productId,
                 @Schema(description = "sku ID")
@@ -41,10 +41,10 @@ public record OrderCheckoutResponse(
                 @Schema(description = "총 판매가")
                 Long totalSalePrice
         ) {
-                public static CheckoutItemResponse of(Long productId, Long skuId, String brandName, String productName,
+                public static CheckoutItemDetailResponse of(Long productId, Long skuId, String brandName, String productName,
                                                       String optionDescription, String productImageUrl,
                                                       Long basePrice, Long salePrice, int quantity, Long totalBasePrice, Long totalSalePrice) {
-                        return new CheckoutItemResponse(
+                        return new CheckoutItemDetailResponse(
                                 productId,
                                 skuId,
                                 brandName,
@@ -94,7 +94,7 @@ public record OrderCheckoutResponse(
 
         public static OrderCheckoutResponse of(
                 DeliveryAddressResponse deliveryAddress,
-                List<CheckoutItemResponse> items,
+                List<CheckoutItemDetailResponse> items,
                 PointInfoResponse pointInfo,
                 List<PaymentMethodResponse> paymentMethods,
                 OrderSummaryResponse summary
