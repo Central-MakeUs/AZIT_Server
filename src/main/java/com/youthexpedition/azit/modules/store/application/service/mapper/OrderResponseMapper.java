@@ -106,6 +106,8 @@ public class OrderResponseMapper {
 
         List<OrderItemResponse> items = order.getOrderItems().stream()
                 .map(item -> OrderItemResponse.of(
+                        item.getProductId(),
+                        item.getSkuId(),
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
@@ -137,6 +139,8 @@ public class OrderResponseMapper {
     public OrderListResponse toOrderListResponse(Order order) {
         List<OrderItemResponse> itemSummaries = order.getOrderItems().stream()
                 .map(item -> OrderItemResponse.of(
+                        item.getProductId(),
+                        item.getSkuId(),
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
