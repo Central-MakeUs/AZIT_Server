@@ -20,9 +20,15 @@ public class OrderResponseMapper {
     @Value("${spring.cloud.aws.cloudfront.domain}")
     private String cloudFrontDomain;
 
-    private static final String BANK_NAME = "신한은행";
-    private static final String ACCOUNT_NUMBER = "110-322-291923";
-    private static final String ACCOUNT_HOLDER = "성수립";
+    @Value("${payment.bank.name}")
+    private String bankName;
+
+    @Value("${payment.bank.account-number}")
+    private String accountNumber;
+
+    @Value("${payment.bank.account-holder}")
+    private String accountHolder;
+
     private static final String ORDER_NUMBER_PREFIX = "#";
 
     public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items,
@@ -40,7 +46,7 @@ public class OrderResponseMapper {
         return OrderCheckoutResponse.of(
                 address,
                 itemResponses,
-                DepositAccountInfoResponse.of(BANK_NAME, ACCOUNT_NUMBER, ACCOUNT_HOLDER, null, null),
+                DepositAccountInfoResponse.of(bankName, accountNumber, accountHolder, null, null),
                 OrderCheckoutResponse.PointInfoResponse.of(member.getTotalPoints(), PointPolicy.MIN_POINT_USAGE, PointPolicy.POINT_UNIT),
                 paymentMethods,
                 OrderSummaryResponse.of(totalProductPrice, membershipDiscount, 0, totalShippingFee)
@@ -184,9 +190,9 @@ public class OrderResponseMapper {
         LocalDateTime paymentDeadline = order.getCreatedAt().plusDays(1);
 
         return DepositAccountInfoResponse.of(
-                BANK_NAME,
-                ACCOUNT_NUMBER,
-                ACCOUNT_HOLDER,
+                bankName,
+                accountNumber,
+                accountHolder,
                 order.getDepositorName(),
                 paymentDeadline
         );

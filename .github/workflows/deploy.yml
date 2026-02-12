@@ -98,6 +98,9 @@ jobs:
             APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}
             APPLE_KEY_PATH=${{ secrets.APPLE_KEY_PATH }}
             APPLE_REDIRECT_URL=${{ secrets.APPLE_REDIRECT_URL }}
+            PAYMENT_BANK_NAME=${{ secrets.PAYMENT_BANK_NAME }}
+            PAYMENT_BANK_ACCOUNT_NUMBER=${{ secrets.PAYMENT_BANK_ACCOUNT_NUMBER }}
+            PAYMENT_BANK_ACCOUNT_HOLDER=${{ secrets.PAYMENT_BANK_ACCOUNT_HOLDER }}
             EOF
 
             sudo docker compose pull app
