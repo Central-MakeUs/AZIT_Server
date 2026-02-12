@@ -66,7 +66,7 @@ public record CreateOrderRequest(
                 shippingInstruction,
                 usedPoints,
                 paymentMethod,
-                depositorName.trim()
+                depositorName != null ? depositorName.trim() : null
         );
     }
 }
