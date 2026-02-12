@@ -26,7 +26,7 @@ public record OrderDetailResponse(
         @Schema(description = "주문 상품 목록")
         List<OrderItemResponse> items,
         @Schema(description = "결제 금액 요약")
-        PaymentSummaryResponse summary
+        OrderSummaryResponse summary
 ) {
         public record OrderDetailDeliveryInfoResponse(
                 @Schema(description = "수령인 이름")
@@ -89,33 +89,9 @@ public record OrderDetailResponse(
                 }
         }
 
-        public record PaymentSummaryResponse(
-                @Schema(description = "총 상품금액 (할인 전 합계)")
-                long totalProductPrice,
-                @Schema(description = "아지트 멤버십 할인 금액")
-                long membershipDiscount,
-                @Schema(description = "포인트 할인 금액")
-                long pointDiscount,
-                @Schema(description = "배송비")
-                long shippingFee,
-                @Schema(description = "최종 결제 예정 금액")
-                long totalPaymentPrice
-        ) {
-                public static PaymentSummaryResponse of(long totalProductPrice, long membershipDiscount, long pointDiscount, long shippingFee) {
-                        long totalPaymentPrice = totalProductPrice - membershipDiscount - pointDiscount + shippingFee;
-                        return new PaymentSummaryResponse(
-                                totalProductPrice,
-                                membershipDiscount,
-                                pointDiscount,
-                                shippingFee,
-                                totalPaymentPrice
-                        );
-                }
-        }
-
         public static OrderDetailResponse of(Long id, LocalDateTime orderDate, String orderNumber, OrderStatus status,
                                              OrderDetailDeliveryInfoResponse deliveryInfo, DepositAccountInfoResponse depositAccountInfo,
-                                             ShippingResponse shippingInfo, List<OrderItemResponse> items, PaymentSummaryResponse summary) {
+                                             ShippingResponse shippingInfo, List<OrderItemResponse> items, OrderSummaryResponse summary) {
                 return new OrderDetailResponse(
                         id,
                         orderDate,

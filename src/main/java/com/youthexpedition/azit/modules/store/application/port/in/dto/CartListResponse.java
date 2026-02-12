@@ -42,14 +42,14 @@ public record CartListResponse(
             boolean isOutOfStock
     ) {
     }
-        public static CartListResponse of(
-                List<CartItemDetail> items, long totalProductPrice, long membershipDiscount, long shippingFee) {
+        public static CartListResponse of(List<CartItemDetail> items, long totalProductPrice, long membershipDiscount, long shippingFee) {
+            long totalPaymentPrice = totalProductPrice - membershipDiscount + shippingFee;
                 return new CartListResponse(
                         items,
                         totalProductPrice,
                         membershipDiscount,
                         shippingFee,
-                        totalProductPrice - membershipDiscount + shippingFee
+                        totalPaymentPrice
                 );
         }
 }

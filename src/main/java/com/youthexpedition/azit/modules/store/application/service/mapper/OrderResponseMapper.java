@@ -42,7 +42,7 @@ public class OrderResponseMapper {
                 itemResponses,
                 OrderCheckoutResponse.PointInfoResponse.of(member.getTotalPoints(), PointPolicy.MIN_POINT_USAGE, PointPolicy.POINT_UNIT),
                 paymentMethods,
-                OrderCheckoutResponse.CheckoutSummaryResponse.of(totalProductPrice, membershipDiscount, totalShippingFee)
+                OrderSummaryResponse.of(totalProductPrice, membershipDiscount, 0, totalShippingFee)
         );
     }
 
@@ -50,6 +50,8 @@ public class OrderResponseMapper {
         String fullImageUrl = buildFullImageUrl(item.imageUrl());
 
         return OrderCheckoutResponse.CheckoutItemResponse.of(
+                item.productId(),
+                item.skuId(),
                 item.brandName(),
                 item.productName(),
                 formatOptionValues(item.optionValues()),
@@ -80,7 +82,7 @@ public class OrderResponseMapper {
                         order.getAddress().getDetailAddress()
                 ),
                 buildDepositAccountInfo(order),
-                CreateOrderResponse.CheckoutSummaryResponse.of(
+                OrderSummaryResponse.of(
                         order.getTotalProductPrice(),
                         order.getMembershipDiscount(),
                         order.getUsedPoints(),
@@ -113,7 +115,7 @@ public class OrderResponseMapper {
                         item.getQuantity()
                 )).toList();
 
-        var summary = OrderDetailResponse.PaymentSummaryResponse.of(
+        var summary = OrderSummaryResponse.of(
                 order.getTotalProductPrice(),
                 order.getMembershipDiscount(),
                 order.getUsedPoints(),

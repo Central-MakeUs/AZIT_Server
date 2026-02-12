@@ -10,7 +10,7 @@ public record CreateOrderResponse(
         @Schema(description = "입금 계좌 정보")
         DepositAccountInfoResponse depositAccountInfo,
         @Schema(description = "최종 결제 금액 요약")
-        CheckoutSummaryResponse summary
+        OrderSummaryResponse summary
 ) {
         public record OrderDeliveryInfoResponse(
                 @Schema(description = "수령인 이름")
@@ -27,31 +27,8 @@ public record CreateOrderResponse(
                 }
         }
 
-        public record CheckoutSummaryResponse(
-                @Schema(description = "총 상품금액 (할인 전 합계)")
-                long totalProductPrice,
-                @Schema(description = "아지트 멤버십 할인 금액")
-                long membershipDiscount,
-                @Schema(description = "포인트 할인 금액")
-                long pointDiscount,
-                @Schema(description = "배송비")
-                long shippingFee,
-                @Schema(description = "최종 결제 금액")
-                long totalPaymentPrice
-        ) {
-                public static CheckoutSummaryResponse of(long totalProductPrice, long membershipDiscount, long pointDiscount, long shippingFee) {
-                        return new CheckoutSummaryResponse(
-                                totalProductPrice,
-                                membershipDiscount,
-                                pointDiscount,
-                                shippingFee,
-                                totalProductPrice - membershipDiscount - pointDiscount + shippingFee
-                        );
-                }
-        }
-
         public static CreateOrderResponse of(String orderNumber, OrderDeliveryInfoResponse deliveryInfo,
-                                             DepositAccountInfoResponse depositAccountInfo, CheckoutSummaryResponse summary) {
+                                             DepositAccountInfoResponse depositAccountInfo, OrderSummaryResponse summary) {
                 return new CreateOrderResponse(orderNumber, deliveryInfo, depositAccountInfo, summary);
         }
 }

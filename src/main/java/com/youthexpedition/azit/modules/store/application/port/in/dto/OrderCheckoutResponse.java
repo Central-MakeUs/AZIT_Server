@@ -15,9 +15,13 @@ public record OrderCheckoutResponse(
         @Schema(description = "사용 가능한 결제 수단 목록")
         List<PaymentMethodResponse> paymentMethods,
         @Schema(description = "최종 결제 금액 요약")
-        CheckoutSummaryResponse summary
+        OrderSummaryResponse summary
 ) {
         public record CheckoutItemResponse(
+                @Schema(description = "상품 ID")
+                Long productId,
+                @Schema(description = "sku ID")
+                Long skuId,
                 @Schema(description = "브랜드명")
                 String brandName,
                 @Schema(description = "상품명")
@@ -37,9 +41,12 @@ public record OrderCheckoutResponse(
                 @Schema(description = "총 판매가")
                 Long totalSalePrice
         ) {
-                public static CheckoutItemResponse of(String brandName, String productName, String optionDescription, String productImageUrl,
+                public static CheckoutItemResponse of(Long productId, Long skuId, String brandName, String productName,
+                                                      String optionDescription, String productImageUrl,
                                                       Long basePrice, Long salePrice, int quantity, Long totalBasePrice, Long totalSalePrice) {
                         return new CheckoutItemResponse(
+                                productId,
+                                skuId,
                                 brandName,
                                 productName,
                                 optionDescription,
@@ -84,32 +91,13 @@ public record OrderCheckoutResponse(
                         );
                 }
         }
-        public record CheckoutSummaryResponse(
-                @Schema(description = "총 상품금액 (할인 전 합계)")
-                long totalProductPrice,
-                @Schema(description = "아지트 멤버십 할인 금액")
-                long membershipDiscount,
-                @Schema(description = "배송비")
-                long shippingFee,
-                @Schema(description = "최종 결제 예정 금액")
-                long totalPaymentPrice
-        ) {
-                public static CheckoutSummaryResponse of(long totalProductPrice, long membershipDiscount, long shippingFee) {
-                        return new CheckoutSummaryResponse(
-                                totalProductPrice,
-                                membershipDiscount,
-                                shippingFee,
-                                totalProductPrice - membershipDiscount + shippingFee
-                        );
-                }
-        }
 
         public static OrderCheckoutResponse of(
                 DeliveryAddressResponse deliveryAddress,
                 List<CheckoutItemResponse> items,
                 PointInfoResponse pointInfo,
                 List<PaymentMethodResponse> paymentMethods,
-                CheckoutSummaryResponse summary
+                OrderSummaryResponse summary
         ) {
                 return new OrderCheckoutResponse(
                         deliveryAddress,
