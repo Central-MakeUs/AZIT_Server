@@ -14,6 +14,7 @@ import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPo
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
+import com.youthexpedition.azit.modules.member.domain.model.provider.ProfileImageProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class SocialLoginService implements SocialLoginUseCase {
     private final TokenPort tokenPort;
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final JwtProvider jwtProvider;
+    private final ProfileImageProvider profileImageProvider;
 
     @Override
     public AuthResult login(SocialLoginCommand command) {
@@ -60,14 +62,22 @@ public class SocialLoginService implements SocialLoginUseCase {
 
     private Member upsertMember(SocialProfile profile) {
         Member member = loadMemberPort.findBySocialInfo(profile.socialProvider(), profile.socialProviderId())
-                .orElseGet(() -> Member.create(
-                        profile.socialProvider(),
-                        profile.socialProviderId(),
-                        profile.nickname(),
-                        profile.email(),
-                        profile.isEmailSharingEnabled(),
-                        profile.profileImageUrl()
-                ));
+                .orElseGet(() -> {
+                    // 제공받은 프로필 이미지가 없을 경우 랜덤으로 기본 이미지 설정
+                    String profileImageUrl = profile.profileImageUrl();
+                    if (profileImageUrl == null || profileImageUrl.isBlank()) {
+                        profileImageUrl = profileImageProvider.getRandomDefaultImage();
+                    }
+
+                    return Member.create(
+                            profile.socialProvider(),
+                            profile.socialProviderId(),
+                            profile.nickname(),
+                            profile.email(),
+                            profile.isEmailSharingEnabled(),
+                            profileImageUrl
+                    );
+                });
 
         // 탈퇴한 회원인 경우 재활성화
         if (member.getStatus() == MemberStatus.WITHDRAWN) {

@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.store.domain.model;
+package com.youthexpedition.azit.modules.store.domain.model.policy;
 
 import com.youthexpedition.azit.modules.store.application.port.out.query.PriceCalculateDto;
 import lombok.AccessLevel;

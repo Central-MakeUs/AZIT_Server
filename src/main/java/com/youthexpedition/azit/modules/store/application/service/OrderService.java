@@ -21,6 +21,8 @@ import com.youthexpedition.azit.modules.store.domain.model.*;
 import com.youthexpedition.azit.modules.store.domain.model.enums.OrderType;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
+import com.youthexpedition.azit.modules.store.domain.model.policy.OrderPricePolicy;
+import com.youthexpedition.azit.modules.store.domain.model.policy.PointPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;

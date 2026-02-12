@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.store.domain.model;
+package com.youthexpedition.azit.modules.store.domain.model.policy;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.domain.model.Member;

@@ -13,7 +13,7 @@ import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.application.service.mapper.CartResponseMapper;
 import com.youthexpedition.azit.modules.store.domain.model.CartItem;
-import com.youthexpedition.azit.modules.store.domain.model.OrderPricePolicy;
+import com.youthexpedition.azit.modules.store.domain.model.policy.OrderPricePolicy;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
 import com.youthexpedition.azit.modules.store.domain.model.ProductSku;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;

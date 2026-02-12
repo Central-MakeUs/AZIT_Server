@@ -31,3 +31,13 @@ oauth:
     auth-url: https://kauth.kakao.com
     api-url: https://kapi.kakao.com
   apple-url: https://appleid.apple.com
+
+default:
+  member:
+    profile-images:
+      - "/profiles/default/default_1.svg"
+      - "/profiles/default/default_2.svg"
+      - "/profiles/default/default_3.svg"
+      - "/profiles/default/default_4.svg"
+      - "/profiles/default/default_5.svg"
+      - "/profiles/default/default_6.svg"
