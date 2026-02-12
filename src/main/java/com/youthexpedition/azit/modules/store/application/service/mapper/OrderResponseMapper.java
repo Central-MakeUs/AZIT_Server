@@ -105,8 +105,8 @@ public class OrderResponseMapper {
                 order.getTrackingNumber()
         );
 
-        List<OrderDetailResponse.OrderItemResponse> items = order.getOrderItems().stream()
-                .map(item -> OrderDetailResponse.OrderItemResponse.of(
+        List<OrderItemResponse> items = order.getOrderItems().stream()
+                .map(item -> OrderItemResponse.of(
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
@@ -136,8 +136,8 @@ public class OrderResponseMapper {
     }
 
     public OrderListResponse toOrderListResponse(Order order) {
-        List<OrderListResponse.OrderItemSummaryResponse> itemSummaries = order.getOrderItems().stream()
-                .map(item -> OrderListResponse.OrderItemSummaryResponse.of(
+        List<OrderItemResponse> itemSummaries = order.getOrderItems().stream()
+                .map(item -> OrderItemResponse.of(
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
