@@ -26,6 +26,7 @@ public class Order {
     private final long usedPoints;
     private final long totalPaymentPrice;
     private final PaymentMethod paymentMethod;
+    private final String depositorName;
     private final String courier; // 택배사
     private final String trackingNumber; // 운송장 번호
     private OrderStatus status;
@@ -33,8 +34,10 @@ public class Order {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private static final long PAYMENT_DUE_DAYS = 1L; // 입금 기한 계산용
+
     public static Order create(Long memberId, String orderNumber, OrderAddress address, String shippingInstruction,
-                               long totalShippingFee, long usedPoints, PaymentMethod paymentMethod, List<OrderItem> orderItems) {
+                               long totalShippingFee, long usedPoints, PaymentMethod paymentMethod, String depositorName, List<OrderItem> orderItems) {
 
         long totalProductPrice = orderItems.stream()
                 .mapToLong(OrderItem::getTotalBasePrice)
@@ -58,6 +61,7 @@ public class Order {
                 .usedPoints(usedPoints)
                 .totalPaymentPrice(totalPaymentPrice)
                 .paymentMethod(paymentMethod)
+                .depositorName(depositorName)
                 .status(OrderStatus.PENDING)
                 .orderItems(orderItems)
                 .build();
@@ -78,5 +82,13 @@ public class Order {
         String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         int randomNumber = ThreadLocalRandom.current().nextInt(1000000);
         return String.format("AZ%s%04d", datePart, randomNumber);
+    }
+
+    // 입금 기한 계산
+    public LocalDateTime calculatePaymentDeadline() {
+        if (this.getCreatedAt() == null) {
+            return LocalDateTime.now().plusDays(PAYMENT_DUE_DAYS);
+        }
+        return this.getCreatedAt().plusDays(PAYMENT_DUE_DAYS);
     }
 }

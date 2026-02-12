@@ -20,24 +20,22 @@ public class CartResponseMapper {
     }
 
     public CartListResponse toCartListResponse(List<CartItemQueryDto> items, long totalProductPrice, long totalMembershipDiscount, long totalShippingFee) {
-        List<CartListResponse.CartItemDetail> details = items.stream()
+        List<CartListResponse.CartItemDetailResponse> details = items.stream()
                 .map(this::toItemDetail)
                 .toList();
 
         return CartListResponse.of(details, totalProductPrice, totalMembershipDiscount, totalShippingFee);
     }
 
-    private CartListResponse.CartItemDetail toItemDetail(CartItemQueryDto cartItem) {
-        String fullImageUrl = (cartItem.imageUrl() != null) ? cloudFrontDomain + cartItem.imageUrl() : null;
-
-        return new CartListResponse.CartItemDetail(
+    private CartListResponse.CartItemDetailResponse toItemDetail(CartItemQueryDto cartItem) {
+        return new CartListResponse.CartItemDetailResponse(
                 cartItem.cartItemId(),
                 cartItem.brandName(),
                 cartItem.productName(),
                 Product.calculateExpectedShippingDate(cartItem.shippingLeadTime()),
                 cartItem.skuId(),
                 formatOptionValues(cartItem.optionValues()),
-                fullImageUrl,
+                buildFullImageUrl(cartItem.imageUrl()),
                 (cartItem.basePrice() + cartItem.additionalPrice()) * cartItem.quantity(),
                 (cartItem.salePrice() + cartItem.additionalPrice()) * cartItem.quantity(),
                 cartItem.quantity(),
@@ -51,5 +49,10 @@ public class CartResponseMapper {
             return "";
         }
         return String.join(" / ", optionValues);
+    }
+
+    private String buildFullImageUrl(String imagePath) {
+        if (imagePath == null) return null;
+        return cloudFrontDomain + imagePath;
     }
 }

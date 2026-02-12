@@ -94,6 +94,12 @@ public class OrderService implements OrderUseCase {
             throw new BusinessException(StoreErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
         }
 
+        // 무통장 입금 시 입금자명 필수 검증
+        if (paymentMethod == PaymentMethod.BANK_TRANSFER && (command.depositorName() == null || command.depositorName().isBlank())) {
+                throw new BusinessException(StoreErrorCode.INVALID_ORDER_REQUEST);
+            }
+
+
         // 결제 타입별로 상품 아이템 조회
         List<CheckoutItemDto> items = switch (OrderType.from(command)) {
             case CART -> loadCartPort.findCartDetailsByIds(command.cartItemIds());
@@ -149,6 +155,7 @@ public class OrderService implements OrderUseCase {
                 totalShippingFee,
                 command.usedPoints(),
                 PaymentMethod.valueOf(command.paymentMethod()),
+                command.depositorName(),
                 orderItems
         );
 

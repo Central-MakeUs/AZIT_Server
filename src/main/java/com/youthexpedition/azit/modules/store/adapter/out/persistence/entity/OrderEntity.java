@@ -59,6 +59,9 @@ public class OrderEntity extends BaseTimeEntity {
     @Column(name = "total_payment_price", nullable = false)
     private long totalPaymentPrice;       // 최종 결제 금액
 
+    @Column(name = "depositor_name", length = 50)
+    private String depositorName; // 입금자명 (무통장입금)
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod; // 결제 수단

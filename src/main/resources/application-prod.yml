@@ -64,6 +64,12 @@ jwt:
   cookie:
     secure: true
 
+payment:
+  bank:
+    name: ${PAYMENT_BANK_NAME}
+    account-number: ${PAYMENT_BANK_ACCOUNT_NUMBER}
+    account-holder: ${PAYMENT_BANK_ACCOUNT_HOLDER}
+
 # 서버 포트 (도커 컨테이너 내부 포트)
 server:
   port: 8080

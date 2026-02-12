@@ -18,35 +18,10 @@ public record OrderListResponse(
         @Schema(description = "주문 상태")
         OrderStatus status,
         @Schema(description = "주문 상품 목록")
-        List<OrderItemSummaryResponse> items
+        List<OrderItemResponse> items
 ) {
-        public record OrderItemSummaryResponse(
-                @Schema(description = "구매 당시 브랜드명")
-                String brandName,
-                @Schema(description = "구매 당시 상품명")
-                String productName,
-                @Schema(description = "구매 당시 옵션 정보")
-                String optionDescription,
-                @Schema(description = "구매 당시 상품 대표 이미지 url")
-                String productImageUrl,
-                @Schema(description = "판매가")
-                long salePrice,
-                @Schema(description = "구매 수량")
-                int quantity
-        ) {
-                public static OrderItemSummaryResponse of(String brandName, String productName, String optionDescription,
-                                                   String productImageUrl, long totalSalePrice, int quantity) {
-                        return new OrderItemSummaryResponse(
-                                brandName,
-                                productName,
-                                optionDescription,
-                                productImageUrl,
-                                totalSalePrice,
-                                quantity);
-                }
-        }
 
-        public static OrderListResponse of(Long id, LocalDateTime orderDate, String orderNumber, OrderStatus status, List<OrderItemSummaryResponse> items) {
+        public static OrderListResponse of(Long id, LocalDateTime orderDate, String orderNumber, OrderStatus status, List<OrderItemResponse> items) {
                 return new OrderListResponse(
                         id,
                         orderDate,
