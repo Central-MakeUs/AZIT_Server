@@ -1,12 +1,12 @@
 spring:
   profiles:
-    active: local # local profile ?? ???
+    active: local
   application:
     name: azit
 
   threads:
     virtual:
-      enabled: true # ?? ??? ???
+      enabled: true
 
   jpa:
     open-in-view: false
@@ -17,4 +17,27 @@ spring:
       hibernate:
         format_sql: true
         highlight_sql: true
-        default_batch_fetch_size: 100 # ?? ??? ??? ?? ??? ???
+        default_batch_fetch_size: 100
+
+security:
+  permit-all-paths:
+    - "/v3/api-docs/**"
+    - "/swagger-ui/**"
+    - "/swagger-ui.html"
+    - "/api/v1/swagger-test/**"
+
+oauth:
+  kakao:
+    auth-url: https://kauth.kakao.com
+    api-url: https://kapi.kakao.com
+  apple-url: https://appleid.apple.com
+
+default:
+  member:
+    profile-images:
+      - "/profiles/default/default_1.svg"
+      - "/profiles/default/default_2.svg"
+      - "/profiles/default/default_3.svg"
+      - "/profiles/default/default_4.svg"
+      - "/profiles/default/default_5.svg"
+      - "/profiles/default/default_6.svg"

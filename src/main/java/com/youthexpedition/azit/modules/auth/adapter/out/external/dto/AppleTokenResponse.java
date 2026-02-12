@@ -1,0 +1,21 @@
+package com.youthexpedition.azit.modules.auth.adapter.out.external.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record AppleTokenResponse(
+        @JsonProperty("access_token")
+        String accessToken,
+        @JsonProperty("token_type")
+        String tokenType,
+        @JsonProperty("expires_in")
+        Long expiresIn,
+        @JsonProperty("refresh_token")
+        String refreshToken,
+        @JsonProperty("id_token")
+        String idToken,
+        String error,
+        @JsonProperty("error_description")
+        String errorDescription
+) {
+
+}

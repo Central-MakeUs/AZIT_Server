@@ -1,0 +1,70 @@
+package com.youthexpedition.azit.infrastructure.auth.jwt;
+
+import com.youthexpedition.azit.infrastructure.auth.util.TokenUtil;
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
+import com.youthexpedition.azit.modules.auth.application.port.out.TokenProviderPort;
+import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final TokenPort tokenPort;
+    private final TokenProviderPort tokenProviderPort;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain filterChain)
+            throws ServletException, IOException {
+
+        // 헤더에서 accessToken 추출
+        String authorizationHeader = request.getHeader("Authorization");
+
+        // 헤더가 없는 경우 통과
+        if (!StringUtils.hasText(authorizationHeader)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // accessToken 유효성 검증 및 인증 처리
+        try {
+            String accessToken = TokenUtil.extractToken(authorizationHeader);
+            // 토큰이 있고 유효한지 검증
+            if (tokenProviderPort.validateToken(accessToken)) {
+                // 블랙리스트에 포함된 토큰인지 확인
+                if (tokenPort.isBlacklisted(accessToken)) {
+                    log.warn("[JwtAuthenticationFilter] Token is blacklisted: {}", accessToken);
+                    throw new BusinessException(AuthErrorCode.BLACKLISTED_TOKEN);
+                }
+
+                Authentication authentication = tokenProviderPort.getAuthentication(accessToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        } catch (BusinessException e) {
+            // 만료(EXPIRED_TOKEN) 또는 유효하지 않음(INVALID_TOKEN) 예외를 request에 저장
+            // 이후 AuthenticationEntryPoint에서 값을 꺼내 처리
+            request.setAttribute("exception", e.getErrorCode());
+        } catch (Exception e) {
+        // NPE 등 기타 예외 발생 시 로그를 남기고 유효하지 않은 토큰으로 처리
+        log.error("Authentication failed: {}", e.getMessage(), e);
+        request.setAttribute("exception", AuthErrorCode.INVALID_TOKEN);
+    }
+
+        filterChain.doFilter(request, response);
+    }
+}

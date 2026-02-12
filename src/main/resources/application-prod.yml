@@ -1,0 +1,75 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password: ${REDIS_PASSWORD}
+
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      s3:
+        bucket: prod-azit-storage
+      cloudfront:
+        domain: https://images.azitcrew.com
+      credentials:
+        access-key: ${AWS_S3_ACCESS_KEY}
+        secret-key: ${AWS_S3_SECRET_KEY}
+
+swagger:
+  server:
+    url: https://api.azitcrew.com
+    description: Production Server
+
+security:
+  cors:
+    allowed-origins:
+      - "https://api.azitcrew.com"
+      - "https://azitcrew.com"
+      - "https://appleid.apple.com"
+    allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed-headers: ["*"]
+    allow-credentials: true
+
+oauth:
+  kakao:
+    client-id: ${KAKAO_REST_API_KEY}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    admin-key: ${KAKAO_ADMIN_KEY}
+    redirect-url: ${KAKAO_REDIRECT_URL}
+
+  apple:
+    team-id: ${APPLE_TEAM_ID}
+    client-id: ${APPLE_SERVICE_ID}
+    key-id: ${APPLE_KEY_ID}
+    key-path: ${APPLE_KEY_PATH}
+    redirect-url: ${APPLE_REDIRECT_URL}
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-token-expiration-seconds: ${JWT_ACCESS_EXPIRATION}
+  refresh-token-expiration-seconds: ${JWT_REFRESH_EXPIRATION}
+  refresh-token-name: azit_rt_prod
+  cookie:
+    secure: true
+
+payment:
+  bank:
+    name: ${PAYMENT_BANK_NAME}
+    account-number: ${PAYMENT_BANK_ACCOUNT_NUMBER}
+    account-holder: ${PAYMENT_BANK_ACCOUNT_HOLDER}
+
+# 서버 포트 (도커 컨테이너 내부 포트)
+server:
+  port: 8080
