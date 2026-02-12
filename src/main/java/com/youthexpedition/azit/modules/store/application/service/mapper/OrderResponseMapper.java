@@ -40,6 +40,7 @@ public class OrderResponseMapper {
         return OrderCheckoutResponse.of(
                 address,
                 itemResponses,
+                DepositAccountInfoResponse.of(BANK_NAME, ACCOUNT_NUMBER, ACCOUNT_HOLDER, null, null),
                 OrderCheckoutResponse.PointInfoResponse.of(member.getTotalPoints(), PointPolicy.MIN_POINT_USAGE, PointPolicy.POINT_UNIT),
                 paymentMethods,
                 OrderSummaryResponse.of(totalProductPrice, membershipDiscount, 0, totalShippingFee)

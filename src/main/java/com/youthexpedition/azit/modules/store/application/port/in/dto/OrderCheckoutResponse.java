@@ -10,6 +10,8 @@ public record OrderCheckoutResponse(
         DeliveryAddressResponse deliveryInfo,
         @Schema(description = "주문할 상품 목록")
         List<CheckoutItemDetailResponse> items,
+        @Schema(description = "입금 계좌 정보")
+        DepositAccountInfoResponse depositAccountInfo,
         @Schema(description = "포인트 정보")
         PointInfoResponse pointInfo,
         @Schema(description = "사용 가능한 결제 수단 목록")
@@ -92,16 +94,14 @@ public record OrderCheckoutResponse(
                 }
         }
 
-        public static OrderCheckoutResponse of(
-                DeliveryAddressResponse deliveryAddress,
-                List<CheckoutItemDetailResponse> items,
-                PointInfoResponse pointInfo,
-                List<PaymentMethodResponse> paymentMethods,
+        public static OrderCheckoutResponse of(DeliveryAddressResponse deliveryAddress, List<CheckoutItemDetailResponse> items,
+                DepositAccountInfoResponse depositAccountInfo, PointInfoResponse pointInfo, List<PaymentMethodResponse> paymentMethods,
                 OrderSummaryResponse summary
         ) {
                 return new OrderCheckoutResponse(
                         deliveryAddress,
                         items,
+                        depositAccountInfo,
                         pointInfo,
                         paymentMethods,
                         summary
