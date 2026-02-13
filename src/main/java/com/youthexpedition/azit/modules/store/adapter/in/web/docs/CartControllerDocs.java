@@ -92,12 +92,9 @@ public interface CartControllerDocs {
     @Operation(
             summary = "장바구니 목록 조회",
             description = """
-            사용자의 장바구니에 담긴 상품 목록과 결제 요약 정보를 조회합니다. <br><br>
+            사용자의 장바구니에 담긴 상품 목록을 조회합니다. <br><br>
             
-            **[데이터 구조]** <br>
-            * totalProductPrice: 장바구니에 담긴 모든 상품의 '정가 + 옵션가' 합계입니다.
-            * membershipDiscount: 아지트 멤버십 할인 금액입니다.
-            * shippingFee: 브랜드별로 가장 높은 배송비를 한 번씩만 합산한 금액입니다.
+            **[참고 사항]** <br>
             * expectedShippingDate: 상품의 예상 출고 소요 시간을 기준으로 계산되며, 주말(토, 일)은 발송일에서 제외됩니다.
             """
     )
