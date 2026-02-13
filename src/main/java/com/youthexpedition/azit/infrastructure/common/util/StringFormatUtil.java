@@ -2,12 +2,11 @@ package com.youthexpedition.azit.infrastructure.common.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class StringFormatUtil {
+public final class StringFormatUtil {
 
     private static final String OPTION_SEPARATOR = " · ";
     private static final String ORDER_NUMBER_PREFIX = "#";
