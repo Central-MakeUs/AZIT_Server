@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.store.application.service;
 import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
+import com.youthexpedition.azit.infrastructure.common.util.StringFormatUtil;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadDeliveryAddressPort;
@@ -13,11 +14,16 @@ import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.store.application.port.in.OrderUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.CreateOrderCommand;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.*;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CreateOrderResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderCheckoutResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderDetailResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.OrderListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.*;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.application.service.mapper.OrderResponseMapper;
-import com.youthexpedition.azit.modules.store.domain.model.*;
+import com.youthexpedition.azit.modules.store.domain.model.Order;
+import com.youthexpedition.azit.modules.store.domain.model.OrderAddress;
+import com.youthexpedition.azit.modules.store.domain.model.OrderItem;
 import com.youthexpedition.azit.modules.store.domain.model.enums.OrderType;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
@@ -137,7 +143,7 @@ public class OrderService implements OrderUseCase {
                             productInfo.brandName(),
                             productInfo.productName(),
                             productInfo.imageUrl(),
-                            orderResponseMapper.formatOptionValues(productInfo.optionValues()), // 옵션 포맷팅
+                            StringFormatUtil.formatOptionValues(productInfo.optionValues()),
                             productInfo.basePrice() + productInfo.additionalPrice(),
                             productInfo.salePrice() + productInfo.additionalPrice(),
                             productInfo.quantity()

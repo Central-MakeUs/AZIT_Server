@@ -1,16 +1,17 @@
 package com.youthexpedition.azit.modules.member.application.service.mapper;
 
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
+import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
-import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class MemberResponseMapper {
 
-    @Value("${spring.cloud.aws.cloudfront.domain}")
-    private String cloudFrontDomain;
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
 
     public MyInfoResponse toMyPageResponse(Member member, CrewMember crewMember) {
         return MyInfoResponse.of(
@@ -18,14 +19,9 @@ public class MemberResponseMapper {
                 member.getNickname(),
                 crewMember.getCrewId(),
                 crewMember.getRole(),
-                buildFullImageUrl(member.getProfileImageUrl()),
+                imageUrlFormatUtil.buildFullImageUrl(member.getProfileImageUrl()),
                 member.getTotalAttendanceCount(),
                 member.getTotalPoints()
         );
-    }
-
-    private String buildFullImageUrl(String imagePath) {
-        if (imagePath == null) return null;
-        return cloudFrontDomain + imagePath;
     }
 }
