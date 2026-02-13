@@ -21,7 +21,7 @@
     <springProfile name="dev">
         <appender name="DEV_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
-                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) : %msg%n</pattern>
+                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%blue(%t)] %green(%logger{45}) : %msg%n</pattern>
             </encoder>
         </appender>
 
@@ -30,7 +30,7 @@
         <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" />
 
         <root level="INFO">
-        <appender-ref ref="DEV_CONSOLE" />
+            <appender-ref ref="DEV_CONSOLE" />
         </root>
     </springProfile>
 
