@@ -26,7 +26,7 @@ public class CartResponseMapper {
     }
 
     private CartItemListResponse toItemDetail(CartItemQueryDto cartItem) {
-        return new CartItemListResponse(
+        return CartItemListResponse.of(
                 cartItem.cartItemId(),
                 cartItem.brandId(),
                 cartItem.brandName(),
@@ -36,8 +36,8 @@ public class CartResponseMapper {
                 cartItem.skuId(),
                 formatOptionValues(cartItem.optionValues()),
                 buildFullImageUrl(cartItem.imageUrl()),
-                (cartItem.basePrice() + cartItem.additionalPrice()) * cartItem.quantity(),
-                (cartItem.salePrice() + cartItem.additionalPrice()) * cartItem.quantity(),
+                cartItem.basePrice() + cartItem.additionalPrice(),
+                cartItem.salePrice() + cartItem.additionalPrice(),
                 cartItem.quantity(),
                 cartItem.stockQuantity() <= 0,
                 cartItem.shippingFee()
