@@ -1,7 +1,7 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
-import com.youthexpedition.azit.infrastructure.common.util.ImageUrlProvider;
-import com.youthexpedition.azit.infrastructure.common.util.StringFormatProvider;
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
+import com.youthexpedition.azit.infrastructure.common.util.StringFormatUtil;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
@@ -15,8 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CartResponseMapper {
 
-    private final ImageUrlProvider imageUrlProvider;
-    private final StringFormatProvider stringFormatProvider;
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
 
     public CartItemCountResponse toCountResponse(long count) {
         return CartItemCountResponse.from(count);
@@ -37,8 +36,8 @@ public class CartResponseMapper {
                 cartItem.productName(),
                 Product.calculateExpectedShippingDate(cartItem.shippingLeadTime()),
                 cartItem.skuId(),
-                stringFormatProvider.formatOptionValues(cartItem.optionValues()),
-                imageUrlProvider.buildFullImageUrl(cartItem.imageUrl()),
+                StringFormatUtil.formatOptionValues(cartItem.optionValues()),
+                imageUrlFormatUtil.buildFullImageUrl(cartItem.imageUrl()),
                 cartItem.basePrice() + cartItem.additionalPrice(),
                 cartItem.salePrice() + cartItem.additionalPrice(),
                 cartItem.quantity(),

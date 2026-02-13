@@ -1,7 +1,7 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
-import com.youthexpedition.azit.infrastructure.common.util.ImageUrlProvider;
-import com.youthexpedition.azit.infrastructure.common.util.StringFormatProvider;
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
+import com.youthexpedition.azit.infrastructure.common.util.StringFormatUtil;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.*;
@@ -30,8 +30,7 @@ public class OrderResponseMapper {
     @Value("${payment.bank.account-holder}")
     private String accountHolder;
 
-    private final ImageUrlProvider imageUrlProvider;
-    private final StringFormatProvider stringFormatProvider;
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
 
     public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items,
                                                          long totalProductPrice, long membershipDiscount, long totalShippingFee) {
@@ -61,8 +60,8 @@ public class OrderResponseMapper {
                 item.skuId(),
                 item.brandName(),
                 item.productName(),
-                stringFormatProvider.formatOptionValues(item.optionValues()),
-                imageUrlProvider.buildFullImageUrl(item.imageUrl()),
+                StringFormatUtil.formatOptionValues(item.optionValues()),
+                imageUrlFormatUtil.buildFullImageUrl(item.imageUrl()),
                 item.basePrice(),
                 item.salePrice(),
                 item.quantity(),
@@ -81,7 +80,7 @@ public class OrderResponseMapper {
 
     public CreateOrderResponse toCreateOrderResponse(Order order) {
         return CreateOrderResponse.of(
-                stringFormatProvider.buildFullOrderNumber(order.getOrderNumber()),
+                StringFormatUtil.buildFullOrderNumber(order.getOrderNumber()),
                 CreateOrderResponse.OrderDeliveryInfoResponse.of(
                         order.getAddress().getRecipientName(),
                         order.getAddress().getPhoneNumber(),
@@ -119,7 +118,7 @@ public class OrderResponseMapper {
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
-                        imageUrlProvider.buildFullImageUrl(item.getProductImageUrl()),
+                        imageUrlFormatUtil.buildFullImageUrl(item.getProductImageUrl()),
                         item.getTotalSalePrice(),
                         item.getQuantity()
                 )).toList();
@@ -134,7 +133,7 @@ public class OrderResponseMapper {
         return OrderDetailResponse.of(
                 order.getId(),
                 order.getCreatedAt(),
-                stringFormatProvider.buildFullOrderNumber(order.getOrderNumber()),
+                StringFormatUtil.buildFullOrderNumber(order.getOrderNumber()),
                 order.getStatus(),
                 deliveryInfo,
                 buildDepositAccountInfo(order),
@@ -152,7 +151,7 @@ public class OrderResponseMapper {
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
-                        imageUrlProvider.buildFullImageUrl(item.getProductImageUrl()),
+                        imageUrlFormatUtil.buildFullImageUrl(item.getProductImageUrl()),
                         item.getSalePrice(),
                         item.getQuantity()
                 )).toList();
@@ -160,7 +159,7 @@ public class OrderResponseMapper {
         return OrderListResponse.of(
                 order.getId(),
                 order.getCreatedAt(),
-                stringFormatProvider.buildFullOrderNumber(order.getOrderNumber()),
+                StringFormatUtil.buildFullOrderNumber(order.getOrderNumber()),
                 order.getStatus(),
                 itemSummaries
         );

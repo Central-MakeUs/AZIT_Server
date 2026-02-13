@@ -1,7 +1,7 @@
 package com.youthexpedition.azit.modules.crew.application.service.mapper;
 
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
-import com.youthexpedition.azit.infrastructure.common.util.ImageUrlProvider;
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewMemberDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewMemberListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
@@ -16,14 +16,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CrewMemberResponseMapper {
 
-    private final ImageUrlProvider imageUrlProvider;
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
 
 
     public JoinRequestMemberResponse toResponse(JoinRequestDto joinRequestDto) {
         return new JoinRequestMemberResponse(
                 joinRequestDto.memberId(),
                 joinRequestDto.nickname(),
-                imageUrlProvider.buildFullImageUrl(joinRequestDto.profileImageUrl()),
+                imageUrlFormatUtil.buildFullImageUrl(joinRequestDto.profileImageUrl()),
                 joinRequestDto.requestedAt()
         );
     }
@@ -46,7 +46,7 @@ public class CrewMemberResponseMapper {
                 crewMemberInfoDto.id(),
                 crewMemberInfoDto.memberId(),
                 crewMemberInfoDto.nickname(),
-                imageUrlProvider.buildFullImageUrl(crewMemberInfoDto.profileImageUrl()),
+                imageUrlFormatUtil.buildFullImageUrl(crewMemberInfoDto.profileImageUrl()),
                 crewMemberInfoDto.role(),
                 crewMemberInfoDto.joinedAt()
         );

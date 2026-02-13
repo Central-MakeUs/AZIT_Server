@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
-import com.youthexpedition.azit.infrastructure.common.util.ImageUrlProvider;
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductResponseMapper {
 
-    private final ImageUrlProvider imageUrlProvider;
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
 
     public ProductDetailResponse toDetailResponse(Product product) {
         return ProductDetailResponse.of(
@@ -73,7 +73,7 @@ public class ProductResponseMapper {
         return product.getImages().stream()
                 .filter(img -> img.getImageType() == type)
                 .sorted(Comparator.comparing(ProductImage::getSortOrder))
-                .map(img -> imageUrlProvider.buildFullImageUrl(img.getImageUrl()))
+                .map(img -> imageUrlFormatUtil.buildFullImageUrl(img.getImageUrl()))
                 .toList();
     }
 }

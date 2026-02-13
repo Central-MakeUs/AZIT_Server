@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @ConfigurationProperties(prefix = "default.member")
 @Getter
 @Setter
-public class S3ProfileImageProvider implements ProfileImageProvider {
+public class S3ProfileImageUtil implements ProfileImageProvider {
 
     private List<String> profileImages;
 

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ImageUrlProvider {
+public class ImageUrlFormatUtil {
 
     @Value("${spring.cloud.aws.cloudfront.domain}")
     private String cloudFrontDomain;

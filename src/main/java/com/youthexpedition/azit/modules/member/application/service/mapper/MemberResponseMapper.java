@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.modules.member.application.service.mapper;
 
-import com.youthexpedition.azit.infrastructure.common.util.ImageUrlProvider;
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MemberResponseMapper {
 
-    private final ImageUrlProvider imageUrlProvider;
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
 
     public MyInfoResponse toMyPageResponse(Member member, CrewMember crewMember) {
         return MyInfoResponse.of(
@@ -19,7 +19,7 @@ public class MemberResponseMapper {
                 member.getNickname(),
                 crewMember.getCrewId(),
                 crewMember.getRole(),
-                imageUrlProvider.buildFullImageUrl(member.getProfileImageUrl()),
+                imageUrlFormatUtil.buildFullImageUrl(member.getProfileImageUrl()),
                 member.getTotalAttendanceCount(),
                 member.getTotalPoints()
         );
