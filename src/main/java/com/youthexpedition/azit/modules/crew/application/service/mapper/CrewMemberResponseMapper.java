@@ -1,7 +1,7 @@
 package com.youthexpedition.azit.modules.crew.application.service.mapper;
 
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
-import com.youthexpedition.azit.infrastructure.common.provider.ImageUrlProvider;
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlProvider;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewMemberDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewMemberListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;

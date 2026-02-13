@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.infrastructure.common.provider;
+package com.youthexpedition.azit.infrastructure.common.util;
 
 import com.youthexpedition.azit.modules.member.domain.model.provider.ProfileImageProvider;
 import lombok.Getter;
