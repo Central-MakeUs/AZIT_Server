@@ -12,11 +12,9 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
-        highlight_sql: true
         default_batch_fetch_size: 100
 
 security:
