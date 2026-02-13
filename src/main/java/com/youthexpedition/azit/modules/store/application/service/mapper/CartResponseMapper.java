@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
 import com.youthexpedition.azit.infrastructure.common.util.ImageUrlProvider;
+import com.youthexpedition.azit.infrastructure.common.util.StringFormatProvider;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
@@ -15,6 +16,7 @@ import java.util.List;
 public class CartResponseMapper {
 
     private final ImageUrlProvider imageUrlProvider;
+    private final StringFormatProvider stringFormatProvider;
 
     public CartItemCountResponse toCountResponse(long count) {
         return CartItemCountResponse.from(count);
@@ -35,7 +37,7 @@ public class CartResponseMapper {
                 cartItem.productName(),
                 Product.calculateExpectedShippingDate(cartItem.shippingLeadTime()),
                 cartItem.skuId(),
-                formatOptionValues(cartItem.optionValues()),
+                stringFormatProvider.formatOptionValues(cartItem.optionValues()),
                 imageUrlProvider.buildFullImageUrl(cartItem.imageUrl()),
                 cartItem.basePrice() + cartItem.additionalPrice(),
                 cartItem.salePrice() + cartItem.additionalPrice(),
@@ -43,14 +45,6 @@ public class CartResponseMapper {
                 cartItem.stockQuantity() <= 0,
                 cartItem.shippingFee()
         );
-    }
-
-    // 옵션 + · + 옵션 형식으로 조합하는 메서드
-    private String formatOptionValues(List<String> optionValues) {
-        if (optionValues == null || optionValues.isEmpty()) {
-            return "";
-        }
-        return String.join(" · ", optionValues);
     }
 
 }

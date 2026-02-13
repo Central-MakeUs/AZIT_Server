@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
 import com.youthexpedition.azit.infrastructure.common.util.ImageUrlProvider;
+import com.youthexpedition.azit.infrastructure.common.util.StringFormatProvider;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.*;
@@ -30,8 +31,7 @@ public class OrderResponseMapper {
     private String accountHolder;
 
     private final ImageUrlProvider imageUrlProvider;
-
-    private static final String ORDER_NUMBER_PREFIX = "#";
+    private final StringFormatProvider stringFormatProvider;
 
     public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items,
                                                          long totalProductPrice, long membershipDiscount, long totalShippingFee) {
@@ -61,7 +61,7 @@ public class OrderResponseMapper {
                 item.skuId(),
                 item.brandName(),
                 item.productName(),
-                formatOptionValues(item.optionValues()),
+                stringFormatProvider.formatOptionValues(item.optionValues()),
                 imageUrlProvider.buildFullImageUrl(item.imageUrl()),
                 item.basePrice(),
                 item.salePrice(),
@@ -81,7 +81,7 @@ public class OrderResponseMapper {
 
     public CreateOrderResponse toCreateOrderResponse(Order order) {
         return CreateOrderResponse.of(
-                buildFullOrderNumber(order.getOrderNumber()),
+                stringFormatProvider.buildFullOrderNumber(order.getOrderNumber()),
                 CreateOrderResponse.OrderDeliveryInfoResponse.of(
                         order.getAddress().getRecipientName(),
                         order.getAddress().getPhoneNumber(),
@@ -134,7 +134,7 @@ public class OrderResponseMapper {
         return OrderDetailResponse.of(
                 order.getId(),
                 order.getCreatedAt(),
-                buildFullOrderNumber(order.getOrderNumber()),
+                stringFormatProvider.buildFullOrderNumber(order.getOrderNumber()),
                 order.getStatus(),
                 deliveryInfo,
                 buildDepositAccountInfo(order),
@@ -160,22 +160,10 @@ public class OrderResponseMapper {
         return OrderListResponse.of(
                 order.getId(),
                 order.getCreatedAt(),
-                buildFullOrderNumber(order.getOrderNumber()),
+                stringFormatProvider.buildFullOrderNumber(order.getOrderNumber()),
                 order.getStatus(),
                 itemSummaries
         );
-    }
-
-    // 옵션 + · + 옵션 형식으로 조합하는 메서드
-    public String formatOptionValues(List<String> optionValues) {
-        if (optionValues == null || optionValues.isEmpty()) {
-            return "";
-        }
-        return String.join(" · ", optionValues);
-    }
-
-    private String buildFullOrderNumber(String orderNumber) {
-        return ORDER_NUMBER_PREFIX + orderNumber;
     }
 
     // 결제수단이 무통장입금일 경우 계좌 정보 생성

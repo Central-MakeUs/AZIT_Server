@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.store.application.service;
 import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
+import com.youthexpedition.azit.infrastructure.common.util.StringFormatProvider;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadDeliveryAddressPort;
@@ -47,6 +48,7 @@ public class OrderService implements OrderUseCase {
     private final SaveOrderPort saveOrderPort;
     private final OrderResponseMapper orderResponseMapper;
     private final DeliveryAddressResponseMapper deliveryAddressResponseMapper;
+    private final StringFormatProvider stringFormatProvider;
 
     @Override
     @Transactional(readOnly = true)
@@ -137,7 +139,7 @@ public class OrderService implements OrderUseCase {
                             productInfo.brandName(),
                             productInfo.productName(),
                             productInfo.imageUrl(),
-                            orderResponseMapper.formatOptionValues(productInfo.optionValues()), // 옵션 포맷팅
+                            stringFormatProvider.formatOptionValues(productInfo.optionValues()),
                             productInfo.basePrice() + productInfo.additionalPrice(),
                             productInfo.salePrice() + productInfo.additionalPrice(),
                             productInfo.quantity()
