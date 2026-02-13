@@ -9,10 +9,12 @@ import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CartItemDeleteR
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.UpdateCartItemQuantityRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.CartUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemListResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/carts")
@@ -50,8 +52,8 @@ public class CartController implements CartControllerDocs {
     }
 
     @GetMapping
-    public CommonResponse<CartListResponse> getCarts(@CurrentMemberId Long memberId) {
-        CartListResponse response = cartUseCase.getCarts(memberId);
+    public CommonResponse<List<CartItemListResponse>> getCarts(@CurrentMemberId Long memberId) {
+        List<CartItemListResponse> response = cartUseCase.getCarts(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
