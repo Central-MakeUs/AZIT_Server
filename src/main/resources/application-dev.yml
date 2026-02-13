@@ -41,7 +41,7 @@ security:
       - "https://dev.azitcrew.com"
       - "https://10.0.2.2:5173"
       - "https://appleid.apple.com"
-    allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed-methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     allowed-headers: ["*"]
     allow-credentials: true
 
