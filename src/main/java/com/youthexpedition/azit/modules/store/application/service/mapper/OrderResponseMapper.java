@@ -1,12 +1,14 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
+import com.youthexpedition.azit.infrastructure.provider.ImageUrlProvider;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.Order;
-import com.youthexpedition.azit.modules.store.domain.model.policy.PointPolicy;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
+import com.youthexpedition.azit.modules.store.domain.model.policy.PointPolicy;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,10 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class OrderResponseMapper {
-
-    @Value("${spring.cloud.aws.cloudfront.domain}")
-    private String cloudFrontDomain;
 
     @Value("${payment.bank.name}")
     private String bankName;
@@ -28,6 +28,8 @@ public class OrderResponseMapper {
 
     @Value("${payment.bank.account-holder}")
     private String accountHolder;
+
+    private final ImageUrlProvider imageUrlProvider;
 
     private static final String ORDER_NUMBER_PREFIX = "#";
 
@@ -60,7 +62,7 @@ public class OrderResponseMapper {
                 item.brandName(),
                 item.productName(),
                 formatOptionValues(item.optionValues()),
-                buildFullImageUrl(item.imageUrl()),
+                imageUrlProvider.buildFullImageUrl(item.imageUrl()),
                 item.basePrice(),
                 item.salePrice(),
                 item.quantity(),
@@ -117,7 +119,7 @@ public class OrderResponseMapper {
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
-                        buildFullImageUrl(item.getProductImageUrl()),
+                        imageUrlProvider.buildFullImageUrl(item.getProductImageUrl()),
                         item.getTotalSalePrice(),
                         item.getQuantity()
                 )).toList();
@@ -150,7 +152,7 @@ public class OrderResponseMapper {
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
-                        buildFullImageUrl(item.getProductImageUrl()),
+                        imageUrlProvider.buildFullImageUrl(item.getProductImageUrl()),
                         item.getSalePrice(),
                         item.getQuantity()
                 )).toList();
@@ -170,11 +172,6 @@ public class OrderResponseMapper {
             return "";
         }
         return String.join(" · ", optionValues);
-    }
-
-    private String buildFullImageUrl(String imagePath) {
-        if (imagePath == null) return null;
-        return cloudFrontDomain + imagePath;
     }
 
     private String buildFullOrderNumber(String orderNumber) {

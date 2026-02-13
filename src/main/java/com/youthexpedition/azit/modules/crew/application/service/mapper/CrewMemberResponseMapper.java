@@ -1,27 +1,29 @@
 package com.youthexpedition.azit.modules.crew.application.service.mapper;
 
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
+import com.youthexpedition.azit.infrastructure.provider.ImageUrlProvider;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewMemberDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewMemberListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class CrewMemberResponseMapper {
 
-    @Value("${spring.cloud.aws.cloudfront.domain}")
-    private String cloudFrontDomain;
+    private final ImageUrlProvider imageUrlProvider;
+
 
     public JoinRequestMemberResponse toResponse(JoinRequestDto joinRequestDto) {
         return new JoinRequestMemberResponse(
                 joinRequestDto.memberId(),
                 joinRequestDto.nickname(),
-                buildFullImageUrl(joinRequestDto.profileImageUrl()),
+                imageUrlProvider.buildFullImageUrl(joinRequestDto.profileImageUrl()),
                 joinRequestDto.requestedAt()
         );
     }
@@ -44,14 +46,9 @@ public class CrewMemberResponseMapper {
                 crewMemberInfoDto.id(),
                 crewMemberInfoDto.memberId(),
                 crewMemberInfoDto.nickname(),
-                buildFullImageUrl(crewMemberInfoDto.profileImageUrl()),
+                imageUrlProvider.buildFullImageUrl(crewMemberInfoDto.profileImageUrl()),
                 crewMemberInfoDto.role(),
                 crewMemberInfoDto.joinedAt()
         );
-    }
-
-    private String buildFullImageUrl(String imagePath) {
-        if (imagePath == null) return null;
-        return cloudFrontDomain + imagePath;
     }
 }

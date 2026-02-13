@@ -1,19 +1,20 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
+import com.youthexpedition.azit.infrastructure.provider.ImageUrlProvider;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class CartResponseMapper {
 
-    @Value("${spring.cloud.aws.cloudfront.domain}")
-    private String cloudFrontDomain;
+    private final ImageUrlProvider imageUrlProvider;
 
     public CartItemCountResponse toCountResponse(long count) {
         return CartItemCountResponse.from(count);
@@ -35,7 +36,7 @@ public class CartResponseMapper {
                 Product.calculateExpectedShippingDate(cartItem.shippingLeadTime()),
                 cartItem.skuId(),
                 formatOptionValues(cartItem.optionValues()),
-                buildFullImageUrl(cartItem.imageUrl()),
+                imageUrlProvider.buildFullImageUrl(cartItem.imageUrl()),
                 cartItem.basePrice() + cartItem.additionalPrice(),
                 cartItem.salePrice() + cartItem.additionalPrice(),
                 cartItem.quantity(),
@@ -52,8 +53,4 @@ public class CartResponseMapper {
         return String.join(" · ", optionValues);
     }
 
-    private String buildFullImageUrl(String imagePath) {
-        if (imagePath == null) return null;
-        return cloudFrontDomain + imagePath;
-    }
 }
