@@ -6,14 +6,13 @@ import com.youthexpedition.azit.modules.store.application.port.in.CartUseCase;
 import com.youthexpedition.azit.modules.store.application.port.in.command.AddToCartCommand;
 import com.youthexpedition.azit.modules.store.application.port.in.command.CartItemDeleteCommand;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadProductPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.application.service.mapper.CartResponseMapper;
 import com.youthexpedition.azit.modules.store.domain.model.CartItem;
-import com.youthexpedition.azit.modules.store.domain.model.policy.OrderPricePolicy;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
 import com.youthexpedition.azit.modules.store.domain.model.ProductSku;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
@@ -115,13 +114,9 @@ public class CartService implements CartUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public CartListResponse getCarts(Long memberId) {
+    public List<CartItemListResponse> getCarts(Long memberId) {
         List<CartItemQueryDto> cartItems = loadCartPort.findCartDetailsByMemberId(memberId);
 
-        long totalProductPrice = OrderPricePolicy.calculateTotalProductPrice(cartItems);
-        long totalMembershipDiscount = OrderPricePolicy.calculateTotalMembershipDiscount(cartItems);
-        long totalShippingFee = OrderPricePolicy.calculateTotalShippingFee(cartItems);
-
-        return cartResponseMapper.toCartListResponse(cartItems, totalProductPrice, totalMembershipDiscount, totalShippingFee);
+        return cartResponseMapper.toCartItemListResponse(cartItems);
     }
 }

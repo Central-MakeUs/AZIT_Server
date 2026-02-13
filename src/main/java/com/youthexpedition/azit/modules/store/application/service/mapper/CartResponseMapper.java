@@ -1,7 +1,7 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,18 +19,18 @@ public class CartResponseMapper {
         return CartItemCountResponse.from(count);
     }
 
-    public CartListResponse toCartListResponse(List<CartItemQueryDto> items, long totalProductPrice, long totalMembershipDiscount, long totalShippingFee) {
-        List<CartListResponse.CartItemDetailResponse> details = items.stream()
+    public List<CartItemListResponse> toCartItemListResponse(List<CartItemQueryDto> items) {
+        return items.stream()
                 .map(this::toItemDetail)
                 .toList();
-
-        return CartListResponse.of(details, totalProductPrice, totalMembershipDiscount, totalShippingFee);
     }
 
-    private CartListResponse.CartItemDetailResponse toItemDetail(CartItemQueryDto cartItem) {
-        return new CartListResponse.CartItemDetailResponse(
+    private CartItemListResponse toItemDetail(CartItemQueryDto cartItem) {
+        return new CartItemListResponse(
                 cartItem.cartItemId(),
+                cartItem.brandId(),
                 cartItem.brandName(),
+                cartItem.productId(),
                 cartItem.productName(),
                 Product.calculateExpectedShippingDate(cartItem.shippingLeadTime()),
                 cartItem.skuId(),
@@ -39,7 +39,8 @@ public class CartResponseMapper {
                 (cartItem.basePrice() + cartItem.additionalPrice()) * cartItem.quantity(),
                 (cartItem.salePrice() + cartItem.additionalPrice()) * cartItem.quantity(),
                 cartItem.quantity(),
-                cartItem.stockQuantity() <= 0
+                cartItem.stockQuantity() <= 0,
+                cartItem.shippingFee()
         );
     }
 

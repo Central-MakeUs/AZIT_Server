@@ -7,14 +7,15 @@ import com.youthexpedition.azit.modules.store.adapter.in.web.dto.AddToCartReques
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.CartItemDeleteRequest;
 import com.youthexpedition.azit.modules.store.adapter.in.web.dto.UpdateCartItemQuantityRequest;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.CartListResponse;
+import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @Tag(name = "Cart" , description = "장바구니 API")
 public interface CartControllerDocs {
@@ -103,5 +104,5 @@ public interface CartControllerDocs {
     @ApiErrorCodeExamples({
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<CartListResponse> getCarts(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+    CommonResponse<List<CartItemListResponse>> getCarts(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }
