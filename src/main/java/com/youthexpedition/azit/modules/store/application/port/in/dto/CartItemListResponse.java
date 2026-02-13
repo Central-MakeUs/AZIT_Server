@@ -32,11 +32,11 @@ public record CartItemListResponse(
         @Schema(description = "품절 여부")
         boolean isOutOfStock,
         @Schema(description = "배송비")
-        long shippingFee
+        Long shippingFee
 ) {
         public static CartItemListResponse of(Long id, Long brandId, String brandName, Long productId, String productName, LocalDate expectedShippingDate,
                                               Long productSkuId, String optionDescription, String productImageUrl,
-                                              Long basePrice, Long salePrice, int quantity, boolean isOutOfStock, long shippingFee) {
+                                              Long basePrice, Long salePrice, int quantity, boolean isOutOfStock, Long shippingFee) {
                 return new CartItemListResponse(
                         id, brandId, brandName, productId, productName, expectedShippingDate, productSkuId, optionDescription,
                         productImageUrl, basePrice, salePrice, quantity, isOutOfStock, shippingFee
