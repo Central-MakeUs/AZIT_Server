@@ -26,6 +26,7 @@
         </appender>
 
         <logger name="com.youthexpedition.azit" level="DEBUG" />
+        <logger name="org.hibernate.SQL" level="DEBUG" />
         <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" />
 
         <root level="INFO">
