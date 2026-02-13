@@ -164,12 +164,12 @@ public class OrderResponseMapper {
         );
     }
 
-    // 옵션 + / + 옵션 형식으로 조합하는 메서드
+    // 옵션 + · + 옵션 형식으로 조합하는 메서드
     public String formatOptionValues(List<String> optionValues) {
         if (optionValues == null || optionValues.isEmpty()) {
             return "";
         }
-        return String.join(" / ", optionValues);
+        return String.join(" · ", optionValues);
     }
 
     private String buildFullImageUrl(String imagePath) {
