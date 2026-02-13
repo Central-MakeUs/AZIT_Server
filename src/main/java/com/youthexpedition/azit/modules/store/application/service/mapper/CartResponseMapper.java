@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
-import com.youthexpedition.azit.infrastructure.provider.ImageUrlProvider;
+import com.youthexpedition.azit.infrastructure.common.provider.ImageUrlProvider;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemCountResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.CartItemListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;

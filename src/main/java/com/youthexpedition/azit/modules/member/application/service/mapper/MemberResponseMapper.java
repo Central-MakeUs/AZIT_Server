@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.modules.member.application.service.mapper;
 
-import com.youthexpedition.azit.infrastructure.provider.ImageUrlProvider;
+import com.youthexpedition.azit.infrastructure.common.provider.ImageUrlProvider;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.domain.model.Member;

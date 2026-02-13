@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.infrastructure.provider;
+package com.youthexpedition.azit.infrastructure.common.provider;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
