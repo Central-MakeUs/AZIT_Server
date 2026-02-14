@@ -113,12 +113,15 @@ public class OrderResponseMapper {
 
         List<OrderItemResponse> items = order.getOrderItems().stream()
                 .map(item -> OrderItemResponse.of(
+                        item.getId(),
                         item.getProductId(),
                         item.getSkuId(),
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
                         imageUrlFormatUtil.buildFullImageUrl(item.getProductImageUrl()),
+                        item.getBasePrice(),
+                        item.getSalePrice(),
                         item.getTotalSalePrice(),
                         item.getQuantity()
                 )).toList();
@@ -146,13 +149,16 @@ public class OrderResponseMapper {
     public OrderListResponse toOrderListResponse(Order order) {
         List<OrderItemResponse> itemSummaries = order.getOrderItems().stream()
                 .map(item -> OrderItemResponse.of(
+                        item.getId(),
                         item.getProductId(),
                         item.getSkuId(),
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
                         imageUrlFormatUtil.buildFullImageUrl(item.getProductImageUrl()),
+                        item.getBasePrice(),
                         item.getSalePrice(),
+                        item.getTotalSalePrice(),
                         item.getQuantity()
                 )).toList();
 
