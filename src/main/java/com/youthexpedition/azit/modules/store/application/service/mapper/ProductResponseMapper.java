@@ -32,13 +32,27 @@ public class ProductResponseMapper {
 
     private List<ProductDetailResponse.OptionGroupResponse> mapOptionGroups(Product product) {
         return product.getOptionGroups().stream()
-                .sorted(Comparator.comparing(ProductOptionGroup::getSortOrder)) // 그룹 정렬
-                .map(og -> new ProductDetailResponse.OptionGroupResponse(
-                        og.getId(),
-                        og.getName(),
-                        og.getValues().stream()
-                                .sorted(Comparator.comparing(ProductOptionValue::getSortOrder)) // 노출 순서로 정렬
-                                .map(v -> new ProductDetailResponse.OptionValueResponse(v.getId(), v.getValue()))
+                // 1. 옵션 그룹 정렬 (예: 컬러 -> 사이즈)
+                .sorted(Comparator.comparing(ProductOptionGroup::getSortOrder))
+                .map(group -> new ProductDetailResponse.OptionGroupResponse(
+                        group.getId(),
+                        group.getName(),
+                        group.getValues().stream()
+                                // 2. 옵션값 정렬 (예: S -> M -> L)
+                                .sorted(Comparator.comparing(ProductOptionValue::getSortOrder))
+                                .map(val -> {
+                                    // ⭐️ 해당 옵션값을 포함하는 모든 SKU가 품절인지 판별
+                                    boolean isSoldOut = product.getSkus().stream()
+                                            .filter(sku -> sku.getSkuOptions().stream()
+                                                    .anyMatch(opt -> opt.getOptionValue().getId().equals(val.getId())))
+                                            .allMatch(sku -> sku.getStockQuantity() <= 0);
+
+                                    return new ProductDetailResponse.OptionValueResponse(
+                                            val.getId(),
+                                            val.getValue(),
+                                            isSoldOut
+                                    );
+                                })
                                 .toList()
                 )).toList();
     }
@@ -46,10 +60,15 @@ public class ProductResponseMapper {
     private List<ProductDetailResponse.SkuResponse> mapSkus(Product product) {
         return product.getSkus().stream()
                 .map(sku -> new ProductDetailResponse.SkuResponse(
-                        sku.getId(), sku.getAdditionalPrice(), sku.getStockQuantity(),
+                        sku.getId(),
+                        sku.getAdditionalPrice(),
+                        sku.getStockQuantity(),
                         sku.getSkuOptions().stream()
+                                // 3. SKU 내부의 옵션 ID 리스트도 정렬된 순서로 제공
                                 .sorted(Comparator.comparing(opt -> opt.getOptionValue().getSortOrder()))
-                                .map(opt -> opt.getOptionValue().getId()).toList()
+                                .map(opt -> opt.getOptionValue().getId())
+                                .toList(),
+                        sku.getStockQuantity() <= 0
                 )).toList();
     }
 
