@@ -1,12 +1,15 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
+import com.youthexpedition.azit.infrastructure.common.util.StringFormatUtil;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryAddressResponse;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.Order;
-import com.youthexpedition.azit.modules.store.domain.model.policy.PointPolicy;
 import com.youthexpedition.azit.modules.store.domain.model.enums.PaymentMethod;
+import com.youthexpedition.azit.modules.store.domain.model.policy.PointPolicy;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,10 +18,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class OrderResponseMapper {
-
-    @Value("${spring.cloud.aws.cloudfront.domain}")
-    private String cloudFrontDomain;
 
     @Value("${payment.bank.name}")
     private String bankName;
@@ -29,7 +30,7 @@ public class OrderResponseMapper {
     @Value("${payment.bank.account-holder}")
     private String accountHolder;
 
-    private static final String ORDER_NUMBER_PREFIX = "#";
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
 
     public OrderCheckoutResponse toOrderCheckoutResponse(Member member, DeliveryAddressResponse address, List<CheckoutItemDto> items,
                                                          long totalProductPrice, long membershipDiscount, long totalShippingFee) {
@@ -59,8 +60,8 @@ public class OrderResponseMapper {
                 item.skuId(),
                 item.brandName(),
                 item.productName(),
-                formatOptionValues(item.optionValues()),
-                buildFullImageUrl(item.imageUrl()),
+                StringFormatUtil.formatOptionValues(item.optionValues()),
+                imageUrlFormatUtil.buildFullImageUrl(item.imageUrl()),
                 item.basePrice(),
                 item.salePrice(),
                 item.quantity(),
@@ -79,7 +80,7 @@ public class OrderResponseMapper {
 
     public CreateOrderResponse toCreateOrderResponse(Order order) {
         return CreateOrderResponse.of(
-                buildFullOrderNumber(order.getOrderNumber()),
+                StringFormatUtil.buildFullOrderNumber(order.getOrderNumber()),
                 CreateOrderResponse.OrderDeliveryInfoResponse.of(
                         order.getAddress().getRecipientName(),
                         order.getAddress().getPhoneNumber(),
@@ -117,7 +118,7 @@ public class OrderResponseMapper {
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
-                        buildFullImageUrl(item.getProductImageUrl()),
+                        imageUrlFormatUtil.buildFullImageUrl(item.getProductImageUrl()),
                         item.getTotalSalePrice(),
                         item.getQuantity()
                 )).toList();
@@ -132,7 +133,7 @@ public class OrderResponseMapper {
         return OrderDetailResponse.of(
                 order.getId(),
                 order.getCreatedAt(),
-                buildFullOrderNumber(order.getOrderNumber()),
+                StringFormatUtil.buildFullOrderNumber(order.getOrderNumber()),
                 order.getStatus(),
                 deliveryInfo,
                 buildDepositAccountInfo(order),
@@ -150,7 +151,7 @@ public class OrderResponseMapper {
                         item.getBrandName(),
                         item.getProductName(),
                         item.getOptionDescription(),
-                        buildFullImageUrl(item.getProductImageUrl()),
+                        imageUrlFormatUtil.buildFullImageUrl(item.getProductImageUrl()),
                         item.getSalePrice(),
                         item.getQuantity()
                 )).toList();
@@ -158,27 +159,10 @@ public class OrderResponseMapper {
         return OrderListResponse.of(
                 order.getId(),
                 order.getCreatedAt(),
-                buildFullOrderNumber(order.getOrderNumber()),
+                StringFormatUtil.buildFullOrderNumber(order.getOrderNumber()),
                 order.getStatus(),
                 itemSummaries
         );
-    }
-
-    // 옵션 + / + 옵션 형식으로 조합하는 메서드
-    public String formatOptionValues(List<String> optionValues) {
-        if (optionValues == null || optionValues.isEmpty()) {
-            return "";
-        }
-        return String.join(" / ", optionValues);
-    }
-
-    private String buildFullImageUrl(String imagePath) {
-        if (imagePath == null) return null;
-        return cloudFrontDomain + imagePath;
-    }
-
-    private String buildFullOrderNumber(String orderNumber) {
-        return ORDER_NUMBER_PREFIX + orderNumber;
     }
 
     // 결제수단이 무통장입금일 경우 계좌 정보 생성

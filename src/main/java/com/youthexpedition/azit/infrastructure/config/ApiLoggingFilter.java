@@ -31,7 +31,7 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         } finally {
             long duration = System.currentTimeMillis() - startTime;
             // [METHOD] /url/path - Status: 200 (15ms) 형태의 로그 출력
-            log.info("[{}] {}, Status: {} ({}ms)", method, fullPath, response.getStatus(), duration);
+            log.debug("[{}] {}, Status: {} ({}ms)", method, fullPath, response.getStatus(), duration);
         }
     }
 }

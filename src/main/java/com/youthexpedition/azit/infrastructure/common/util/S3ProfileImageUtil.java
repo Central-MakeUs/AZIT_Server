@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.infrastructure.provider;
+package com.youthexpedition.azit.infrastructure.common.util;
 
 import com.youthexpedition.azit.modules.member.domain.model.provider.ProfileImageProvider;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @ConfigurationProperties(prefix = "default.member")
 @Getter
 @Setter
-public class S3ProfileImageProvider implements ProfileImageProvider {
+public class S3ProfileImageUtil implements ProfileImageProvider {
 
     private List<String> profileImages;
 

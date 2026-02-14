@@ -1,20 +1,24 @@
 package com.youthexpedition.azit.modules.store.application.service.mapper;
 
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
-import com.youthexpedition.azit.modules.store.domain.model.*;
+import com.youthexpedition.azit.modules.store.domain.model.Product;
+import com.youthexpedition.azit.modules.store.domain.model.ProductImage;
+import com.youthexpedition.azit.modules.store.domain.model.ProductOptionGroup;
+import com.youthexpedition.azit.modules.store.domain.model.ProductOptionValue;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class ProductResponseMapper {
 
-    @Value("${spring.cloud.aws.cloudfront.domain}")
-    private String cloudFrontDomain;
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
 
     public ProductDetailResponse toDetailResponse(Product product) {
         return ProductDetailResponse.of(
@@ -69,12 +73,7 @@ public class ProductResponseMapper {
         return product.getImages().stream()
                 .filter(img -> img.getImageType() == type)
                 .sorted(Comparator.comparing(ProductImage::getSortOrder))
-                .map(img -> buildFullImageUrl(img.getImageUrl()))
+                .map(img -> imageUrlFormatUtil.buildFullImageUrl(img.getImageUrl()))
                 .toList();
-    }
-
-    private String buildFullImageUrl(String imagePath) {
-        if (imagePath == null) return null;
-        return cloudFrontDomain + imagePath;
     }
 }
