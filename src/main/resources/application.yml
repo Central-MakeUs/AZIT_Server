@@ -33,9 +33,9 @@ oauth:
 default:
   member:
     profile-images:
-      - "/profiles/default/default_1.svg"
-      - "/profiles/default/default_2.svg"
-      - "/profiles/default/default_3.svg"
-      - "/profiles/default/default_4.svg"
-      - "/profiles/default/default_5.svg"
-      - "/profiles/default/default_6.svg"
+      - "/default/members/default_1.svg"
+      - "/default/members/default_2.svg"
+      - "/default/members/default_3.svg"
+      - "/default/members/default_4.svg"
+      - "/default/members/default_5.svg"
+      - "/default/members/default_6.svg"
