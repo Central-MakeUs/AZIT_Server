@@ -5,7 +5,9 @@ import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialR
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
@@ -30,6 +32,7 @@ public class MemberService implements MemberUseCase {
     private final SaveMemberPort saveMemberPort;
     private final SaveCrewMemberPort saveCrewMemberPort;
     private final LoadCrewMemberPort loadCrewMemberPort;
+    private final LoadCrewPort loadCrewPort;
     private final SocialAuthPort socialAuthPort;
     private final TokenPort tokenPort;
     private final MemberResponseMapper memberResponseMapper;
@@ -103,7 +106,10 @@ public class MemberService implements MemberUseCase {
         CrewMember crewMember = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_MEMBER_NOT_FOUND));
 
-        return memberResponseMapper.toMyPageResponse(member, crewMember);
+        Crew crew = loadCrewPort.findById(crewMember.getCrewId())
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        return memberResponseMapper.toMyPageResponse(member, crewMember, crew);
     }
 
     private Member getMember(Long memberId) {
