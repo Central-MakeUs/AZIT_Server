@@ -3,16 +3,12 @@ package com.youthexpedition.azit.modules.store.application.service.mapper;
 import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductDetailResponse;
 import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
-import com.youthexpedition.azit.modules.store.domain.model.Product;
-import com.youthexpedition.azit.modules.store.domain.model.ProductImage;
-import com.youthexpedition.azit.modules.store.domain.model.ProductOptionGroup;
-import com.youthexpedition.azit.modules.store.domain.model.ProductOptionValue;
+import com.youthexpedition.azit.modules.store.domain.model.*;
 import com.youthexpedition.azit.modules.store.domain.model.enums.ProductImageType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -31,21 +27,30 @@ public class ProductResponseMapper {
     }
 
     private List<ProductDetailResponse.OptionGroupResponse> mapOptionGroups(Product product) {
+        // 옵션값 ID를 키로, 해당 옵션을 포함하는 SKU 리스트를 값으로 갖는 Map 생성
+        Map<Long, List<ProductSku>> skuMapByOptionValue = new HashMap<>();
+        for (ProductSku sku : product.getSkus()) {
+            for (ProductSkuOption option : sku.getSkuOptions()) {
+                skuMapByOptionValue
+                        .computeIfAbsent(option.getOptionValue().getId(), k -> new ArrayList<>())
+                        .add(sku);
+            }
+        }
+
         return product.getOptionGroups().stream()
-                // 1. 옵션 그룹 정렬 (예: 컬러 -> 사이즈)
                 .sorted(Comparator.comparing(ProductOptionGroup::getSortOrder))
                 .map(group -> new ProductDetailResponse.OptionGroupResponse(
                         group.getId(),
                         group.getName(),
                         group.getValues().stream()
-                                // 2. 옵션값 정렬 (예: S -> M -> L)
                                 .sorted(Comparator.comparing(ProductOptionValue::getSortOrder))
                                 .map(val -> {
-                                    // ⭐️ 해당 옵션값을 포함하는 모든 SKU가 품절인지 판별
-                                    boolean isSoldOut = product.getSkus().stream()
-                                            .filter(sku -> sku.getSkuOptions().stream()
-                                                    .anyMatch(opt -> opt.getOptionValue().getId().equals(val.getId())))
-                                            .allMatch(sku -> sku.getStockQuantity() <= 0);
+                                    // Map에서 해당 옵션값이 포함된 SKU들만 즉시 조회
+                                    List<ProductSku> associatedSkus = skuMapByOptionValue.getOrDefault(val.getId(), List.of());
+
+                                    // 연관된 모든 SKU의 재고가 0 이하일 때만 품절 처리
+                                    boolean isSoldOut = !associatedSkus.isEmpty() &&
+                                            associatedSkus.stream().allMatch(sku -> sku.getStockQuantity() <= 0);
 
                                     return new ProductDetailResponse.OptionValueResponse(
                                             val.getId(),
