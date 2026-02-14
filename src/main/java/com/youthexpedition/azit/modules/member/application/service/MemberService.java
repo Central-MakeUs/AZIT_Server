@@ -103,6 +103,7 @@ public class MemberService implements MemberUseCase {
     public MyInfoResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
 
+        // TODO: 쿼리 하나로 조회하게 개선 필요
         CrewMember crewMember = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_MEMBER_NOT_FOUND));
 
