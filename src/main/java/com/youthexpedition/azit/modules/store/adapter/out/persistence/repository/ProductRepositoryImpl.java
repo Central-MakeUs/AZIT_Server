@@ -34,7 +34,8 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .selectFrom(productEntity)
                 .join(productEntity.brand, brandEntity).fetchJoin() // Brand 정보 한 번에 조회
                 .where(
-                        ltCursorId(query.cursorId()))
+                        ltCursorId(query.cursorId()),
+                        isProductInStock())
                 .orderBy(productEntity.id.desc())
                 .limit((long) query.size() + 1)
                 .fetch();
@@ -131,5 +132,15 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 tuple.get(productEntity.shippingFee),
                 optionValues
         ));
+    }
+
+    // 상품에 재고가 있는지 확인
+    private BooleanExpression isProductInStock() {
+        return JPAExpressions
+                .selectOne()
+                .from(productSkuEntity)
+                .where(productSkuEntity.product.eq(productEntity)
+                        .and(productSkuEntity.stockQuantity.gt(0)))
+                .exists();
     }
 }

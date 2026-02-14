@@ -48,7 +48,9 @@ public record ProductDetailResponse(
                 @Schema(description = "옵션값 ID")
                 Long id,
                 @Schema(description = "옵션값 명칭")
-                String value
+                String value,
+                @Schema(description = "품절 여부")
+                Boolean isSoldOut
         ) {}
         public record SkuResponse(
                 @Schema(description = "SKU ID")
@@ -58,7 +60,9 @@ public record ProductDetailResponse(
                 @Schema(description = "재고 수량")
                 Integer stockQuantity,
                 @Schema(description = "매칭되는 옵션값 ID 리스트 (정렬된 순서)")
-                List<Long> optionValueIds
+                List<Long> optionValueIds,
+                @Schema(description = "품절 여부")
+                Boolean isSoldOut
         ) {}
 
         public static ProductDetailResponse of(Product product, List<String> slideImageUrls, List<String> detailImageUrls,

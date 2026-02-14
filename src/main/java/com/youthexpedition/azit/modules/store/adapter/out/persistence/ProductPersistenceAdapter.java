@@ -7,14 +7,12 @@ import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.Pro
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.mapper.ProductMapper;
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.repository.ProductRepository;
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.repository.ProductSkuRepository;
-import com.youthexpedition.azit.modules.store.application.port.in.dto.ProductListResponse;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadProductPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveProductPort;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CheckoutItemDto;
 import com.youthexpedition.azit.modules.store.domain.model.Product;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -26,9 +24,6 @@ public class ProductPersistenceAdapter implements LoadProductPort, SaveProductPo
     private final ProductRepository productRepository;
     private final ProductSkuRepository productSkuRepository;
     private final ProductMapper productMapper;
-
-    @Value("${spring.cloud.aws.cloudfront.domain}")
-    private String cloudFrontDomain;
 
     @Override
     public SliceResponse<Product> findProducts(CursorPageQuery query) {
