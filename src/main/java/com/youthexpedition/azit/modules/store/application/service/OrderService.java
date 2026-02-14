@@ -65,6 +65,9 @@ public class OrderService implements OrderUseCase {
         // 주문할 장바구니 아이템 상세 조회
         List<CheckoutItemDto> items = loadCartPort.findCartDetailsByIds(cartItemIds);
 
+        // 재고 확인
+        validateStockAvailability(items);
+
         return createCheckoutResponse(member, address, items);
     }
 
@@ -79,6 +82,9 @@ public class OrderService implements OrderUseCase {
         // 주문할 상품 상세 조회
         CheckoutItemDto item = loadProductPort.findProductInfoBySkuId(skuId, quantity)
                 .orElseThrow(() -> new BusinessException(StoreErrorCode.SKU_NOT_FOUND));
+
+        // 재고 확인
+        validateStockAvailability(List.of(item));
 
         return createCheckoutResponse(member, address, List.of(item));
     }
@@ -305,6 +311,15 @@ public class OrderService implements OrderUseCase {
         }
         // 최대 재시도 후에도 실패 시 예외 발생
         throw new BusinessException(StoreErrorCode.ORDER_NUMBER_GENERATION_FAILED);
+    }
+
+    private void validateStockAvailability(List<CheckoutItemDto> items) {
+        for (CheckoutItemDto item : items) {
+            // sku의 현재 재고보다 주문 요청 수량이 많은지 체크
+            if (item.stockQuantity() < item.quantity()) {
+                throw new BusinessException(StoreErrorCode.OUT_OF_STOCK);
+            }
+        }
     }
 
 }
