@@ -24,6 +24,7 @@ import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPo
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -44,6 +45,9 @@ public class CrewService implements CrewUseCase {
     private final SaveMemberPort saveMemberPort;
     private final CrewMemberResponseMapper crewMemberResponseMapper;
 
+    @Value("${default.crew.image}")
+    private String defaultCrewImageUrl;
+
     @Override
     @Retryable(
             retryFor = {DataIntegrityViolationException.class}, // db 에러 시 재시도
@@ -55,7 +59,7 @@ public class CrewService implements CrewUseCase {
         String invitationCode = generateUniqueInvitationCode();
 
         // 크루 생성
-        Crew crew = Crew.create(command.name(), command.category(), command.region(), invitationCode);
+        Crew crew = Crew.create(command.name(), command.category(), command.region(), defaultCrewImageUrl, invitationCode);
         Crew savedCrew = saveCrewPort.save(crew);
 
         // 리더 등록

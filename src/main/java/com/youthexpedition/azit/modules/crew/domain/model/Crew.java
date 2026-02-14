@@ -26,11 +26,12 @@ public class Crew {
     private static final int CODE_LENGTH = 6;
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public static Crew create(String name, CrewCategory category, Region region, String invitationCode) {
+    public static Crew create(String name, CrewCategory category, Region region, String imageUrl,  String invitationCode) {
         return Crew.builder()
                 .name(name)
                 .category(category)
                 .region(region)
+                .imageUrl(imageUrl)
                 .invitationCode(invitationCode)
                 .memberCount(1)
                 .createdAt(LocalDateTime.now())

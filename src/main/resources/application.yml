@@ -39,3 +39,5 @@ default:
       - "/default/members/default_4.svg"
       - "/default/members/default_5.svg"
       - "/default/members/default_6.svg"
+  crew:
+    image: "/default/crews/crew_default.svg"
