@@ -16,7 +16,7 @@ public class Crew {
     private String name;
     private CrewCategory category;
     private Region region;
-    private String profileImageUrl;
+    private String imageUrl;
     private String invitationCode; // 초대 코드
     private Integer memberCount;
     private final LocalDateTime createdAt;
