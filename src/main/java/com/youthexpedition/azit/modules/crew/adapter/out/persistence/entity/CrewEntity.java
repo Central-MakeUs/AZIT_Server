@@ -29,8 +29,8 @@ public class CrewEntity extends BaseTimeEntity {
     @Column(nullable = false, length = 30)
     private Region region;
 
-    @Column(name = "profile_image_url", length = 255)
-    private String profileImageUrl;
+    @Column(name = "image_url", length = 255)
+    private String imageUrl;
 
     @Column(name = "invitation_code", nullable = false, unique = true, length = 20)
     private String invitationCode;

@@ -10,6 +10,12 @@ public record MyInfoResponse(
         String nickname,
         @Schema(description = "크루 ID")
         Long crewId,
+        @Schema(description = "크루 이름")
+        String crewName,
+        @Schema(description = "크루 초대코드")
+        String invitationCode,
+        @Schema(description = "크루 프로필 이미지 url")
+        String crewImageUrl,
         @Schema(description = "크루 내 역할")
         CrewMemberRole crewMemberRole,
         @Schema(description = "프로필 이미지 URL")
@@ -19,7 +25,10 @@ public record MyInfoResponse(
         @Schema(description = "포인트")
         Long totalPoints
 ) {
-    public static MyInfoResponse of(Long id, String nickname, Long crewId, CrewMemberRole crewMemberRole, String profileImageUrl, Integer totalAttendanceCount, Long totalPoints) {
-        return new MyInfoResponse(id, nickname, crewId, crewMemberRole, profileImageUrl, totalAttendanceCount, totalPoints);
+    public static MyInfoResponse of(Long id, String nickname, Long crewId, String crewName, String invitationCode,
+                                    String crewImageUrl, CrewMemberRole crewMemberRole, String profileImageUrl,
+                                    Integer totalAttendanceCount, Long totalPoints) {
+        return new MyInfoResponse(
+                id, nickname, crewId, crewName, invitationCode, crewImageUrl, crewMemberRole, profileImageUrl, totalAttendanceCount, totalPoints);
     }
 }

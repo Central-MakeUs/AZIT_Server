@@ -38,9 +38,4 @@ public class CrewPersistenceAdapter implements LoadCrewPort, SaveCrewPort {
     public boolean existsByInvitationCode(String invitationCode) {
         return crewRepository.existsByInvitationCode(invitationCode);
     }
-
-    @Override
-    public boolean existsById(Long crewId) {
-        return crewRepository.existsById(crewId);
-    }
 }

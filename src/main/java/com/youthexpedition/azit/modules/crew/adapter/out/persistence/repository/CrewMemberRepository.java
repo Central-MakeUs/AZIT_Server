@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Long>, CrewMemberRepositoryCustom {
-    long countByCrewIdAndStatus(Long crewId, CrewMemberStatus status);
     Optional<CrewMemberEntity> findByCrewIdAndMemberId(Long crewId, Long memberId);
     Optional<CrewMemberEntity> findFirstByMemberIdAndStatusInOrderByIdDesc(Long memberId, Collection<CrewMemberStatus> statuses);
 
