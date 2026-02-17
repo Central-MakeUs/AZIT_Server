@@ -41,3 +41,12 @@ default:
       - "/default/members/default_6.svg"
   crew:
     image: "/default/crews/crew_default.svg"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health # 무중단 배포에 필요한 health 엔드포인트만 노출
+  endpoint:
+    health:
+      show-details: never # 서버 내부 정보(DB 상태, 디스크 용량 등)를 숨기고 "UP/DOWN" 결과만 보여줌
