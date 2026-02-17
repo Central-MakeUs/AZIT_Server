@@ -25,6 +25,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${TARGET_PROFILE}
       - TZ=Asia/Seoul
+      - "JAVA_OPTS=-Xms400m -Xmx400m -XX:+UseG1GC"
     volumes:
       - /home/ubuntu/app/keys:/app/keys
     networks:
@@ -42,6 +43,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${TARGET_PROFILE}
       - TZ=Asia/Seoul
+      - "JAVA_OPTS=-Xms400m -Xmx400m -XX:+UseG1GC"
     volumes:
       - /home/ubuntu/app/keys:/app/keys
     networks:
