@@ -44,6 +44,8 @@ public class SecurityConfig {
 
                 // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(securityProperties.getPermitAllPaths().toArray(String[]::new)).permitAll()
                          // 공통 허용 경로 (로그인 등)
                         .requestMatchers("/api/v1/auth/social-login/**",
