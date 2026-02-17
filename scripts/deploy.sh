@@ -49,7 +49,7 @@ done
 
 # Nginx 포트 스위칭 (Nginx가 참조하는 설정 파일 업데이트)
 echo "🔄 Nginx 연결 포트를 $TARGET_PORT 로 변경합니다."
-echo "set \$service_url http://127.0.0.1:$TARGET_PORT;" | sudo tee /etc/nginx/conf.d/service-env.inc
+echo "server 127.0.0.1:$TARGET_PORT;" | sudo tee /etc/nginx/conf.d/service-env.inc
 
 # Nginx 설정 반영 (서비스 중단 없이 설정만 다시 읽음)
 sudo nginx -s reload
