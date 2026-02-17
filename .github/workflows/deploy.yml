@@ -81,7 +81,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "scripts/deploy.sh, docker-compose.yml"
+          source: "scripts/deploy.sh, scripts/docker-compose.yml"
           target: "~/app"
           strip_components: 1 # scripts/ 폴더를 떼고 파일만 전송
 
