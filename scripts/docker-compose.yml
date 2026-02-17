@@ -1,0 +1,68 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: azit-redis
+    volumes:
+      - ~/app/redis-data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD}
+    networks:
+      - azit-network
+
+  # 블루(Blue) 환경: 8081 포트 사용
+  azit-blue:
+    image: ${DOCKER_USERNAME}/azit-server:${IMAGE_TAG:-latest}
+    container_name: azit-blue
+    ports:
+      - "8081:8080"
+    depends_on:
+      - redis
+    env_file: .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=${TARGET_PROFILE}
+      - TZ=Asia/Seoul
+    volumes:
+      - /home/ubuntu/app/keys:/app/keys
+    networks:
+      - azit-network
+
+  # 그린(Green) 환경: 8082 포트 사용
+  azit-green:
+    image: ${DOCKER_USERNAME}/azit-server:${IMAGE_TAG:-latest}
+    container_name: azit-green
+    ports:
+      - "8082:8080"
+    depends_on:
+      - redis
+    env_file: .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=${TARGET_PROFILE}
+      - TZ=Asia/Seoul
+    volumes:
+      - /home/ubuntu/app/keys:/app/keys
+    networks:
+      - azit-network
+
+  azit-dev:
+    image: ${DOCKER_USERNAME}/azit-server:${IMAGE_TAG:-latest}
+    container_name: azit-dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    env_file: .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - TZ=Asia/Seoul
+    volumes:
+      - /home/ubuntu/app/keys:/app/keys
+    networks:
+      - azit-network
+
+networks:
+  azit-network:
+    driver: bridge
