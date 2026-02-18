@@ -32,7 +32,7 @@ public class S3ProfileImageUtil implements ProfileImageProvider, CrewImageProvid
     // 멤버 프로필용: 랜덤 이미지 반환
     @Override
     public String getRandomDefaultImage() {
-        List<String> images = member.getProfileImages();
+        List<String> images = (member != null) ? member.getProfileImages() : null;
         if (images == null || images.isEmpty()) {
             return null;
         }
