@@ -33,8 +33,7 @@ public interface CrewScheduleControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "NOT_A_CREW_MEMBER", "ONLY_LEADER_CAN_CREATE_REGULAR_RUN",
-            "INVALID_SCHEDULE_TITLE", "EXCEEDED_MAX_SUPPLY_COUNT", "INVALID_SCHEDULE_TIME",
+            "NOT_A_CREW_MEMBER", "ONLY_LEADER_CAN_CREATE_REGULAR_RUN", "INVALID_SCHEDULE_TIME",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> createSchedule(

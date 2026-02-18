@@ -22,8 +22,6 @@ public enum CrewErrorCode implements BaseErrorCode {
     CANNOT_KICK_SELF("CANNOT_KICK_SELF", "스스로를 방출할 수 없습니다.", HttpStatus.BAD_REQUEST),
 
     // 일정 관련
-    INVALID_SCHEDULE_TITLE("INVALID_SCHEDULE_TITLE", "유효하지 않은 일정 제목입니다.", HttpStatus.BAD_REQUEST),
-    EXCEEDED_MAX_SUPPLY_COUNT("EXCEEDED_MAX_SUPPLY_COUNT", "최대 준비물 등록 개수를 넘었습니다.", HttpStatus.BAD_REQUEST),
     INVALID_SCHEDULE_TIME("INVALID_SCHEDULE_TIME", "유효하지 않은 일정 시간입니다.", HttpStatus.BAD_REQUEST),
     ONLY_LEADER_CAN_CREATE_REGULAR_RUN("ONLY_LEADER_CAN_CREATE_REGULAR_RUN", "크루 리더만 정기런을 등록할 수 있습니다.", HttpStatus.BAD_REQUEST),
     ;
