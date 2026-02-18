@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.crew.adapter.in.web.dto;
 
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.AmPm;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -24,9 +25,9 @@ public record CreateScheduleRequest(
         @NotNull(message = "날짜는 필수입니다.")
         LocalDate date,
 
-        @Schema(description = "오전/오후 구분")
-        @NotBlank(message = "오전/오후 선택은 필수입니다.")
-        String amPm,
+        @Schema(description = "오전/오후 구분 (AM, PM)")
+        @NotNull(message = "오전/오후 선택은 필수입니다.")
+        AmPm amPm,
 
         @Schema(description = "시간 (1~12)")
         @Min(1) @Max(12)
@@ -77,8 +78,7 @@ public record CreateScheduleRequest(
         List<@Size(max = 15, message = "준비물 내용은 최대 15자까지 가능합니다.") String> supplies
 ) {
     public CreateScheduleCommand toCommand(Long crewId, Long memberId) {
-        int hour24 = amPm.equals("오후") && hour < 12 ? hour + 12 : (amPm.equals("오전") && hour == 12 ? 0 : hour);
-        LocalDateTime meetingAt = LocalDateTime.of(date, LocalTime.of(hour24, minute));
+            LocalDateTime meetingAt = LocalDateTime.of(date, LocalTime.of(amPm.to24Hour(hour), minute));
 
         return CreateScheduleCommand.of(
                 crewId,

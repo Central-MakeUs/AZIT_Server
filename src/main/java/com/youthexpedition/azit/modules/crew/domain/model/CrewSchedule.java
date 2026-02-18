@@ -48,8 +48,8 @@ public class CrewSchedule {
     }
 
     // 현재보다 과거 시간인지 검증
-    public boolean isMeetingTimeValid(LocalDateTime meetingAt) {
-        return meetingAt != null && meetingAt.isAfter(LocalDateTime.now());
+    public boolean isMeetingTimeValid() {
+        return this.meetingAt != null && this.meetingAt.isAfter(LocalDateTime.now());
     }
 
     public void cancel() {

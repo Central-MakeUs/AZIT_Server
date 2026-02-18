@@ -65,6 +65,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     // 일정 유효성 체크
     private void validateSchedule(CrewSchedule schedule) {
         // 현재보다 이후의 시간인지 검증
-        if (!schedule.isMeetingTimeValid(schedule.getMeetingAt())) throw new BusinessException(CrewErrorCode.INVALID_SCHEDULE_TIME);
+        if (!schedule.isMeetingTimeValid()) throw new BusinessException(CrewErrorCode.INVALID_SCHEDULE_TIME);
     }
 }
