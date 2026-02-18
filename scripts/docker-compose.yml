@@ -28,6 +28,7 @@ services:
       - "JAVA_OPTS=-Xms400m -Xmx400m -XX:+UseG1GC"
     volumes:
       - /home/ubuntu/app/keys:/app/keys
+      - /home/ubuntu/app/logs:/logs
     networks:
       - azit-network
 
@@ -45,6 +46,7 @@ services:
       - TZ=Asia/Seoul
     volumes:
       - /home/ubuntu/app/keys:/app/keys
+      - /home/ubuntu/app/logs:/logs
     networks:
       - azit-network
 
@@ -61,6 +63,7 @@ services:
       - TZ=Asia/Seoul
     volumes:
       - /home/ubuntu/app/keys:/app/keys
+      - /home/ubuntu/app/logs:/logs
     networks:
       - azit-network
 
