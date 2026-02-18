@@ -17,6 +17,10 @@ spring:
       hibernate:
         default_batch_fetch_size: 100
 
+  jackson:
+    deserialization:
+      read_unknown_enum_values_as_null: true
+
 security:
   permit-all-paths:
     - "/v3/api-docs/**"
