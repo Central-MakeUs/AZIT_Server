@@ -1,6 +1,5 @@
 package com.youthexpedition.azit.modules.crew.application.port.in.dto;
 
-import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record CrewInvitationResponse(
@@ -11,14 +10,17 @@ public record CrewInvitationResponse(
         @Schema(description = "크루 카테고리")
         String category,
         @Schema(description = "크루에 가입되어 있는 멤버 수")
-        long memberCount
+        long memberCount,
+        @Schema(description = "크루 이미지 url")
+        String crewImageUrl
 ) {
-    public static CrewInvitationResponse of(Crew crew, long memberCount) {
+    public static CrewInvitationResponse of(Long crewId, String name, String category, long memberCount, String crewImageUrl) {
         return new CrewInvitationResponse(
-                crew.getId(),
-                crew.getName(),
-                crew.getCategory().name(),
-                memberCount
+                crewId,
+                name,
+                category,
+                memberCount,
+                crewImageUrl
         );
     }
 }

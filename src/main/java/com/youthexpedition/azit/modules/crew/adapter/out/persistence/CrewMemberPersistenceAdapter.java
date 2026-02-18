@@ -45,11 +45,6 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
-    public void updateAllStatusByMemberId(Long memberId, CrewMemberStatus status) {
-        crewMemberRepository.updateAllStatusByMemberId(memberId, status);
-    }
-
-    @Override
     public List<JoinRequestDto> findJoinRequestsByCrewId(Long crewId) {
         return crewMemberRepository.findJoinRequestsByCrewId(crewId);
     }
@@ -68,5 +63,20 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     @Override
     public long countJoinedCrewsByMemberId(Long memberId) {
         return crewMemberRepository.countByMemberIdAndStatus(memberId, CrewMemberStatus.JOINED);
+    }
+
+    @Override
+    public List<CrewMember> findAllByMemberId(Long memberId) {
+        return crewMemberRepository.findAllByMemberId(memberId).stream()
+                .map(crewMemberMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void saveAll(List<CrewMember> crews) {
+        List<CrewMemberEntity> entities = crews.stream()
+                .map(crewMemberMapper::toEntity)
+                .toList();
+        crewMemberRepository.saveAll(entities);
     }
 }

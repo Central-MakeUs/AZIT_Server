@@ -2,35 +2,27 @@
 <configuration>
     <property name="LOG_PATH" value="./logs" />
     <property name="LOG_FILE_NAME" value="azit-server" />
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%blue(%t)] %green(%logger{45}) : %msg%n</pattern>
+        </encoder>
+    </appender>
 
     <springProfile name="local">
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder>
-                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%blue(%t)] %green(%logger{45}) : %msg%n</pattern>
-            </encoder>
-        </appender>
-
         <logger name="com.youthexpedition.azit" level="DEBUG" />
         <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" />
-
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
         </root>
     </springProfile>
 
     <springProfile name="dev">
-        <appender name="DEV_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder>
-                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%blue(%t)] %green(%logger{45}) : %msg%n</pattern>
-            </encoder>
-        </appender>
-
         <logger name="com.youthexpedition.azit" level="DEBUG" />
         <logger name="org.hibernate.SQL" level="DEBUG" />
         <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" />
 
         <root level="INFO">
-            <appender-ref ref="DEV_CONSOLE" />
+            <appender-ref ref="CONSOLE" />
         </root>
     </springProfile>
 

@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -37,5 +38,20 @@ public class CrewPersistenceAdapter implements LoadCrewPort, SaveCrewPort {
     @Override
     public boolean existsByInvitationCode(String invitationCode) {
         return crewRepository.existsByInvitationCode(invitationCode);
+    }
+
+    @Override
+    public List<Crew> findAllByIds(List<Long> ids) {
+        return crewRepository.findAllById(ids).stream()
+                .map(crewMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void saveAll(List<Crew> crews) {
+        List<CrewEntity> entities = crews.stream()
+                .map(crewMapper::toEntity)
+                .toList();
+        crewRepository.saveAll(entities);
     }
 }

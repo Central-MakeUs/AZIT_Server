@@ -2,6 +2,7 @@ package com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity;
 
 import com.youthexpedition.azit.infrastructure.common.entity.BaseTimeEntity;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewCategory;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.Region;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,4 +39,8 @@ public class CrewEntity extends BaseTimeEntity {
     @Builder.Default
     @Column(name = "member_count", nullable = false)
     private Integer memberCount = 1;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private CrewStatus status;
 }
