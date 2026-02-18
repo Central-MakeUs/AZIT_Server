@@ -18,4 +18,8 @@ public class CrewScheduleSupplyEntity extends BaseTimeEntity {
 
     @Column(name = "content", nullable = false, length = 15)
     private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_id", nullable = false)
+    private CrewScheduleEntity schedule;
 }

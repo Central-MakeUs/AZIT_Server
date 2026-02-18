@@ -7,8 +7,6 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.Location;
 import org.springframework.stereotype.Component;
 
-import java.util.stream.Collectors;
-
 @Component
 public class CrewScheduleMapper {
 
@@ -43,7 +41,7 @@ public class CrewScheduleMapper {
     public CrewScheduleEntity toEntity(CrewSchedule domain) {
         if (domain == null) return null;
 
-        return CrewScheduleEntity.builder()
+        CrewScheduleEntity scheduleEntity = CrewScheduleEntity.builder()
                 .id(domain.getId())
                 .crewId(domain.getCrewId())
                 .creatorId(domain.getCreatorId())
@@ -61,12 +59,18 @@ public class CrewScheduleMapper {
                 .distance(domain.getDistance())
                 .pace(domain.getPace())
                 .maxParticipants(domain.getMaxParticipants())
-                .supplies(domain.getSupplies().stream()
-                        .map(content -> CrewScheduleSupplyEntity.builder()
-                                .content(content)
-                                .build())
-                        .collect(Collectors.toList()))
                 .status(domain.getStatus())
                 .build();
+
+        if (domain.getSupplies() != null) {
+            domain.getSupplies().stream()
+                    .map(content -> CrewScheduleSupplyEntity.builder()
+                            .content(content)
+                            .schedule(scheduleEntity)
+                            .build())
+                    .forEach(scheduleEntity::addSupply); // 연관관계 편의 메서드로 리스트에 추가
+        }
+
+        return scheduleEntity;
     }
 }

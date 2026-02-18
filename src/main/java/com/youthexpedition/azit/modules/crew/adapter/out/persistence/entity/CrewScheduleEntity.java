@@ -54,9 +54,12 @@ public class CrewScheduleEntity extends BaseTimeEntity {
     private String description;
 
     @Builder.Default
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "schedule_id")
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CrewScheduleSupplyEntity> supplies = new ArrayList<>();
+
+    public void addSupply(CrewScheduleSupplyEntity supply) {
+        this.supplies.add(supply);
+    }
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
