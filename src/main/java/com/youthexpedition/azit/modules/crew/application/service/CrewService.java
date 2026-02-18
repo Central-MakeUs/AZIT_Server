@@ -14,17 +14,18 @@ import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMember
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
+import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
+import com.youthexpedition.azit.modules.crew.domain.model.provider.CrewImageProvider;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -44,9 +45,8 @@ public class CrewService implements CrewUseCase {
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
     private final CrewMemberResponseMapper crewMemberResponseMapper;
-
-    @Value("${default.crew.image}")
-    private String defaultCrewImageUrl;
+    private final CrewResponseMapper crewResponseMapper;
+    private final CrewImageProvider crewImageProvider;
 
     @Override
     @Retryable(
@@ -58,8 +58,11 @@ public class CrewService implements CrewUseCase {
         // 초대 코드 생성
         String invitationCode = generateUniqueInvitationCode();
 
+        // 크루 기본 이미지
+        String defaultImageUrl = crewImageProvider.getCrewDefaultImage();
+
         // 크루 생성
-        Crew crew = Crew.create(command.name(), command.category(), command.region(), defaultCrewImageUrl, invitationCode);
+        Crew crew = Crew.create(command.name(), command.category(), command.region(), defaultImageUrl, invitationCode);
         Crew savedCrew = saveCrewPort.save(crew);
 
         // 리더 등록
@@ -73,7 +76,7 @@ public class CrewService implements CrewUseCase {
 
         saveMemberPort.save(member);
 
-        return CreateCrewResponse.from(savedCrew.getInvitationCode());
+        return crewResponseMapper.toCreateResponse(savedCrew);
     }
 
     // 초대 코드 중복 방어
@@ -130,7 +133,7 @@ public class CrewService implements CrewUseCase {
         Crew crew = loadCrewPort.findByInvitationCode(invitationCode)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
-        return CrewInvitationResponse.of(crew, crew.getMemberCount());
+        return crewResponseMapper.toInvitationResponse(crew);
     }
 
     @Override
@@ -143,7 +146,7 @@ public class CrewService implements CrewUseCase {
         CrewMemberStatus status = loadCrewMemberPort.findStatusByCrewIdAndMemberId(crewId, memberId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
-        return CrewJoinStatusResponse.of(crew.getId(), crew.getName(), status);
+        return crewResponseMapper.toJoinStatusResponse(crew, status);
     }
 
     @Override
