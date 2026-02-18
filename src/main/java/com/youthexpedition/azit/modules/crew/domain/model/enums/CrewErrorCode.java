@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum CrewErrorCode implements BaseErrorCode {
+    // 크루 관련
     CREW_NOT_FOUND("CREW_NOT_FOUND", "존재하지 않는 크루입니다.", HttpStatus.NOT_FOUND),
     INVALID_CREW_CATEGORY("INVALID_CREW_CATEGORY", "유효하지 않은 크루 카테고리입니다.", HttpStatus.BAD_REQUEST),
     INVALID_REGION("INVALID_REGION", "유효하지 않은 활동 지역입니다.", HttpStatus.BAD_REQUEST),
@@ -18,7 +19,14 @@ public enum CrewErrorCode implements BaseErrorCode {
     NOT_CREW_LEADER("NOT_CREW_LEADER", "해당 크루의 리더 권한이 없습니다.", HttpStatus.FORBIDDEN),
     NOT_A_CREW_MEMBER("NOT_A_CREW_MEMBER", "해당 크루의 멤버가 아닙니다.", HttpStatus.FORBIDDEN),
     CREW_MEMBER_NOT_FOUND("CREW_MEMBER_NOT_FOUND", "가입한 크루가 없습니다.", HttpStatus.NOT_FOUND),
-    CANNOT_KICK_SELF("CANNOT_KICK_SELF", "스스로를 방출할 수 없습니다.", HttpStatus.BAD_REQUEST),;
+    CANNOT_KICK_SELF("CANNOT_KICK_SELF", "스스로를 방출할 수 없습니다.", HttpStatus.BAD_REQUEST),
+
+    // 일정 관련
+    INVALID_SCHEDULE_TITLE("INVALID_SCHEDULE_TITLE", "유효하지 않은 일정 제목입니다.", HttpStatus.BAD_REQUEST),
+    EXCEEDED_MAX_SUPPLY_COUNT("EXCEEDED_MAX_SUPPLY_COUNT", "최대 준비물 등록 개수를 넘었습니다.", HttpStatus.BAD_REQUEST),
+    INVALID_SCHEDULE_TIME("INVALID_SCHEDULE_TIME", "유효하지 않은 일정 시간입니다.", HttpStatus.BAD_REQUEST),
+    ONLY_LEADER_CAN_CREATE_REGULAR_RUN("ONLY_LEADER_CAN_CREATE_REGULAR_RUN", "크루 리더만 정기런을 등록할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    ;
 
     private final String code;
     private final String message;
