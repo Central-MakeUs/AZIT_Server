@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -33,6 +36,7 @@ public class MemberService implements MemberUseCase {
     private final SaveCrewMemberPort saveCrewMemberPort;
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadCrewPort loadCrewPort;
+    private final SaveCrewPort saveCrewPort;
     private final SocialAuthPort socialAuthPort;
     private final TokenPort tokenPort;
     private final MemberResponseMapper memberResponseMapper;
@@ -56,8 +60,8 @@ public class MemberService implements MemberUseCase {
         // 소셜 연동 해제
         socialAuthPort.revoke(SocialRevokeCommand.from(member));
 
-        // 가입한 모든 크루에서 탈퇴 처리
-        saveCrewMemberPort.updateAllStatusByMemberId(memberId, CrewMemberStatus.EXITED);
+        // 가입한 크루 인원 수 차감 및 상태 변경
+        processCrewWithdrawal(memberId);
 
         member.withdraw();
         tokenPort.deleteByMemberId(memberId); // 리프레시 토큰 삭제
@@ -71,7 +75,8 @@ public class MemberService implements MemberUseCase {
         Member member = loadMemberPort.findBySocialInfo(socialProvider, socialProviderId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        saveCrewMemberPort.updateAllStatusByMemberId(member.getId(), CrewMemberStatus.EXITED);
+        // 가입한 크루 인원 수 차감 및 상태 변경
+        processCrewWithdrawal(member.getId());
 
         member.withdraw();
         tokenPort.deleteByMemberId(member.getId()); // 리프레시 토큰 삭제
@@ -116,5 +121,22 @@ public class MemberService implements MemberUseCase {
     private Member getMember(Long memberId) {
         return loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    private void processCrewWithdrawal(Long memberId) {
+        List<CrewMember> crewMembers = loadCrewMemberPort.findAllByMemberId(memberId);
+
+        for (CrewMember crewMember : crewMembers) {
+            // JOINED 상태인 경우에만 크루 인원수 차감
+            if (crewMember.getStatus() == CrewMemberStatus.JOINED) {
+                loadCrewPort.findById(crewMember.getCrewId()).ifPresent(crew -> {
+                    crew.decreaseMemberCount();
+                    saveCrewPort.save(crew);
+                });
+            }
+            // 가입한 모든 크루에서 탈퇴 처리
+            crewMember.exit();
+            saveCrewMemberPort.save(crewMember);
+        }
     }
 }
