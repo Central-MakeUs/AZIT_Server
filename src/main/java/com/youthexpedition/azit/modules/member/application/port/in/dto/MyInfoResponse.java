@@ -14,7 +14,7 @@ public record MyInfoResponse(
         String crewName,
         @Schema(description = "크루 초대코드")
         String invitationCode,
-        @Schema(description = "크루 프로필 이미지 url")
+        @Schema(description = "크루 이미지 url")
         String crewImageUrl,
         @Schema(description = "크루 내 역할")
         CrewMemberRole crewMemberRole,
