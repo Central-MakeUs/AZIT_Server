@@ -71,4 +71,12 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
                 .map(crewMemberMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public void saveAll(List<CrewMember> crews) {
+        List<CrewMemberEntity> entities = crews.stream()
+                .map(crewMemberMapper::toEntity)
+                .toList();
+        crewMemberRepository.saveAll(entities);
+    }
 }

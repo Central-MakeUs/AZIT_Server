@@ -125,18 +125,23 @@ public class MemberService implements MemberUseCase {
 
     private void processCrewWithdrawal(Long memberId) {
         List<CrewMember> crewMembers = loadCrewMemberPort.findAllByMemberId(memberId);
+        if (crewMembers.isEmpty()) return;
 
-        for (CrewMember crewMember : crewMembers) {
-            // JOINED 상태인 경우에만 크루 인원수 차감
-            if (crewMember.getStatus() == CrewMemberStatus.JOINED) {
-                loadCrewPort.findById(crewMember.getCrewId()).ifPresent(crew -> {
-                    crew.decreaseMemberCount();
-                    saveCrewPort.save(crew);
-                });
-            }
-            // 가입한 모든 크루에서 탈퇴 처리
-            crewMember.exit();
-            saveCrewMemberPort.save(crewMember);
+        // 가입 상태인 크루 ID 추출
+        List<Long> joinedCrewIds = crewMembers.stream()
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
+                .map(CrewMember::getCrewId)
+                .toList();
+
+        // 인원수 일괄 차감
+        if (!joinedCrewIds.isEmpty()) {
+            List<Crew> joinedCrews = loadCrewPort.findAllByIds(joinedCrewIds);
+            joinedCrews.forEach(Crew::decreaseMemberCount);
+            saveCrewPort.saveAll(joinedCrews);
         }
+
+        // 가입한 모든 크루 상태를 EXITED로 변경 및 저장
+        crewMembers.forEach(CrewMember::exit);
+        saveCrewMemberPort.saveAll(crewMembers);
     }
 }
