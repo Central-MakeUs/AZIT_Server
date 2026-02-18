@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.crew.domain.model;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewCategory;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.Region;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,7 @@ public class Crew {
     private String imageUrl;
     private String invitationCode; // 초대 코드
     private Integer memberCount;
+    private CrewStatus status;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -48,13 +50,17 @@ public class Crew {
         return sb.toString();
     }
 
-    public void addMember() {
+    public void increaseMemberCount() {
         this.memberCount++;
     }
 
-    public void removeMember() {
-        if (this.memberCount > 1) {
+    public void decreaseMemberCount() {
+        if (this.memberCount > 0) {
             this.memberCount--;
+        }
+
+        if (this.memberCount == 0) {
+            this.status = CrewStatus.INACTIVE;
         }
     }
 

@@ -163,7 +163,7 @@ public class CrewService implements CrewUseCase {
         // TODO: 원자성 체크 필요
         Crew crew = loadCrewPort.findById(command.crewId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
-        crew.addMember(); // 인원 수 +1
+        crew.increaseMemberCount(); // 인원 수 +1
         saveCrewPort.save(crew);
 
         // 해당 유저의 회원 상태를 APPROVED_PENDING_CONFIRM 로 변경 (온보딩 완료 처리)
@@ -238,7 +238,7 @@ public class CrewService implements CrewUseCase {
         // TODO: 동시성 이슈 고려 필요
         Crew crew = loadCrewPort.findById(crewId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
-        crew.removeMember();
+        crew.decreaseMemberCount();
         saveCrewPort.save(crew);
 
         // 가입된 잔여 크루 확인 멤버 상태 변경
