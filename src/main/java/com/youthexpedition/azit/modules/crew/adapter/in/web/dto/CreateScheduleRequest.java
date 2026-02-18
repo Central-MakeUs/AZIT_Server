@@ -20,7 +20,7 @@ public record CreateScheduleRequest(
         @NotNull(message = "런 종류는 필수입니다.")
         RunType runType,
 
-        @Schema(description = "모임 날짜", example = "2026-01-26")
+        @Schema(description = "모임 날짜")
         @NotNull(message = "날짜는 필수입니다.")
         LocalDate date,
 
