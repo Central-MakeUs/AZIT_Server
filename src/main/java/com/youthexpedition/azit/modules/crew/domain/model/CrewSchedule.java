@@ -27,9 +27,6 @@ public class CrewSchedule {
     private List<String> supplies;  // 준비물 리스트
     private ScheduleStatus status;
 
-    private static final int MAX_TITLE_LENGTH = 15;
-    private static final int MAX_SUPPLY_COUNT = 5;
-
     public static CrewSchedule create(Long crewId, Long creatorId, String title, RunType runType,
                                       LocalDateTime meetingAt, Location location, String description,
                                       Double distance, Double pace, Integer maxParticipants, List<String> supplies
@@ -48,16 +45,6 @@ public class CrewSchedule {
                 .supplies(supplies)
                 .status(ScheduleStatus.ACTIVE)
                 .build();
-    }
-
-    // 타이틀 15자 제한 검증
-    public boolean isValidTitle(String title) {
-        return title != null && !title.isBlank() && title.length() <= MAX_TITLE_LENGTH;
-    }
-
-    // 준비물 최대 5개 검증
-    public boolean isSuppliesCountValid(List<String> supplies) {
-        return supplies == null || supplies.size() <= MAX_SUPPLY_COUNT;
     }
 
     // 현재보다 과거 시간인지 검증
