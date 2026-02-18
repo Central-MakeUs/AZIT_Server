@@ -26,7 +26,7 @@ public class S3ProfileImageUtil implements ProfileImageProvider, CrewImageProvid
 
     @Getter @Setter
     public static class CrewConfig {
-        private String crewImage;
+        private String image;
     }
 
     // 멤버 프로필용: 랜덤 이미지 반환
@@ -43,6 +43,9 @@ public class S3ProfileImageUtil implements ProfileImageProvider, CrewImageProvid
     // 크루용: 단일 기본 이미지 반환
     @Override
     public String getCrewDefaultImage() {
-        return crew.getCrewImage();
+        if (crew == null) {
+            return null;
+        }
+        return crew.getImage();
     }
 }

@@ -4,9 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public record CreateCrewResponse(
         @Schema(description = "초대코드")
-        String invitationCode
+        String invitationCode,
+        @Schema(description = "크루 이미지 url")
+        String crewImageUrl
 ) {
-    public static CreateCrewResponse from(String invitationCode) {
-        return new CreateCrewResponse(invitationCode);
+    public static CreateCrewResponse of(String invitationCode, String crewImageUrl) {
+        return new CreateCrewResponse(invitationCode, crewImageUrl);
     }
 }

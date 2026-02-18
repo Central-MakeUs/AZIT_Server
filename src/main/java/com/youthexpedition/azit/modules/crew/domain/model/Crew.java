@@ -36,6 +36,7 @@ public class Crew {
                 .imageUrl(imageUrl)
                 .invitationCode(invitationCode)
                 .memberCount(1)
+                .status(CrewStatus.ACTIVE)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();

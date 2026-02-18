@@ -14,6 +14,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMember
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
+import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
@@ -44,6 +45,7 @@ public class CrewService implements CrewUseCase {
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
     private final CrewMemberResponseMapper crewMemberResponseMapper;
+    private final CrewResponseMapper crewResponseMapper;
     private final CrewImageProvider crewImageProvider;
 
     @Override
@@ -74,7 +76,7 @@ public class CrewService implements CrewUseCase {
 
         saveMemberPort.save(member);
 
-        return CreateCrewResponse.from(savedCrew.getInvitationCode());
+        return crewResponseMapper.toCreateResponse(savedCrew);
     }
 
     // 초대 코드 중복 방어
@@ -131,7 +133,7 @@ public class CrewService implements CrewUseCase {
         Crew crew = loadCrewPort.findByInvitationCode(invitationCode)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
-        return CrewInvitationResponse.of(crew, crew.getMemberCount());
+        return crewResponseMapper.toInvitationResponse(crew);
     }
 
     @Override
@@ -144,7 +146,7 @@ public class CrewService implements CrewUseCase {
         CrewMemberStatus status = loadCrewMemberPort.findStatusByCrewIdAndMemberId(crewId, memberId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
-        return CrewJoinStatusResponse.of(crew.getId(), crew.getName(), status);
+        return crewResponseMapper.toJoinStatusResponse(crew, status);
     }
 
     @Override
