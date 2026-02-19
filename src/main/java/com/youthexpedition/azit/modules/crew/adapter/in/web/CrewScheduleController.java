@@ -5,6 +5,7 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.docs.CrewScheduleControllerDocs;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateScheduleRequest;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateScheduleRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,13 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
     @PostMapping
     public CommonResponse<Void> createSchedule(@PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody CreateScheduleRequest request) {
         crewScheduleUseCase.createSchedule(request.toCommand(crewId, memberId));
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @PutMapping("/{scheduleId}")
+    public CommonResponse<Void> updateSchedule(
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateScheduleRequest request) {
+        crewScheduleUseCase.updateSchedule(request.toCommand(scheduleId, crewId, memberId));
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 

@@ -24,6 +24,7 @@ public enum CrewErrorCode implements BaseErrorCode {
     // 일정 관련
     INVALID_SCHEDULE_TIME("INVALID_SCHEDULE_TIME", "유효하지 않은 일정 시간입니다.", HttpStatus.BAD_REQUEST),
     ONLY_LEADER_CAN_CREATE_REGULAR_RUN("ONLY_LEADER_CAN_CREATE_REGULAR_RUN", "크루 리더만 정기런을 등록할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    SCHEDULE_NOT_FOUND("SCHEDULE_NOT_FOUND", "존재하지 않는 일정입니다.", HttpStatus.NOT_FOUND)
     ;
 
     private final String code;

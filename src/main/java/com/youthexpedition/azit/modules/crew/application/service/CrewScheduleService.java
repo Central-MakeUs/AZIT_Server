@@ -1,9 +1,12 @@
 package com.youthexpedition.azit.modules.crew.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CrewScheduleService implements CrewScheduleUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
+    private final LoadCrewSchedulePort loadCrewSchedulePort;
     private final SaveCrewSchedulePort saveCrewSchedulePort;
 
     @Override
@@ -30,7 +34,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                 .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
 
-        //  정기런은 리더만 생성 가능
+        // 정기런은 리더만 생성 가능
         if (command.runType() == RunType.REGULAR && creator.getRole() != CrewMemberRole.LEADER) {
             throw new BusinessException(CrewErrorCode.ONLY_LEADER_CAN_CREATE_REGULAR_RUN);
         }
@@ -61,6 +65,46 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         validateSchedule(crewSchedule);
         saveCrewSchedulePort.save(crewSchedule);
     }
+
+    @Override
+    public void updateSchedule(UpdateScheduleCommand command) {
+        CrewSchedule schedule = loadCrewSchedulePort.findById(command.scheduleId())
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.SCHEDULE_NOT_FOUND));
+
+        // 크루 정회원인지 확인
+        CrewMember creator = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.creatorId())
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+
+        // 본인이 생성한 일정인지 확인
+        if (!schedule.getCreatorId().equals(command.creatorId())) {
+            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
+
+        // 정기런은 리더만 생성 가능
+        if (command.runType() == RunType.REGULAR && creator.getRole() != CrewMemberRole.LEADER) {
+            throw new BusinessException(CrewErrorCode.ONLY_LEADER_CAN_CREATE_REGULAR_RUN);
+        }
+
+        Location location = Location.builder()
+                .name(command.locationName())
+                .address(command.address())
+                .detailedLocation(command.detailedLocation())
+                .latitude(command.latitude())
+                .longitude(command.longitude())
+                .build();
+
+        schedule.update(
+                command.title(), command.runType(), command.meetingAt(), location,
+                command.description(), command.distance(), command.pace(),
+                command.maxParticipants(), command.supplies()
+        );
+
+        // 유효성 체크
+        validateSchedule(schedule);
+        saveCrewSchedulePort.save(schedule);
+    }
+
 
     // 일정 유효성 체크
     private void validateSchedule(CrewSchedule schedule) {
