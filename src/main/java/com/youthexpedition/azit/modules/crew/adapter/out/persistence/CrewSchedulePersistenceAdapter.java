@@ -19,13 +19,21 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
 
     @Override
     public void save(CrewSchedule crewSchedule) {
-        CrewScheduleEntity entity = crewScheduleMapper.toEntity(crewSchedule);
-        crewScheduleRepository.save(entity);
+        if (crewSchedule.getId() != null) {
+            // 수정할 경우 기존 엔티티를 영속성 컨텍스트로 가져와서 업데이트
+            crewScheduleRepository.findByIdWithDetails(crewSchedule.getId()).ifPresent(entity -> {
+                crewScheduleMapper.updateEntity(entity, crewSchedule);
+            });
+        } else {
+            // 생성할 경우
+            CrewScheduleEntity entity = crewScheduleMapper.toEntity(crewSchedule);
+            crewScheduleRepository.save(entity);
+        }
     }
 
     @Override
     public Optional<CrewSchedule> findById(Long scheduleId) {
-        return crewScheduleRepository.findById(scheduleId)
+        return crewScheduleRepository.findByIdWithDetails(scheduleId)
                 .map(crewScheduleMapper::toDomain);
     }
 }

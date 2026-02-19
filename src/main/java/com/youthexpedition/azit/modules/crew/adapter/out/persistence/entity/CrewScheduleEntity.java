@@ -7,8 +7,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "crew_schedule")
@@ -55,14 +55,58 @@ public class CrewScheduleEntity extends BaseTimeEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CrewScheduleSupplyEntity> supplies = new ArrayList<>();
+    private Set<CrewScheduleSupplyEntity> supplies = new LinkedHashSet<>();
 
     public void addSupply(CrewScheduleSupplyEntity supply) {
         this.supplies.add(supply);
+    }
+
+    @Builder.Default
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CrewScheduleMemberEntity> members = new LinkedHashSet<>();
+
+    public void addMember(Long memberId) {
+        CrewScheduleMemberEntity scheduleMember = CrewScheduleMemberEntity.builder()
+                .schedule(this)
+                .memberId(memberId)
+                .build();
+        this.members.add(scheduleMember);
     }
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
     @Column(name = "status", nullable = false)
     private ScheduleStatus status = ScheduleStatus.ACTIVE;
+
+    public void syncWithDomain(
+            String title,
+            RunType runType,
+            LocalDateTime meetingAt,
+            String locationName,
+            String address,
+            String detailedLocation,
+            Double latitude,
+            Double longitude,
+            String description,
+            Double distance,
+            Double pace,
+            Integer maxParticipants,
+            ScheduleStatus status
+    ) {
+        this.title = title;
+        this.runType = runType;
+        this.meetingAt = meetingAt;
+        this.description = description;
+        this.distance = distance;
+        this.pace = pace;
+        this.maxParticipants = maxParticipants;
+        this.status = status;
+        this.locationEntity = LocationEntity.builder()
+                .name(locationName)
+                .address(address)
+                .detailedLocation(detailedLocation)
+                .latitude(latitude)
+                .longitude(longitude)
+                .build();
+    }
 }

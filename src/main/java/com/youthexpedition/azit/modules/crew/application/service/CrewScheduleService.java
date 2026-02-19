@@ -5,6 +5,7 @@ import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.ParticipateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
@@ -129,6 +130,30 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 삭제 처리
         schedule.cancel();
 
+        saveCrewSchedulePort.save(schedule);
+    }
+
+    @Override
+    public void participateSchedule(ParticipateScheduleCommand command) {
+        CrewSchedule schedule = loadCrewSchedulePort.findById(command.scheduleId())
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.SCHEDULE_NOT_FOUND));
+
+        loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.memberId())
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+
+        // 일정 참여 가능한지 검증
+        if (schedule.isCancelled()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
+        }
+        if (schedule.isAlreadyParticipating(command.memberId())) {
+            throw new BusinessException(CrewErrorCode.ALREADY_PARTICIPATED);
+        }
+        if (schedule.isFull()) {
+            throw new BusinessException(CrewErrorCode.EXCEEDED_MAX_PARTICIPANTS);
+        }
+
+        schedule.addParticipant(command.memberId());
         saveCrewSchedulePort.save(schedule);
     }
 
