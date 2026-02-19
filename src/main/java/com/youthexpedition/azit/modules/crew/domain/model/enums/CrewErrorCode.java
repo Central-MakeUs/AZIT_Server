@@ -27,7 +27,9 @@ public enum CrewErrorCode implements BaseErrorCode {
     SCHEDULE_NOT_FOUND("SCHEDULE_NOT_FOUND", "존재하지 않는 일정입니다.", HttpStatus.NOT_FOUND),
     ALREADY_CANCELLED_SCHEDULE("ALREADY_CANCELLED_SCHEDULE", "이미 취소된 일정입니다.", HttpStatus.BAD_REQUEST),
     ALREADY_PARTICIPATED("ALREADY_PARTICIPATED", "이미 참여한 일정입니다.", HttpStatus.BAD_REQUEST),
-    EXCEEDED_MAX_PARTICIPANTS("EXCEEDED_MAX_PARTICIPANTS", "최대 참여 인원을 초과했습니다.", HttpStatus.BAD_REQUEST)
+    EXCEEDED_MAX_PARTICIPANTS("EXCEEDED_MAX_PARTICIPANTS", "최대 참여 인원을 초과했습니다.", HttpStatus.BAD_REQUEST),
+    NOT_PARTICIPATING_SCHEDULE("NOT_PARTICIPATING_SCHEDULE", "해당 일정의 참여자가 아닙니다.", HttpStatus.BAD_REQUEST),
+    CREATOR_CANNOT_CANCEL_PARTICIPATION("CREATOR_CANNOT_CANCEL_PARTICIPATION", "일정 생성자는 참여 취소가 불가능합니다.", HttpStatus.BAD_REQUEST)
     ;
 
     private final String code;
