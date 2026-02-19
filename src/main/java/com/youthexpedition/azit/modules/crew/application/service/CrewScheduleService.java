@@ -116,18 +116,15 @@ public class CrewScheduleService implements CrewScheduleUseCase {
             throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
         }
 
-        // 크루 정회원인지 확인
-        CrewMember creator = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.creatorId())
-                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
-
-        // 본인 또는 크루 리더인지 확인
-        boolean isCreator = schedule.getCreatorId().equals(command.creatorId());
-        boolean isLeader = creator.getRole() == CrewMemberRole.LEADER;
-
-        if (!isCreator && !isLeader) {
+        // 본인이 생성한 일정인지 확인
+        if (!schedule.getCreatorId().equals(command.creatorId())) {
             throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
         }
+
+        // 크루 정회원인지 확인
+        loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.creatorId())
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
 
         // 삭제 처리
         schedule.cancel();
