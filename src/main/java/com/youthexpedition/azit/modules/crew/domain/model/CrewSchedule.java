@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -25,12 +26,16 @@ public class CrewSchedule {
     private Double pace;            // 목표 페이스
     private Integer maxParticipants; // 최대 인원
     private List<String> supplies;  // 준비물 리스트
+    private List<Long> participantIds; // 참여 인원
     private ScheduleStatus status;
 
     public static CrewSchedule create(Long crewId, Long creatorId, String title, RunType runType,
                                       LocalDateTime meetingAt, Location location, String description,
                                       Double distance, Double pace, Integer maxParticipants, List<String> supplies
     ) {
+        List<Long> participantIds = new ArrayList<>(); // 참여 인원에 작성자 추가
+        participantIds.add(creatorId);
+
         return CrewSchedule.builder()
                 .crewId(crewId)
                 .creatorId(creatorId)
@@ -43,6 +48,7 @@ public class CrewSchedule {
                 .pace(pace)
                 .maxParticipants(maxParticipants)
                 .supplies(supplies)
+                .participantIds(participantIds)
                 .status(ScheduleStatus.ACTIVE)
                 .build();
     }
@@ -74,5 +80,20 @@ public class CrewSchedule {
 
     public boolean isCancelled() {
         return this.status == ScheduleStatus.CANCELLED;
+    }
+
+    // 최대 인원 확인
+    public boolean isFull() {
+        return participantIds.size() >= maxParticipants;
+    }
+
+    // 이미 일정에 참여했는지 확인
+    public boolean isAlreadyParticipating(Long memberId) {
+        return participantIds.contains(memberId);
+    }
+
+    // 일정 참여
+    public void addParticipant(Long memberId) {
+        this.participantIds.add(memberId);
     }
 }

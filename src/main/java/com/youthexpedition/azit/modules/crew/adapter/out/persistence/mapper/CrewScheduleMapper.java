@@ -1,11 +1,16 @@
 package com.youthexpedition.azit.modules.crew.adapter.out.persistence.mapper;
 
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewScheduleEntity;
+import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewScheduleMemberEntity;
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewScheduleSupplyEntity;
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.LocationEntity;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.Location;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class CrewScheduleMapper {
@@ -33,11 +38,15 @@ public class CrewScheduleMapper {
                 .maxParticipants(entity.getMaxParticipants())
                 .supplies(entity.getSupplies().stream()
                         .map(CrewScheduleSupplyEntity::getContent)
-                        .toList())
+                        .collect(Collectors.toCollection(ArrayList::new)))
+                .participantIds(entity.getMembers().stream()
+                        .map(CrewScheduleMemberEntity::getMemberId)
+                        .collect(Collectors.toCollection(ArrayList::new)))
                 .status(entity.getStatus())
                 .build();
     }
 
+    // 신규 생성
     public CrewScheduleEntity toEntity(CrewSchedule domain) {
         if (domain == null) return null;
 
@@ -68,9 +77,62 @@ public class CrewScheduleMapper {
                             .content(content)
                             .schedule(scheduleEntity)
                             .build())
-                    .forEach(scheduleEntity::addSupply); // 연관관계 편의 메서드로 리스트에 추가
+                    .forEach(scheduleEntity::addSupply);
+        }
+
+        if (domain.getParticipantIds() != null) {
+            domain.getParticipantIds().forEach(scheduleEntity::addMember);
         }
 
         return scheduleEntity;
+    }
+
+    // 업데이트
+    public void updateEntity(CrewScheduleEntity entity, CrewSchedule domain) {
+        entity.syncWithDomain(
+                domain.getTitle(),
+                domain.getRunType(),
+                domain.getMeetingAt(),
+                domain.getLocation().getName(),
+                domain.getLocation().getAddress(),
+                domain.getLocation().getDetailedLocation(),
+                domain.getLocation().getLatitude(),
+                domain.getLocation().getLongitude(),
+                domain.getDescription(),
+                domain.getDistance(),
+                domain.getPace(),
+                domain.getMaxParticipants(),
+                domain.getStatus()
+        );
+
+        // 준비물 업데이트
+        List<String> currentSupplies = entity.getSupplies().stream()
+                .map(CrewScheduleSupplyEntity::getContent)
+                .toList();
+
+        // 도메인 리스트에 없는 준비물만 엔티티에서 제거
+        entity.getSupplies().removeIf(s -> !domain.getSupplies().contains(s.getContent()));
+
+        // 엔티티에 아직 없는 준비물만 새로 추가
+        domain.getSupplies().stream()
+                .filter(content -> !currentSupplies.contains(content))
+                .map(content -> CrewScheduleSupplyEntity.builder()
+                        .content(content)
+                        .schedule(entity)
+                        .build())
+                .forEach(entity::addSupply);
+
+        // 참여 멤버 업데이트
+        List<Long> currentMemberIds = entity.getMembers().stream()
+                .map(CrewScheduleMemberEntity::getMemberId)
+                .toList();
+
+        // 도메인 리스트에 없는 멤버만 엔티티에서 제거
+        entity.getMembers().removeIf(m -> !domain.getParticipantIds().contains(m.getMemberId()));
+
+        // 엔티티에 아직 없는 멤버 ID만 새로 추가
+        domain.getParticipantIds().stream()
+                .filter(id -> !currentMemberIds.contains(id))
+                .forEach(entity::addMember);
     }
 }
