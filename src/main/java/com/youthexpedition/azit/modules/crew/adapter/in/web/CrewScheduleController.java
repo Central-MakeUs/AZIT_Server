@@ -8,7 +8,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateScheduleRe
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateScheduleRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.ParticipateScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +44,16 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
 
     @PostMapping("/{scheduleId}/participate")
     public CommonResponse<Void> participateSchedule(@PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId) {
-        ParticipateScheduleCommand command = ParticipateScheduleCommand.of(crewId, scheduleId, memberId);
+        CrewScheduleCommand command = CrewScheduleCommand.of(crewId, scheduleId, memberId);
         crewScheduleUseCase.participateSchedule(command);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @DeleteMapping("/{scheduleId}/participate")
+    public CommonResponse<Void> cancelParticipation(@PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId) {
+        CrewScheduleCommand command = CrewScheduleCommand.of(crewId, scheduleId, memberId);
+        crewScheduleUseCase.cancelParticipation(command);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }

@@ -5,7 +5,7 @@ import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.ParticipateScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
@@ -32,9 +32,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     @Override
     public void createSchedule(CreateScheduleCommand command) {
         // 크루 정회원인지 확인
-        CrewMember creator = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.creatorId())
-                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+        CrewMember creator = getJoinedMember(command.crewId(), command.creatorId());
 
         // 정기런은 리더만 생성 가능
         if (command.runType() == RunType.REGULAR && creator.getRole() != CrewMemberRole.LEADER) {
@@ -70,18 +68,13 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
     @Override
     public void updateSchedule(UpdateScheduleCommand command) {
-        CrewSchedule schedule = loadCrewSchedulePort.findById(command.scheduleId())
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.SCHEDULE_NOT_FOUND));
+        CrewSchedule schedule = getSchedule(command.scheduleId());
 
         // 본인이 생성한 일정인지 확인
-        if (!schedule.getCreatorId().equals(command.creatorId())) {
-            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
-        }
+        validateCreator(schedule, command.creatorId());
 
         // 크루 정회원인지 확인
-        CrewMember creator = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.creatorId())
-                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+        CrewMember creator = getJoinedMember(command.crewId(), command.creatorId());
 
         // 정기런은 리더만 생성 가능
         if (command.runType() == RunType.REGULAR && creator.getRole() != CrewMemberRole.LEADER) {
@@ -109,8 +102,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
     @Override
     public void cancelSchedule(CancelScheduleCommand command) {
-        CrewSchedule schedule = loadCrewSchedulePort.findById(command.scheduleId())
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.SCHEDULE_NOT_FOUND));
+        CrewSchedule schedule = getSchedule(command.scheduleId());
 
         // 이미 취소된 일정인지 확인
         if (schedule.isCancelled()) {
@@ -118,14 +110,10 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         // 본인이 생성한 일정인지 확인
-        if (!schedule.getCreatorId().equals(command.creatorId())) {
-            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
-        }
+        validateCreator(schedule, command.creatorId());
 
         // 크루 정회원인지 확인
-        loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.creatorId())
-                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+        getJoinedMember(command.crewId(), command.creatorId());
 
         // 삭제 처리
         schedule.cancel();
@@ -134,19 +122,17 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
-    public void participateSchedule(ParticipateScheduleCommand command) {
-        CrewSchedule schedule = loadCrewSchedulePort.findById(command.scheduleId())
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.SCHEDULE_NOT_FOUND));
+    public void participateSchedule(CrewScheduleCommand command) {
+        CrewSchedule schedule = getSchedule(command.scheduleId());
 
-        loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.memberId())
-                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+        // 크루 정회원인지 확인
+        getJoinedMember(command.crewId(), command.memberId());
 
         // 일정 참여 가능한지 검증
         if (schedule.isCancelled()) {
             throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
         }
-        if (schedule.isAlreadyParticipating(command.memberId())) {
+        if (schedule.isParticipating(command.memberId())) {
             throw new BusinessException(CrewErrorCode.ALREADY_PARTICIPATED);
         }
         if (schedule.isFull()) {
@@ -157,6 +143,46 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         saveCrewSchedulePort.save(schedule);
     }
 
+    @Override
+    public void cancelParticipation(CrewScheduleCommand command) {
+        CrewSchedule schedule = getSchedule(command.scheduleId());
+
+        // 크루 정회원인지 확인
+        getJoinedMember(command.crewId(), command.memberId());
+
+        // 참여 중인지 확인
+        if (!schedule.isParticipating(command.memberId())) {
+            throw new BusinessException(CrewErrorCode.NOT_PARTICIPATING_SCHEDULE);
+        }
+
+        // 본인이 일정 생성자인지 확인
+        if (schedule.getCreatorId().equals(command.memberId())) {
+            throw new BusinessException(CrewErrorCode.CREATOR_CANNOT_CANCEL_PARTICIPATION);
+        }
+
+        schedule.removeParticipant(command.memberId());
+        saveCrewSchedulePort.save(schedule);
+    }
+
+    // 일정이 존재하는지 확인
+    private CrewSchedule getSchedule(Long scheduleId) {
+        return loadCrewSchedulePort.findById(scheduleId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.SCHEDULE_NOT_FOUND));
+    }
+
+    // 크루 정회원인지 확인
+    private CrewMember getJoinedMember(Long crewId, Long memberId) {
+        return loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+    }
+
+    // 해당 일정의 생성자인지 확인
+    private void validateCreator(CrewSchedule schedule, Long memberId) {
+        if (!schedule.getCreatorId().equals(memberId)) {
+            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
+    }
 
     // 일정 유효성 체크
     private void validateSchedule(CrewSchedule schedule) {

@@ -74,6 +74,7 @@ public class CrewSchedule {
         this.supplies = supplies;
     }
 
+    // 일정 취소
     public void cancel() {
         this.status = ScheduleStatus.CANCELLED;
     }
@@ -87,13 +88,18 @@ public class CrewSchedule {
         return participantIds.size() >= maxParticipants;
     }
 
-    // 이미 일정에 참여했는지 확인
-    public boolean isAlreadyParticipating(Long memberId) {
+    // 일정에 참여하고 있는지 확인
+    public boolean isParticipating(Long memberId) {
         return participantIds.contains(memberId);
     }
 
     // 일정 참여
     public void addParticipant(Long memberId) {
         this.participantIds.add(memberId);
+    }
+
+    // 일정 참여 취소
+    public void removeParticipant(Long memberId) {
+        this.participantIds.remove(memberId);
     }
 }
