@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.crew.application.service;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
@@ -106,8 +107,8 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
-    public void cancelSchedule(Long crewId, Long scheduleId, Long memberId) {
-        CrewSchedule schedule = loadCrewSchedulePort.findById(scheduleId)
+    public void cancelSchedule(CancelScheduleCommand command) {
+        CrewSchedule schedule = loadCrewSchedulePort.findById(command.scheduleId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.SCHEDULE_NOT_FOUND));
 
         // 이미 취소된 일정인지 확인
@@ -116,12 +117,12 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         // 크루 정회원인지 확인
-        CrewMember creator = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)
+        CrewMember creator = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.creatorId())
                 .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
 
         // 본인 또는 크루 리더인지 확인
-        boolean isCreator = schedule.getCreatorId().equals(memberId);
+        boolean isCreator = schedule.getCreatorId().equals(command.creatorId());
         boolean isLeader = creator.getRole() == CrewMemberRole.LEADER;
 
         if (!isCreator && !isLeader) {
