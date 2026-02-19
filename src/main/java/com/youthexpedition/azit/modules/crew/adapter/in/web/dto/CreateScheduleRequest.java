@@ -68,6 +68,7 @@ public record CreateScheduleRequest(
 
         @Schema(description = "최대 모집 인원")
         @Min(value = 1, message = "최소 1명 이상이어야 합니다.")
+        @Max(value = 999, message = "최대 999명까지 가능합니다.")
         Integer maxParticipants,
 
         @Schema(description = "상세 설명")
