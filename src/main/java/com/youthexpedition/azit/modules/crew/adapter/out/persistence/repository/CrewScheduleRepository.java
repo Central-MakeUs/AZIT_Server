@@ -1,9 +1,9 @@
 package com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository;
 
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewScheduleEntity;
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
