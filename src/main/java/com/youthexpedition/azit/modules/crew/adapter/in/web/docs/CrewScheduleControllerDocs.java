@@ -70,7 +70,7 @@ public interface CrewScheduleControllerDocs {
             생성된 일정을 취소 상태(CANCELLED)로 변경합니다. <br><br>
             
             **[참고 사항]** <br>
-            * 해당 일정을 생성한 본인 또는 크루 리더만 취소할 수 있습니다. (FORBIDDEN_ERROR)
+            * 해당 일정을 생성한 본인만 취소할 수 있습니다. (FORBIDDEN_ERROR)
             * 해당 크루의 정회원(JOINED 상태)이어야 합니다. (NOT_A_CREW_MEMBER)
             * 이미 취소된 일정은 다시 취소할 수 없습니다. (ALREADY_CANCELLED_SCHEDULE)
             """
