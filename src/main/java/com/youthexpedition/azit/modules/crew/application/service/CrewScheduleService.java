@@ -71,15 +71,15 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         CrewSchedule schedule = loadCrewSchedulePort.findById(command.scheduleId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.SCHEDULE_NOT_FOUND));
 
-        // 크루 정회원인지 확인
-        CrewMember creator = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.creatorId())
-                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
-
         // 본인이 생성한 일정인지 확인
         if (!schedule.getCreatorId().equals(command.creatorId())) {
             throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
         }
+
+        // 크루 정회원인지 확인
+        CrewMember creator = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.creatorId())
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
 
         // 정기런은 리더만 생성 가능
         if (command.runType() == RunType.REGULAR && creator.getRole() != CrewMemberRole.LEADER) {
