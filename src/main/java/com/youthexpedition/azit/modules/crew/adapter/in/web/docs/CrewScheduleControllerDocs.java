@@ -77,7 +77,26 @@ public interface CrewScheduleControllerDocs {
     )
     @ApiErrorCodeExamples({
             "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER", "ALREADY_CANCELLED_SCHEDULE",
-            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN"
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> cancelSchedule(@PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "크루 일정 참여 신청",
+            description = """
+            특정 일정에 참여 신청을 합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 해당 크루의 정회원(JOINED 상태)만 신청할 수 있습니다. (NOT_A_CREW_MEMBER)
+            * 이미 취소된 일정에는 신청할 수 없습니다. (ALREADY_CANCELLED_SCHEDULE)
+            * 이미 신청한 일정에 중복 신청은 불가합니다. (ALREADY_PARTICIPATED)
+            * 모집 인원이 마감된(정원 초과) 일정에는 신청할 수 없습니다. (EXCEEDED_MAX_PARTICIPANTS)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "NOT_A_CREW_MEMBER", "ALREADY_CANCELLED_SCHEDULE", "ALREADY_PARTICIPATED", "EXCEEDED_MAX_PARTICIPANTS", "SCHEDULE_NOT_FOUND",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> participateSchedule(
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId);
 }
