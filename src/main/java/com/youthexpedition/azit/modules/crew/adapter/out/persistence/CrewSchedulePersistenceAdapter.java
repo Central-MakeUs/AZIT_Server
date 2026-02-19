@@ -9,6 +9,8 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, SaveCrewSchedulePort {
@@ -19,5 +21,11 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
     public void save(CrewSchedule crewSchedule) {
         CrewScheduleEntity entity = crewScheduleMapper.toEntity(crewSchedule);
         crewScheduleRepository.save(entity);
+    }
+
+    @Override
+    public Optional<CrewSchedule> findById(Long scheduleId) {
+        return crewScheduleRepository.findById(scheduleId)
+                .map(crewScheduleMapper::toDomain);
     }
 }
