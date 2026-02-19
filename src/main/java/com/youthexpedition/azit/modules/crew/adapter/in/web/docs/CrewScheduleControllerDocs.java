@@ -46,7 +46,7 @@ public interface CrewScheduleControllerDocs {
             기존에 생성된 크루 일정 정보를 수정합니다. <br>
             준비물 리스트의 경우, 기존 리스트를 모두 대체하는 방식으로 업데이트됩니다. <br><br>
             
-            **[제약 사항]** <br>
+            **[참고 사항]** <br>
             * 해당 일정을 생성한 본인만 수정할 수 있습니다. (FORBIDDEN_ERROR)
             * 해당 크루의 정회원(JOINED)이어야 합니다. (NOT_A_CREW_MEMBER)
             * 정기런으로 수정하거나 정기런을 수정할 경우, 반드시 리더 권한이 있어야 합니다. (ONLY_LEADER_CAN_CREATE_REGULAR_RUN)
@@ -58,9 +58,26 @@ public interface CrewScheduleControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "SCHEDULE_NOT_FOUND", "FORBIDDEN_ERROR", "NOT_A_CREW_MEMBER", "ONLY_LEADER_CAN_CREATE_REGULAR_RUN", "INVALID_SCHEDULE_TIME",
+            "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER", "ONLY_LEADER_CAN_CREATE_REGULAR_RUN", "INVALID_SCHEDULE_TIME",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> updateSchedule(
             @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateScheduleRequest request);
+
+    @Operation(
+            summary = "크루 일정 취소(삭제)",
+            description = """
+            생성된 일정을 취소 상태(CANCELLED)로 변경합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 해당 일정을 생성한 본인 또는 크루 리더만 취소할 수 있습니다. (FORBIDDEN_ERROR)
+            * 해당 크루의 정회원(JOINED 상태)이어야 합니다. (NOT_A_CREW_MEMBER)
+            * 이미 취소된 일정은 다시 취소할 수 없습니다. (ALREADY_CANCELLED_SCHEDULE)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER", "ALREADY_CANCELLED_SCHEDULE",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN"
+    })
+    CommonResponse<Void> cancelSchedule(@PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId);
 }
