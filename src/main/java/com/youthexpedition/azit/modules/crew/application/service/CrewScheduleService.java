@@ -105,6 +105,35 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         saveCrewSchedulePort.save(schedule);
     }
 
+    @Override
+    public void cancelSchedule(Long crewId, Long scheduleId, Long memberId) {
+        CrewSchedule schedule = loadCrewSchedulePort.findById(scheduleId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.SCHEDULE_NOT_FOUND));
+
+        // 이미 취소된 일정인지 확인
+        if (schedule.isCancelled()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
+        }
+
+        // 크루 정회원인지 확인
+        CrewMember creator = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+
+        // 본인 또는 크루 리더인지 확인
+        boolean isCreator = schedule.getCreatorId().equals(memberId);
+        boolean isLeader = creator.getRole() == CrewMemberRole.LEADER;
+
+        if (!isCreator && !isLeader) {
+            throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
+
+        // 삭제 처리
+        schedule.cancel();
+
+        saveCrewSchedulePort.save(schedule);
+    }
+
 
     // 일정 유효성 체크
     private void validateSchedule(CrewSchedule schedule) {

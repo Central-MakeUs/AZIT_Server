@@ -71,4 +71,8 @@ public class CrewSchedule {
     public void cancel() {
         this.status = ScheduleStatus.CANCELLED;
     }
+
+    public boolean isCancelled() {
+        return this.status == ScheduleStatus.CANCELLED;
+    }
 }

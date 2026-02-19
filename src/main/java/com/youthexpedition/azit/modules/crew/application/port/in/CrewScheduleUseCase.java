@@ -6,4 +6,5 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateS
 public interface CrewScheduleUseCase {
     void createSchedule(CreateScheduleCommand command);
     void updateSchedule(UpdateScheduleCommand command);
+    void cancelSchedule(Long crewId, Long scheduleId, Long memberId);
 }

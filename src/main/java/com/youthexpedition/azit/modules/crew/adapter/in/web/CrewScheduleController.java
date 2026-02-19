@@ -20,6 +20,7 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
     @PostMapping
     public CommonResponse<Void> createSchedule(@PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody CreateScheduleRequest request) {
         crewScheduleUseCase.createSchedule(request.toCommand(crewId, memberId));
+
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
@@ -27,6 +28,14 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
     public CommonResponse<Void> updateSchedule(
             @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateScheduleRequest request) {
         crewScheduleUseCase.updateSchedule(request.toCommand(scheduleId, crewId, memberId));
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @DeleteMapping("/{scheduleId}")
+    public CommonResponse<Void> cancelSchedule(@PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId) {
+        crewScheduleUseCase.cancelSchedule(crewId, scheduleId, memberId);
+
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
