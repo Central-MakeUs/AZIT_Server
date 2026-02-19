@@ -147,9 +147,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     public void cancelParticipation(CrewScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
-        // 크루 정회원인지 확인
-        getJoinedMember(command.crewId(), command.memberId());
-
         // 참여 중인지 확인
         if (!schedule.isParticipating(command.memberId())) {
             throw new BusinessException(CrewErrorCode.NOT_PARTICIPATING_SCHEDULE);
@@ -159,6 +156,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (schedule.getCreatorId().equals(command.memberId())) {
             throw new BusinessException(CrewErrorCode.CREATOR_CANNOT_CANCEL_PARTICIPATION);
         }
+
+        // 크루 정회원인지 확인
+        getJoinedMember(command.crewId(), command.memberId());
 
         schedule.removeParticipant(command.memberId());
         saveCrewSchedulePort.save(schedule);
