@@ -99,4 +99,21 @@ public interface CrewScheduleControllerDocs {
     })
     CommonResponse<Void> participateSchedule(
             @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "크루 일정 참여 취소",
+            description = """
+            참여 신청했던 일정에서 참여를 취소합니다. <br><br>
+        
+            **[참고 사항]** <br>
+            * 일정 생성자는 본인의 일정 참여를 취소할 수 없습니다. (CREATOR_CANNOT_CANCEL_PARTICIPATION)
+            * 참여하지 않은 일정에 대해 취소 요청을 할 수 없습니다. (NOT_PARTICIPATING_SCHEDULE)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "NOT_PARTICIPATING_SCHEDULE", "CREATOR_CANNOT_CANCEL_PARTICIPATION", "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> cancelParticipation(
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId);
 }
