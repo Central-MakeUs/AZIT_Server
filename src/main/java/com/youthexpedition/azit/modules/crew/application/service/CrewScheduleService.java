@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelS
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
@@ -17,9 +18,12 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
+import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadCrewSchedulePort loadCrewSchedulePort;
     private final SaveCrewSchedulePort saveCrewSchedulePort;
+    private final LoadMemberPort loadMemberPort;
 
     @Override
     public void createSchedule(CreateScheduleCommand command) {
@@ -162,6 +167,42 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         schedule.removeParticipant(command.memberId());
         saveCrewSchedulePort.save(schedule);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public CrewScheduleDetailResponse getScheduleDetail(CrewScheduleCommand command) {
+        // 1. 일정 정보 조회 (Fetch Join이 적용된 Port 사용)
+        CrewSchedule schedule = getScheduleOrThrow(scheduleId);
+        List<Long> participantIds = schedule.getParticipantIds();
+
+        // 2. 외부 정보 조회 (N+1 방지를 위해 IN 쿼리 기반 Batch 조회)
+        // [Member 모듈] 닉네임, 프로필 이미지 정보
+        Map<Long, MemberProfile> profileMap = loadMemberProfilePort.findAllByIds(participantIds);
+        // [Crew 모듈] 크루 내 역할(LEADER/MEMBER) 정보
+        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(crewId, participantIds);
+
+        // 3. 참여자 리스트 생성 및 정렬
+        List<CrewScheduleDetailResponse.ParticipantResponse> participants = participantIds.stream()
+                .map(id -> {
+                    MemberProfile profile = profileMap.get(id);
+                    CrewMember cm = crewMemberMap.get(id);
+                    // DTO 내부에 구현된 정적 팩토리 메서드 활용
+                    return CrewScheduleDetailResponse.ParticipantResponse.of(
+                            id,
+                            profile.nickname(),
+                            profile.profileImageUrl(),
+                            cm.getRole(),
+                            id.equals(schedule.getCreatorId()) // 일정 생성자 여부 판단
+                    );
+                })
+                // ⭐️ 리더(LEADER)를 최상단(0순위)으로 정렬
+                .sorted(Comparator.comparing(p -> p.role() == CrewMemberRole.LEADER ? 0 : 1))
+                .toList();
+
+        // 4. 최종 응답 DTO 조립 (정적 팩토리 메서드 활용)
+        // 내부적으로 LocationInfoResponse.of()를 호출하여 장소 정보까지 자동 매핑합니다.
+        return CrewScheduleDetailResponse.of(schedule, currentMemberId, participants);
     }
 
     // 일정이 존재하는지 확인

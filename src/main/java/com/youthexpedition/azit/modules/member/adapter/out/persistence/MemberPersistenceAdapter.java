@@ -5,12 +5,16 @@ import com.youthexpedition.azit.modules.member.adapter.out.persistence.entity.Me
 import com.youthexpedition.azit.modules.member.adapter.out.persistence.repository.MemberRepository;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.query.MemberProfileDto;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -35,6 +39,15 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
         MemberEntity entity = memberMapper.toEntity(member);
         MemberEntity savedEntity = memberRepository.save(entity);
         return memberMapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public Map<Long, MemberProfileDto> findAllByIds(List<Long> memberIds) {
+        return memberRepository.findAllById(memberIds).stream()
+                .collect(Collectors.toMap(
+                        MemberEntity::getId,
+                        entity -> MemberProfileDto.of(entity.getId(), entity.getNickname(), entity.getProfileImageUrl())
+                ));
     }
 
 }
