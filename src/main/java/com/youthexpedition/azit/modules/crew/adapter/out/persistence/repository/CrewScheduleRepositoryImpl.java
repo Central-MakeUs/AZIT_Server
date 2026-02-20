@@ -28,7 +28,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
 
     @Override
     public List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, RunType runType) {
-        return queryFactory.selectFrom(crewScheduleEntity) // 모든 컬럼 가져옴
+        return queryFactory.selectFrom(crewScheduleEntity)
                 .where(
                         crewScheduleEntity.crewId.eq(crewId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 삭제된 일정은 제외
