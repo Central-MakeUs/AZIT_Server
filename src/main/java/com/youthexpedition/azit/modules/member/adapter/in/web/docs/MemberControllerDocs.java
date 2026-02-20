@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.annotation.CurrentAccessTo
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
 
 @Tag(name = "Member" , description = "회원 API")
 public interface MemberControllerDocs {
@@ -77,5 +80,22 @@ public interface MemberControllerDocs {
     CommonResponse<MyInfoResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
+    @Operation(
+            summary = "내 일정 목록 조회",
+            description = """
+            현재 로그인한 사용자가 참여(신청) 중인 모든 크루의 일정 목록을 조회합니다. <br>
+            홈 탭에서 사용자가 앞으로 참여해야 할 일정들을 확인하는 데 사용됩니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 본인이 참여 신청을 완료한 일정만 반환됩니다.
+            * 취소(삭제)된 일정은 응답에서 제외됩니다.
+            * 오늘 현재 시간 이후의 일정만 반환됩니다. (지난 일정 제외)
+            * 모임 시간이 가장 가까운 순서대로 정렬됩니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<List<CrewScheduleListResponse>> getMySchedules(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
 }
