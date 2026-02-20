@@ -6,6 +6,7 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -97,5 +98,29 @@ public interface MemberControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<List<CrewScheduleListResponse>> getMySchedules(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "오늘의 러닝 및 출석 현황 조회 (홈 위젯용)",
+            description = """
+            홈 화면 최상단 위젯에 표시될 사용자의 실시간 러닝 및 출석 상태를 조회합니다. <br>
+            오늘 참여할 일정의 활성화 여부와 다음 일정까지의 남은 기간(D-Day) 정보를 포함합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 출석 가능 시간 (isAvailableTime): 일정 시작 1시간 전부터 1시간 후 사이인 경우 true를 반환합니다.
+            * 출석 완료 시점부터 최소 30분, 혹은 일정 시작 후 최대 3시간까지 출석 완료 화면을 유지합니다.
+            * 하루에 여러 일정이 있을 때, 앞선 일정 출석 완료 후 30분 동안은 다음 일정이 활성화되는 시간(1시간 전)이더라도 출석 완료 화면을 유지해야 합니다.
+            <br><br>
+            
+            **[UI 설정 가이드]** <br>
+            * 출석하기 활성화: isCheckedIn == false && isAvailableTime == true && (GPS 거리 100m 이내) <br>
+            * 출석하기 비활성화: isCheckedIn == false && (isAvailableTime == false || GPS 거리 100m 밖) <br>
+            * 출석 완료: isCheckedIn == true <br>
+            * D-Day: hasScheduleToday == false
+            """
+    )
+    @ApiErrorCodeExamples({
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<CheckInStatusResponse> getCheckInStatus(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
 }
