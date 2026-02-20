@@ -54,3 +54,8 @@ management:
   endpoint:
     health:
       show-details: never # 서버 내부 정보(DB 상태, 디스크 용량 등)를 숨기고 "UP/DOWN" 결과만 보여줌
+
+springdoc:
+  swagger-ui:
+    tags-sorter: alpha # 컨트롤러 알파벳 순
+    operations-sorter: method # HTTP 메서드 순
