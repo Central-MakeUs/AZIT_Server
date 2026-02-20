@@ -33,8 +33,6 @@ public record CrewScheduleDetailResponse(
         Integer currentParticipants,
         @Schema(description = "준비물 리스트")
         List<String> supplies,
-        @Schema(description = "일정 상태")
-        ScheduleStatus status,
         @Schema(description = "내가 생성한 일정인지 여부")
         boolean isMine,
         @Schema(description = "내가 참여 중인 일정인지 여부")
@@ -45,7 +43,9 @@ public record CrewScheduleDetailResponse(
         boolean hasMoreParticipants,
         @Schema(description = "생성 시간")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        @Schema(description = "일정 상태")
+        ScheduleStatus status
 ) {
         public static CrewScheduleDetailResponse of(
                 CrewSchedule schedule,
@@ -65,12 +65,12 @@ public record CrewScheduleDetailResponse(
                         schedule.getMaxParticipants(),
                         schedule.getParticipantIds().size(),
                         schedule.getSupplies(),
-                        schedule.getStatus(),
                         schedule.getCreatorId().equals(currentMemberId), // 생성자 여부 판단
                         schedule.isParticipating(currentMemberId), // 참여 여부 판단
                         participants,
                         hasMoreParticipants,
-                        schedule.getCreatedAt()
+                        schedule.getCreatedAt(),
+                        schedule.getStatus()
                 );
         }
 }
