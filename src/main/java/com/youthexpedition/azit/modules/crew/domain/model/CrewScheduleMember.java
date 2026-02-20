@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CrewScheduleMember {
     private final Long id;
-    private final Long crewId;
     private final Long memberId;
     private final LocalDateTime createdAt;
 }
