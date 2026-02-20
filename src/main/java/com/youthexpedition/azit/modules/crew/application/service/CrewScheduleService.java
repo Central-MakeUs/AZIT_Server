@@ -28,15 +28,20 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
+import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -259,6 +264,20 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberId(memberId);
 
         return crewScheduleResponseMapper.toScheduleListResponse(schedules, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public CheckInStatusResponse getCheckInStatus(Long memberId) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 오늘 참여하는 모든 일정 조회
+        List<CrewSchedule> todaySchedules = loadCrewSchedulePort.findAllTodaySchedulesByMemberId(memberId, now);
+
+        // 가장 가까운 미래 일정 조회
+        Optional<CrewSchedule> nextSchedule = loadCrewSchedulePort.findNextClosestScheduleByMemberId(memberId, now);
+
+        return crewScheduleResponseMapper.toCheckInStatusResponse(todaySchedules, nextSchedule, memberId);
     }
 
     // 일정이 존재하는지 확인

@@ -12,6 +12,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewSchedul
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleMonthlyQuery;
 import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleQuery;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.CheckInStatusResponse;
 
 import java.util.List;
 
@@ -26,4 +27,5 @@ public interface CrewScheduleUseCase {
     List<CrewScheduleListResponse> getSchedules(CrewScheduleQuery query);
     List<CrewScheduleMonthlyListResponse> getMonthlySchedulesForCalendar(CrewScheduleMonthlyQuery query);
     List<CrewScheduleListResponse> getMySchedules(Long memberId);
+    CheckInStatusResponse getCheckInStatus(Long memberId);
 }

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -59,5 +60,18 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
         return crewScheduleRepository.findAllByMemberId(memberId).stream()
                 .map(crewScheduleMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public List<CrewSchedule> findAllTodaySchedulesByMemberId(Long memberId, LocalDateTime now) {
+        return crewScheduleRepository.findAllTodaySchedulesByMemberId(memberId, now).stream()
+                .map(crewScheduleMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<CrewSchedule> findNextClosestScheduleByMemberId(Long memberId, LocalDateTime now) {
+        return crewScheduleRepository.findNextClosestScheduleByMemberId(memberId, now)
+                .map(crewScheduleMapper::toDomain);
     }
 }

@@ -115,4 +115,13 @@ public class CrewSchedule {
     public List<Long> getParticipantIds() {
         return participants.stream().map(CrewScheduleMember::getMemberId).toList();
     }
+
+    // 특정 멤버의 출석 여부 확인
+    public boolean isCheckedIn(Long memberId) {
+        return participants.stream()
+                .filter(m -> m.getMemberId().equals(memberId))
+                .map(CrewScheduleMember::isCheckedIn)
+                .findFirst()
+                .orElse(false);
+    }
 }
