@@ -8,13 +8,18 @@ import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExampl
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateScheduleRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateScheduleRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Tag(name = "Crew Schedule" , description = "크루 일정 API")
 public interface CrewScheduleControllerDocs {
@@ -162,4 +167,28 @@ public interface CrewScheduleControllerDocs {
     })
     CommonResponse<SliceResponse<ParticipantResponse>> getScheduleParticipants(
             @PathVariable Long crewId, @PathVariable Long scheduleId, @Parameter(hidden = true) @CurrentMemberId Long memberId, CursorPageQuery query);
+
+    @Operation(
+            summary = "크루 일정 목록 조회 (캘린더용)",
+            description = """
+            특정 크루의 일정 목록을 날짜와 러닝 타입별로 필터링하여 조회합니다. <br>
+            
+            **[쿼리 파라미터]** <br>
+            * date (선택): 특정 날짜(yyyy-MM-dd)의 일정만 조회하고 싶을 때 사용합니다. 미입력 시 전체 기간을 조회합니다.
+            * runType (선택): REGULAR 또는 LIGHTNING으로 필터링합니다. 미입력 시 모든 타입을 조회합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 해당 크루의 정회원(JOINED)만 조회가 가능합니다. (NOT_A_CREW_MEMBER)
+            * 결과 목록은 모임 시간(meetingAt)이 빠른 순서대로 정렬되어 반환됩니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "NOT_A_CREW_MEMBER",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<List<CrewScheduleListResponse>> getCrewSchedules(
+            @PathVariable Long crewId,
+            @Parameter(description = "조회 날짜 (yyyy-MM-dd)") LocalDate date,
+            @Parameter(description = "러닝 타입") RunType runType,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }
