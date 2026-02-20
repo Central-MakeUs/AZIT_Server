@@ -12,4 +12,5 @@ import java.util.Set;
 public interface CrewScheduleRepositoryCustom {
     List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, RunType runType);
     Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, YearMonth yearMonth);
+    List<CrewScheduleEntity> findAllByMemberId(Long memberId);
 }

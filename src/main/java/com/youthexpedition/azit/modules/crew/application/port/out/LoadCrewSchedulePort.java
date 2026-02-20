@@ -14,4 +14,5 @@ public interface LoadCrewSchedulePort {
     Optional<CrewSchedule> findById(Long scheduleId);
     List<CrewSchedule> findAllByFilter(Long crewId, LocalDate date, RunType runType);
     Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, YearMonth yearMonth);
+    List<CrewSchedule> findAllByMemberId(Long memberId);
 }

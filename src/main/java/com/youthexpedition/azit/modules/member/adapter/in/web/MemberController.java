@@ -4,6 +4,8 @@ import com.youthexpedition.azit.infrastructure.common.annotation.CurrentAccessTo
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
+import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
@@ -12,11 +14,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/members")
 @RequiredArgsConstructor
 public class MemberController implements MemberControllerDocs {
     private final MemberUseCase memberUseCase;
+    private final CrewScheduleUseCase crewScheduleUseCase;
 
     @PostMapping("/terms")
     public CommonResponse<Void> agreeToTerms(@CurrentMemberId Long memberId, @Valid @RequestBody AgreeToTermsRequest request) {
@@ -42,6 +47,13 @@ public class MemberController implements MemberControllerDocs {
     @GetMapping("/me")
     public CommonResponse<MyInfoResponse> getMyInfo(@CurrentMemberId Long memberId) {
         MyInfoResponse response = memberUseCase.getMyInfo(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/me/schedules")
+    public CommonResponse<List<CrewScheduleListResponse>> getMySchedules(@CurrentMemberId Long memberId) {
+        List<CrewScheduleListResponse> response = crewScheduleUseCase.getMySchedules(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
