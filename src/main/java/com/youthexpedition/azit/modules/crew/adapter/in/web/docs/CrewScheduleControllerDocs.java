@@ -1,11 +1,14 @@
 package com.youthexpedition.azit.modules.crew.adapter.in.web.docs;
 
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
+import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateScheduleRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateScheduleRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -135,9 +138,28 @@ public interface CrewScheduleControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "SCHEDULE_NOT_FOUND", "ALREADY_CANCELLED_SCHEDULE",
+            "SCHEDULE_NOT_FOUND", "ALREADY_CANCELLED_SCHEDULE", "NOT_A_CREW_MEMBER",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CrewScheduleDetailResponse> getScheduleDetail(
             @PathVariable Long crewId, @PathVariable Long scheduleId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "크루 일정 참여자 명단 조회 (무한스크롤)",
+            description = """
+            특정 일정에 참여 중인 전체 멤버 명단을 조회합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 해당 크루의 정회원(JOINED)만 조회 가능합니다. (NOT_A_CREW_MEMBER)
+            * 이미 취소(삭제)된 일정은 명단 조회가 불가능합니다. (ALREADY_CANCELLED_SCHEDULE)
+            * 탈퇴하거나 가입 정보가 유실된 회원은 명단에서 제외되어 반환됩니다.
+            * 무한 스크롤 방식: hasNext를 통해 다음 페이지 존재 여부를 확인하고, lastId를 다음 요청의 cursorId로 호출하면 됩니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "SCHEDULE_NOT_FOUND", "ALREADY_CANCELLED_SCHEDULE", "NOT_A_CREW_MEMBER",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<SliceResponse<ParticipantResponse>> getScheduleParticipants(
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @Parameter(hidden = true) @CurrentMemberId Long memberId, CursorPageQuery query);
 }

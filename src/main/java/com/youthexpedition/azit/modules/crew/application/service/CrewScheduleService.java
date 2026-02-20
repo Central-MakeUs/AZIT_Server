@@ -190,6 +190,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
             throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
         }
 
+        // 크루 정회원인지 확인
+        getJoinedMember(command.crewId(), command.memberId());
+
         // 성능을 위해 Map 으로 가져옴
         Map<Long, MemberProfileDto> memberProfileMap = loadMemberPort.findAllByIds(participantIds);
         Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
@@ -208,6 +211,14 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     public SliceResponse<ParticipantResponse> getScheduleParticipants(CrewScheduleCommand command, CursorPageQuery query) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
         List<Long> participantIds = schedule.getParticipantIds();
+
+        // 취소된 일정인지 확인
+        if (schedule.isCancelled()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
+        }
+
+        // 크루 정회원인지 확인
+        getJoinedMember(command.crewId(), command.memberId());
 
         Map<Long, MemberProfileDto> memberProfileMap = loadMemberPort.findAllByIds(participantIds);
         Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
