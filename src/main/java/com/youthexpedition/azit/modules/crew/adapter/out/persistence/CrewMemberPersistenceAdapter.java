@@ -15,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -78,5 +80,12 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
                 .map(crewMemberMapper::toEntity)
                 .toList();
         crewMemberRepository.saveAll(entities);
+    }
+
+    @Override
+    public Map<Long, CrewMember> findAllByCrewIdAndMemberIds(Long crewId, List<Long> memberIds) {
+        return crewMemberRepository.findByCrew_IdAndMemberIdIn(crewId, memberIds).stream()
+                .map(crewMemberMapper::toDomain)
+                .collect(Collectors.toMap(CrewMember::getMemberId, cm -> cm));
     }
 }

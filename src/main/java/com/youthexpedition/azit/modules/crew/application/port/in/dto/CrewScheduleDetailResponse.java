@@ -43,7 +43,10 @@ public record CrewScheduleDetailResponse(
         @Schema(description = "참여 멤버 미리보기 리스트(최대 6명)")
         List<ParticipantResponse> participants,
         @Schema(description = "참여자 명단이 더 있는지 여부 (6명 초과 시 true)")
-        boolean hasMoreParticipants
+        boolean hasMoreParticipants,
+        @Schema(description = "생성 시간")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime createdAt
 ) {
         public record ParticipantResponse(
                 @Schema(description = "멤버 ID")
@@ -55,16 +58,20 @@ public record CrewScheduleDetailResponse(
                 @Schema(description = "크루 내 역할")
                 CrewMemberRole role,
                 @Schema(description = "일정 생성자 여부")
-                boolean isCreator
+                boolean isCreator,
+                @Schema(description = "신청 시간")
+                @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+                LocalDateTime participatedAt
         ) {
                 public static ParticipantResponse of(
                         Long memberId,
                         String nickname,
                         String profileImageUrl,
                         CrewMemberRole role,
-                        boolean isCreator
+                        boolean isCreator,
+                        LocalDateTime participatedAt
                 ) {
-                        return new ParticipantResponse(memberId, nickname, profileImageUrl, role, isCreator);
+                        return new ParticipantResponse(memberId, nickname, profileImageUrl, role, isCreator, participatedAt);
                 }
         }
 
@@ -84,13 +91,14 @@ public record CrewScheduleDetailResponse(
                         schedule.getDistance(),
                         schedule.getPace(),
                         schedule.getMaxParticipants(),
-                        participants.size(),
+                        schedule.getParticipantIds().size(),
                         schedule.getSupplies(),
                         schedule.getStatus(),
                         schedule.getCreatorId().equals(currentMemberId), // 생성자 여부 판단
                         schedule.isParticipating(currentMemberId), // 참여 여부 판단
                         participants,
-                        hasMoreParticipants
+                        hasMoreParticipants,
+                        schedule.getCreatedAt()
                 );
         }
 }

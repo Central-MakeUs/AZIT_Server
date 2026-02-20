@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.member.application.port.out.query;
+package com.youthexpedition.azit.modules.crew.application.port.out.query;
 
 public record MemberProfileDto(
         Long memberId,

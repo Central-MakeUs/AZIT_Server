@@ -11,6 +11,8 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewSchedul
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
+import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewScheduleResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.Location;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private final LoadCrewSchedulePort loadCrewSchedulePort;
     private final SaveCrewSchedulePort saveCrewSchedulePort;
     private final LoadMemberPort loadMemberPort;
+    private final CrewScheduleResponseMapper crewScheduleResponseMapper;
 
     @Override
     public void createSchedule(CreateScheduleCommand command) {
@@ -45,9 +49,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         Location location = Location.builder()
-                .name(command.locationName())
+                .placeName(command.placeName())
                 .address(command.address())
-                .detailedLocation(command.detailedLocation())
+                .meetingSpot(command.meetingSpot())
                 .latitude(command.latitude())
                 .longitude(command.longitude())
                 .build();
@@ -87,9 +91,10 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         Location location = Location.builder()
-                .name(command.locationName())
+
+                .placeName(command.placeName())
                 .address(command.address())
-                .detailedLocation(command.detailedLocation())
+                .meetingSpot(command.meetingSpot())
                 .latitude(command.latitude())
                 .longitude(command.longitude())
                 .build();
@@ -172,37 +177,19 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     @Transactional(readOnly = true)
     @Override
     public CrewScheduleDetailResponse getScheduleDetail(CrewScheduleCommand command) {
-        // 1. 일정 정보 조회 (Fetch Join이 적용된 Port 사용)
-        CrewSchedule schedule = getScheduleOrThrow(scheduleId);
+        CrewSchedule schedule = getSchedule(command.scheduleId());
         List<Long> participantIds = schedule.getParticipantIds();
 
-        // 2. 외부 정보 조회 (N+1 방지를 위해 IN 쿼리 기반 Batch 조회)
-        // [Member 모듈] 닉네임, 프로필 이미지 정보
-        Map<Long, MemberProfile> profileMap = loadMemberProfilePort.findAllByIds(participantIds);
-        // [Crew 모듈] 크루 내 역할(LEADER/MEMBER) 정보
-        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(crewId, participantIds);
+        // 취소된 일정인지 확인
+        if (schedule.isCancelled()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
+        }
 
-        // 3. 참여자 리스트 생성 및 정렬
-        List<CrewScheduleDetailResponse.ParticipantResponse> participants = participantIds.stream()
-                .map(id -> {
-                    MemberProfile profile = profileMap.get(id);
-                    CrewMember cm = crewMemberMap.get(id);
-                    // DTO 내부에 구현된 정적 팩토리 메서드 활용
-                    return CrewScheduleDetailResponse.ParticipantResponse.of(
-                            id,
-                            profile.nickname(),
-                            profile.profileImageUrl(),
-                            cm.getRole(),
-                            id.equals(schedule.getCreatorId()) // 일정 생성자 여부 판단
-                    );
-                })
-                // ⭐️ 리더(LEADER)를 최상단(0순위)으로 정렬
-                .sorted(Comparator.comparing(p -> p.role() == CrewMemberRole.LEADER ? 0 : 1))
-                .toList();
+        // 성능을 위해 Map 으로 가져옴
+        Map<Long, MemberProfileDto> memberProfileMap = loadMemberPort.findAllByIds(participantIds);
+        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
 
-        // 4. 최종 응답 DTO 조립 (정적 팩토리 메서드 활용)
-        // 내부적으로 LocationInfoResponse.of()를 호출하여 장소 정보까지 자동 매핑합니다.
-        return CrewScheduleDetailResponse.of(schedule, currentMemberId, participants);
+        return crewScheduleResponseMapper.toDetailResponse(schedule, command.memberId(), memberProfileMap, crewMemberMap);
     }
 
     // 일정이 존재하는지 확인

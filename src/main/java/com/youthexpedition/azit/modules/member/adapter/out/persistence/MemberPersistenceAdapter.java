@@ -5,7 +5,7 @@ import com.youthexpedition.azit.modules.member.adapter.out.persistence.entity.Me
 import com.youthexpedition.azit.modules.member.adapter.out.persistence.repository.MemberRepository;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
-import com.youthexpedition.azit.modules.member.application.port.out.query.MemberProfileDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import lombok.RequiredArgsConstructor;

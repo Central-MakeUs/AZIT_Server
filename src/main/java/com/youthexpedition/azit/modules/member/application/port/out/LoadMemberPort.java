@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.modules.member.application.port.out;
 
-import com.youthexpedition.azit.modules.member.application.port.out.query.MemberProfileDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 
