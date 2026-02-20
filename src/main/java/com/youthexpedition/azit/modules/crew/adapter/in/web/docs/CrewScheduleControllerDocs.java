@@ -5,7 +5,9 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateScheduleRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateScheduleRequest;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,7 +40,7 @@ public interface CrewScheduleControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> createSchedule(
-            @PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody CreateScheduleRequest request);
+            @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody CreateScheduleRequest request);
 
     @Operation(
             summary = "크루 일정 수정",
@@ -62,7 +64,7 @@ public interface CrewScheduleControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> updateSchedule(
-            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateScheduleRequest request);
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateScheduleRequest request);
 
     @Operation(
             summary = "크루 일정 취소(삭제)",
@@ -79,7 +81,7 @@ public interface CrewScheduleControllerDocs {
             "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER", "ALREADY_CANCELLED_SCHEDULE",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> cancelSchedule(@PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId);
+    CommonResponse<Void> cancelSchedule(@PathVariable Long crewId, @PathVariable Long scheduleId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
             summary = "크루 일정 참여 신청",
@@ -98,7 +100,7 @@ public interface CrewScheduleControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> participateSchedule(
-            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId);
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
             summary = "크루 일정 참여 취소",
@@ -115,5 +117,27 @@ public interface CrewScheduleControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> cancelParticipation(
-            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId);
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "크루 일정 상세 조회",
+            description = """
+            특정 크루 일정의 상세 정보를 조회합니다. <br><br>
+            
+            **[참여자 미리보기 목록]** <br>
+            * 참여자 목록은 최대 6명까지만 반환됩니다. (미리보기 용도) <br>
+            * 정렬 기준: 일정 생성자(0순위) -> 크루 리더(1순위) -> 일반 멤버(신청 시간 순) <br>
+            * hasMoreParticipants 값이 true인 경우, 전체 참여자 명단 조회 API를 통해 추가 목록을 확인해야 합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 이미 취소(삭제)된 일정은 상세 조회가 불가능합니다. (ALREADY_CANCELLED_SCHEDULE)
+            * 존재하지 않는 일정일 경우 예외가 발생합니다. (SCHEDULE_NOT_FOUND)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "SCHEDULE_NOT_FOUND", "ALREADY_CANCELLED_SCHEDULE",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<CrewScheduleDetailResponse> getScheduleDetail(
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

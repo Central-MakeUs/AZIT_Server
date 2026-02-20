@@ -26,15 +26,20 @@ public class CrewSchedule {
     private Double pace;            // 목표 페이스
     private Integer maxParticipants; // 최대 인원
     private List<String> supplies;  // 준비물 리스트
-    private List<Long> participantIds; // 참여 인원
+    private List<CrewScheduleMember> participants; // 참여 인원
     private ScheduleStatus status;
+    private final LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public static CrewSchedule create(Long crewId, Long creatorId, String title, RunType runType,
                                       LocalDateTime meetingAt, Location location, String description,
                                       Double distance, Double pace, Integer maxParticipants, List<String> supplies
     ) {
-        List<Long> participantIds = new ArrayList<>(); // 참여 인원에 작성자 추가
-        participantIds.add(creatorId);
+        List<CrewScheduleMember> participants = new ArrayList<>(); // 참여 인원에 작성자 추가
+        participants.add(CrewScheduleMember.builder()
+                        .memberId(creatorId)
+                        .createdAt(LocalDateTime.now())
+                .build());
 
         return CrewSchedule.builder()
                 .crewId(crewId)
@@ -48,7 +53,7 @@ public class CrewSchedule {
                 .pace(pace)
                 .maxParticipants(maxParticipants)
                 .supplies(supplies)
-                .participantIds(participantIds)
+                .participants(participants)
                 .status(ScheduleStatus.ACTIVE)
                 .build();
     }
@@ -85,21 +90,29 @@ public class CrewSchedule {
 
     // 최대 인원 확인
     public boolean isFull() {
-        return participantIds.size() >= maxParticipants;
+        return participants.size() >= maxParticipants;
     }
 
     // 일정에 참여하고 있는지 확인
     public boolean isParticipating(Long memberId) {
-        return participantIds.contains(memberId);
+        return participants.stream().anyMatch(m -> m.getMemberId().equals(memberId));
     }
 
     // 일정 참여
     public void addParticipant(Long memberId) {
-        this.participantIds.add(memberId);
+        this.participants.add(CrewScheduleMember.builder()
+                .memberId(memberId)
+                .createdAt(LocalDateTime.now())
+                .build());
     }
 
     // 일정 참여 취소
     public void removeParticipant(Long memberId) {
-        this.participantIds.remove(memberId);
+        this.participants.removeIf(m -> m.getMemberId().equals(memberId));
+    }
+
+    // ID 리스트만 필요할 때 사용
+    public List<Long> getParticipantIds() {
+        return participants.stream().map(CrewScheduleMember::getMemberId).toList();
     }
 }

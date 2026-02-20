@@ -82,9 +82,9 @@ public class CrewScheduleEntity extends BaseTimeEntity {
             String title,
             RunType runType,
             LocalDateTime meetingAt,
-            String locationName,
+            String placeName,
             String address,
-            String detailedLocation,
+            String meetingSpot,
             Double latitude,
             Double longitude,
             String description,
@@ -102,9 +102,9 @@ public class CrewScheduleEntity extends BaseTimeEntity {
         this.maxParticipants = maxParticipants;
         this.status = status;
         this.locationEntity = LocationEntity.builder()
-                .name(locationName)
+                .placeName(placeName)
                 .address(address)
-                .detailedLocation(detailedLocation)
+                .meetingSpot(meetingSpot)
                 .latitude(latitude)
                 .longitude(longitude)
                 .build();

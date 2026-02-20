@@ -7,9 +7,12 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelS
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
+import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewScheduleResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.Location;
@@ -17,17 +20,25 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
+import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class CrewScheduleService implements CrewScheduleUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadCrewSchedulePort loadCrewSchedulePort;
     private final SaveCrewSchedulePort saveCrewSchedulePort;
+    private final LoadMemberPort loadMemberPort;
+    private final CrewScheduleResponseMapper crewScheduleResponseMapper;
 
     @Override
     public void createSchedule(CreateScheduleCommand command) {
@@ -40,9 +51,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         Location location = Location.builder()
-                .name(command.locationName())
+                .placeName(command.placeName())
                 .address(command.address())
-                .detailedLocation(command.detailedLocation())
+                .meetingSpot(command.meetingSpot())
                 .latitude(command.latitude())
                 .longitude(command.longitude())
                 .build();
@@ -82,9 +93,10 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         Location location = Location.builder()
-                .name(command.locationName())
+
+                .placeName(command.placeName())
                 .address(command.address())
-                .detailedLocation(command.detailedLocation())
+                .meetingSpot(command.meetingSpot())
                 .latitude(command.latitude())
                 .longitude(command.longitude())
                 .build();
@@ -162,6 +174,30 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         schedule.removeParticipant(command.memberId());
         saveCrewSchedulePort.save(schedule);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public CrewScheduleDetailResponse getScheduleDetail(CrewScheduleCommand command) {
+        CrewSchedule schedule = getSchedule(command.scheduleId());
+        List<Long> participantIds = schedule.getParticipantIds();
+
+        // 취소된 일정인지 확인
+        if (schedule.isCancelled()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
+        }
+
+        // 성능을 위해 Map 으로 가져옴
+        Map<Long, MemberProfileDto> memberProfileMap = loadMemberPort.findAllByIds(participantIds);
+        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
+
+        // 데이터 정합성 검증
+        if (memberProfileMap.size() != participantIds.size() || crewMemberMap.size() != participantIds.size()) {
+            log.warn("Data inconsistency detected for schedule {}: participants={}, profiles={}, crewMembers={}",
+                    schedule.getId(), participantIds.size(), memberProfileMap.size(), crewMemberMap.size());
+        }
+
+        return crewScheduleResponseMapper.toDetailResponse(schedule, command.memberId(), memberProfileMap, crewMemberMap);
     }
 
     // 일정이 존재하는지 확인

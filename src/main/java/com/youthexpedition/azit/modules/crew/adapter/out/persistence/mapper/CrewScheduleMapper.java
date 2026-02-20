@@ -5,6 +5,7 @@ import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.Crew
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewScheduleSupplyEntity;
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.LocationEntity;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
+import com.youthexpedition.azit.modules.crew.domain.model.CrewScheduleMember;
 import com.youthexpedition.azit.modules.crew.domain.model.Location;
 import org.springframework.stereotype.Component;
 
@@ -26,9 +27,9 @@ public class CrewScheduleMapper {
                 .runType(entity.getRunType())
                 .meetingAt(entity.getMeetingAt())
                 .location(Location.builder()
-                        .name(entity.getLocationEntity().getName())
+                        .placeName(entity.getLocationEntity().getPlaceName())
                         .address(entity.getLocationEntity().getAddress())
-                        .detailedLocation(entity.getLocationEntity().getDetailedLocation())
+                        .meetingSpot(entity.getLocationEntity().getMeetingSpot())
                         .latitude(entity.getLocationEntity().getLatitude())
                         .longitude(entity.getLocationEntity().getLongitude())
                         .build())
@@ -39,10 +40,16 @@ public class CrewScheduleMapper {
                 .supplies(entity.getSupplies().stream()
                         .map(CrewScheduleSupplyEntity::getContent)
                         .collect(Collectors.toCollection(ArrayList::new)))
-                .participantIds(entity.getMembers().stream()
-                        .map(CrewScheduleMemberEntity::getMemberId)
+                .participants(entity.getMembers().stream()
+                        .map(m -> CrewScheduleMember.builder()
+                                .id(m.getId())
+                                .memberId(m.getMemberId())
+                                .createdAt(m.getCreatedAt())
+                                .build())
                         .collect(Collectors.toCollection(ArrayList::new)))
                 .status(entity.getStatus())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 
@@ -58,9 +65,9 @@ public class CrewScheduleMapper {
                 .runType(domain.getRunType())
                 .meetingAt(domain.getMeetingAt())
                 .locationEntity(LocationEntity.builder()
-                        .name(domain.getLocation().getName())
+                        .placeName(domain.getLocation().getPlaceName())
                         .address(domain.getLocation().getAddress())
-                        .detailedLocation(domain.getLocation().getDetailedLocation())
+                        .meetingSpot(domain.getLocation().getMeetingSpot())
                         .latitude(domain.getLocation().getLatitude())
                         .longitude(domain.getLocation().getLongitude())
                         .build())
@@ -93,9 +100,9 @@ public class CrewScheduleMapper {
                 domain.getTitle(),
                 domain.getRunType(),
                 domain.getMeetingAt(),
-                domain.getLocation().getName(),
+                domain.getLocation().getPlaceName(),
                 domain.getLocation().getAddress(),
-                domain.getLocation().getDetailedLocation(),
+                domain.getLocation().getMeetingSpot(),
                 domain.getLocation().getLatitude(),
                 domain.getLocation().getLongitude(),
                 domain.getDescription(),

@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateScheduleRe
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +57,15 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
         crewScheduleUseCase.cancelParticipation(command);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @GetMapping("/{scheduleId}")
+    public CommonResponse<CrewScheduleDetailResponse> getScheduleDetail(
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId) {
+        CrewScheduleCommand command = CrewScheduleCommand.of(crewId, scheduleId, memberId);
+        CrewScheduleDetailResponse response = crewScheduleUseCase.getScheduleDetail(command);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
 }
