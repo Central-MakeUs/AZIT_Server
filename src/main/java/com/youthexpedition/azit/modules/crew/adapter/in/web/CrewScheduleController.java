@@ -27,15 +27,6 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
-    @GetMapping("/{scheduleId}")
-    public CommonResponse<CrewScheduleDetailResponse> getScheduleDetail(
-            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId) {
-        CrewScheduleCommand command = CrewScheduleCommand.of(crewId, scheduleId, memberId);
-        CrewScheduleDetailResponse response = crewScheduleUseCase.getScheduleDetail(command);
-
-        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
-    }
-
     @PutMapping("/{scheduleId}")
     public CommonResponse<Void> updateSchedule(
             @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateScheduleRequest request) {
@@ -66,6 +57,15 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
         crewScheduleUseCase.cancelParticipation(command);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @GetMapping("/{scheduleId}")
+    public CommonResponse<CrewScheduleDetailResponse> getScheduleDetail(
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId) {
+        CrewScheduleCommand command = CrewScheduleCommand.of(crewId, scheduleId, memberId);
+        CrewScheduleDetailResponse response = crewScheduleUseCase.getScheduleDetail(command);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
 }
