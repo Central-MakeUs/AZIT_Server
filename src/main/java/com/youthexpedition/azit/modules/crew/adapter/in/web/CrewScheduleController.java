@@ -13,14 +13,18 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelS
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleMonthlyListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleMonthlyQuery;
 import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleQuery;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -91,6 +95,15 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
             @PathVariable Long crewId, @RequestParam(required = false) LocalDate date, @RequestParam(required = false) RunType runType, @CurrentMemberId Long memberId) {
         CrewScheduleQuery query = CrewScheduleQuery.of(crewId, date, runType, memberId);
         List<CrewScheduleListResponse> response = crewScheduleUseCase.getSchedules(query);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/calendar")
+    public CommonResponse<List<CrewScheduleMonthlyListResponse>> getMonthlyScheduleMeta(
+            @PathVariable Long crewId, @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
+        CrewScheduleMonthlyQuery query = CrewScheduleMonthlyQuery.of(crewId, yearMonth, memberId);
+        List<CrewScheduleMonthlyListResponse> response = crewScheduleUseCase.getMonthlySchedulesForCalendar(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }

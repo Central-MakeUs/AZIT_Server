@@ -8,7 +8,9 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewSch
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleMonthlyListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleMonthlyQuery;
 import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleQuery;
 
 import java.util.List;
@@ -22,4 +24,5 @@ public interface CrewScheduleUseCase {
     CrewScheduleDetailResponse getScheduleDetail(CrewScheduleCommand command);
     SliceResponse<ParticipantResponse> getScheduleParticipants(CrewScheduleCommand command, CursorPageQuery query);
     List<CrewScheduleListResponse> getSchedules(CrewScheduleQuery query);
+    List<CrewScheduleMonthlyListResponse> getMonthlySchedulesForCalendar(CrewScheduleMonthlyQuery query);
 }

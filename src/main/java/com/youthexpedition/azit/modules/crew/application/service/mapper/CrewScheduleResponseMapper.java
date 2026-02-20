@@ -5,17 +5,21 @@ import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleMonthlyListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 @Component
@@ -100,6 +104,17 @@ public class CrewScheduleResponseMapper {
     public List<CrewScheduleListResponse> toScheduleListResponse(List<CrewSchedule> schedules, Long currentMemberId) {
         return schedules.stream()
                 .map(schedule -> CrewScheduleListResponse.of(schedule, currentMemberId))
+                .toList();
+    }
+
+    public List<CrewScheduleMonthlyListResponse> toScheduleMonthlyListResponse(Map<LocalDate, Set<RunType>> monthlyScheduleMap) {
+        return monthlyScheduleMap.entrySet().stream()
+                .map(entry -> CrewScheduleMonthlyListResponse.of(
+                        entry.getKey(),
+                        entry.getValue().contains(RunType.REGULAR), // 정기런 존재 여부
+                        entry.getValue().contains(RunType.LIGHTNING) // 번개런 존재 여부
+                ))
+                .sorted(Comparator.comparing(CrewScheduleMonthlyListResponse::date)) // 날짜순 정렬
                 .toList();
     }
 

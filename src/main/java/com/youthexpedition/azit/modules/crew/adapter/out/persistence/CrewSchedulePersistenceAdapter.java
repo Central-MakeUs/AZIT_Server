@@ -11,8 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -44,5 +47,10 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
         return crewScheduleRepository.findAllByFilter(crewId, date, runType).stream()
                 .map(crewScheduleMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, YearMonth yearMonth) {
+        return crewScheduleRepository.findMonthlySchedulesForCalendar(crewId, yearMonth);
     }
 }
