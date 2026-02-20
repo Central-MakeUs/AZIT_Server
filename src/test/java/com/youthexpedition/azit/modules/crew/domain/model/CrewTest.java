@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.crew.domain.model;
 
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewCategory;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.Region;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,9 +17,10 @@ class CrewTest {
         CrewCategory category = CrewCategory.RUNNING;
         Region region = Region.SEOUL;
         String invitationCode = "ABC123";
+        String imageUrl = "testUrl.png";
 
         // when
-        Crew crew = Crew.create(name, category, region, invitationCode);
+        Crew crew = Crew.create(name, category, region, imageUrl, invitationCode);
 
         // then
         assertThat(crew.getName()).isEqualTo(name);
