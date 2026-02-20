@@ -15,6 +15,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMember
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
+import com.youthexpedition.azit.modules.crew.application.service.dto.ScheduleData;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewScheduleResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
@@ -182,35 +183,24 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     @Transactional(readOnly = true)
     @Override
     public CrewScheduleDetailResponse getScheduleDetail(CrewScheduleCommand command) {
-        CrewSchedule schedule = getSchedule(command.scheduleId());
-        List<Long> participantIds = schedule.getParticipantIds();
+        ScheduleData data = getValidatedScheduleData(command);
 
-        // 취소된 일정인지 확인
-        if (schedule.isCancelled()) {
-            throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
-        }
-
-        // 크루 정회원인지 확인
-        getJoinedMember(command.crewId(), command.memberId());
-
-        // 성능을 위해 Map 으로 가져옴
-        Map<Long, MemberProfileDto> memberProfileMap = loadMemberPort.findAllByIds(participantIds);
-        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
-
-        // 데이터 정합성 검증
-        if (memberProfileMap.size() != participantIds.size() || crewMemberMap.size() != participantIds.size()) {
-            log.warn("Data inconsistency detected for schedule {}: participants={}, profiles={}, crewMembers={}",
-                    schedule.getId(), participantIds.size(), memberProfileMap.size(), crewMemberMap.size());
-        }
-
-        return crewScheduleResponseMapper.toDetailResponse(schedule, command.memberId(), memberProfileMap, crewMemberMap);
+        return crewScheduleResponseMapper.toDetailResponse(
+                data.schedule(), command.memberId(), data.profileMap(), data.crewMemberMap());
     }
 
     @Override
     @Transactional(readOnly = true)
     public SliceResponse<ParticipantResponse> getScheduleParticipants(CrewScheduleCommand command, CursorPageQuery query) {
+        ScheduleData data = getValidatedScheduleData(command);
+
+        return crewScheduleResponseMapper.toParticipantSliceResponse(
+                data.schedule(), data.profileMap(), data.crewMemberMap(), query);
+    }
+
+    // 일정 상세 및 참여자 명단 조회 시 공통적으로 사용하는 검증 및 데이터 로딩 로직
+    private ScheduleData getValidatedScheduleData(CrewScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
-        List<Long> participantIds = schedule.getParticipantIds();
 
         // 취소된 일정인지 확인
         if (schedule.isCancelled()) {
@@ -220,10 +210,17 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.memberId());
 
-        Map<Long, MemberProfileDto> memberProfileMap = loadMemberPort.findAllByIds(participantIds);
+        List<Long> participantIds = schedule.getParticipantIds();
+        Map<Long, MemberProfileDto> profileMap = loadMemberPort.findAllByIds(participantIds);
         Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
 
-        return crewScheduleResponseMapper.toParticipantSliceResponse(schedule, memberProfileMap, crewMemberMap, query);
+        // 데이터 정합성 검증
+        if (profileMap.size() != participantIds.size() || crewMemberMap.size() != participantIds.size()) {
+            log.warn("Data inconsistency detected for schedule {}: participants={}, profiles={}, crewMembers={}",
+                    schedule.getId(), participantIds.size(), profileMap.size(), crewMemberMap.size());
+        }
+
+        return new ScheduleData(schedule, profileMap, crewMemberMap);
     }
 
     // 일정이 존재하는지 확인
