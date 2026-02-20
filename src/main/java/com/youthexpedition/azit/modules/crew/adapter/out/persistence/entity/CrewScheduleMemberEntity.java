@@ -4,6 +4,8 @@ import com.youthexpedition.azit.infrastructure.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "crew_schedule_member")
 @Getter
@@ -22,4 +24,11 @@ public class CrewScheduleMemberEntity extends BaseTimeEntity {
 
     @Column(name = "member_id", nullable = false)
     private Long memberId;
+
+    @Column(name = "is_checked_in", nullable = false)
+    @Builder.Default
+    private boolean isCheckedIn = false;
+
+    @Column(name = "checked_in_at")
+    private LocalDateTime checkedInAt;
 }
