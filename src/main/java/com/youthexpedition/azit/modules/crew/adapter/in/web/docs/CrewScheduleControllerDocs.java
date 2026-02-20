@@ -212,7 +212,7 @@ public interface CrewScheduleControllerDocs {
             "NOT_A_CREW_MEMBER",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<List<CrewScheduleMonthlyListResponse>> getMonthlyScheduleMeta(
+    CommonResponse<List<CrewScheduleMonthlyListResponse>> getMonthlySchedulesForCalendar(
             @PathVariable Long crewId,
             @Parameter(description = "조회 연월 (yyyy-MM)") YearMonth yearMonth,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);

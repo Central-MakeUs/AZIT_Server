@@ -100,7 +100,7 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
     }
 
     @GetMapping("/calendar")
-    public CommonResponse<List<CrewScheduleMonthlyListResponse>> getMonthlyScheduleMeta(
+    public CommonResponse<List<CrewScheduleMonthlyListResponse>> getMonthlySchedulesForCalendar(
             @PathVariable Long crewId, @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
         CrewScheduleMonthlyQuery query = CrewScheduleMonthlyQuery.of(crewId, yearMonth, memberId);
         List<CrewScheduleMonthlyListResponse> response = crewScheduleUseCase.getMonthlySchedulesForCalendar(query);
