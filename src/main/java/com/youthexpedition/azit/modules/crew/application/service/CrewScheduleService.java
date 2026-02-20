@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.modules.crew.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
+import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
@@ -8,6 +10,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateS
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
@@ -198,6 +201,18 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         return crewScheduleResponseMapper.toDetailResponse(schedule, command.memberId(), memberProfileMap, crewMemberMap);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SliceResponse<ParticipantResponse> getScheduleParticipants(CrewScheduleCommand command, CursorPageQuery query) {
+        CrewSchedule schedule = getSchedule(command.scheduleId());
+        List<Long> participantIds = schedule.getParticipantIds();
+
+        Map<Long, MemberProfileDto> memberProfileMap = loadMemberPort.findAllByIds(participantIds);
+        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
+
+        return crewScheduleResponseMapper.toParticipantSliceResponse(schedule, memberProfileMap, crewMemberMap, query);
     }
 
     // 일정이 존재하는지 확인
