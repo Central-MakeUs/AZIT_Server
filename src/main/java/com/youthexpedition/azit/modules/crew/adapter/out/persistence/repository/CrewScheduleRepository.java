@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface CrewScheduleRepository extends JpaRepository<CrewScheduleEntity, Long> {
+public interface CrewScheduleRepository extends JpaRepository<CrewScheduleEntity, Long>, CrewScheduleRepositoryCustom {
     @Query("select distinct s from CrewScheduleEntity s " +
             "left join fetch s.supplies " +
             "left join fetch s.members " +

@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
@@ -91,6 +92,12 @@ public class CrewScheduleResponseMapper {
                 .sorted(Comparator.comparing((ParticipantResponse p) -> p.isCreator() ? 0 : 1)
                         .thenComparing(p -> p.role() == CrewMemberRole.LEADER ? 0 : 1)
                         .thenComparing(ParticipantResponse::participatedAt))
+                .toList();
+    }
+
+    public List<CrewScheduleListResponse> toScheduleListResponse(List<CrewSchedule> schedules, Long currentMemberId) {
+        return schedules.stream()
+                .map(schedule -> CrewScheduleListResponse.of(schedule, currentMemberId))
                 .toList();
     }
 

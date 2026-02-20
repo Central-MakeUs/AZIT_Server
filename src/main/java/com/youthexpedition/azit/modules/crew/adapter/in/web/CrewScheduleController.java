@@ -12,10 +12,16 @@ import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUse
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleQuery;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/crews/{crewId}/schedules")
@@ -76,6 +82,16 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
             @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId, CursorPageQuery query) {
         CrewScheduleCommand command = CrewScheduleCommand.of(crewId, scheduleId, memberId);
         SliceResponse<ParticipantResponse> response = crewScheduleUseCase.getScheduleParticipants(command, query);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping
+    public CommonResponse<List<CrewScheduleListResponse>> getCrewSchedules(
+            @PathVariable Long crewId, @RequestParam(required = false) LocalDate date, @RequestParam(required = false) RunType runType, @CurrentMemberId Long memberId
+    ) {
+        CrewScheduleQuery query = CrewScheduleQuery.of(crewId, date, runType, memberId);
+        List<CrewScheduleListResponse> response = crewScheduleUseCase.getSchedules(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }

@@ -7,7 +7,11 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateS
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleQuery;
+
+import java.util.List;
 
 public interface CrewScheduleUseCase {
     void createSchedule(CreateScheduleCommand command);
@@ -17,4 +21,5 @@ public interface CrewScheduleUseCase {
     void cancelParticipation(CrewScheduleCommand command);
     CrewScheduleDetailResponse getScheduleDetail(CrewScheduleCommand command);
     SliceResponse<ParticipantResponse> getScheduleParticipants(CrewScheduleCommand command, CursorPageQuery query);
+    List<CrewScheduleListResponse> getSchedules(CrewScheduleQuery query);
 }
