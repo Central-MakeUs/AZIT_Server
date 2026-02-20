@@ -12,9 +12,9 @@ public record UpdateScheduleCommand(
         String title,
         RunType runType,
         LocalDateTime meetingAt,
-        String locationName,
+        String placeName,
         String address,
-        String detailedLocation,
+        String meetingSpot,
         Double latitude,
         Double longitude,
         Double distance,
@@ -25,12 +25,12 @@ public record UpdateScheduleCommand(
 ) {
     public static UpdateScheduleCommand of(
             Long scheduleId, Long crewId, Long creatorId, String title, RunType runType, LocalDateTime meetingAt,
-            String locationName, String address, String detailedLocation, Double latitude, Double longitude,
+            String placeName, String address, String meetingSpot, Double latitude, Double longitude,
             Double distance, Double pace, Integer maxParticipants, String description, List<String> supplies
     ) {
         return new UpdateScheduleCommand(
                 scheduleId, crewId, creatorId, title, runType, meetingAt,
-                locationName, address, detailedLocation, latitude, longitude,
+                placeName, address, meetingSpot, latitude, longitude,
                 distance, pace, maxParticipants, description, supplies
         );
     }

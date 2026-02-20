@@ -11,14 +11,14 @@ import lombok.*;
 @Builder
 public class LocationEntity {
 
-    @Column(name = "location_name", nullable = false)
-    private String name;
+    @Column(name = "place_name", nullable = false, length = 100)
+    private String placeName;
 
-    @Column(name = "address", nullable = false)
+    @Column(name = "address", nullable = false, length = 255)
     private String address;
 
-    @Column(name = "detailed_location", nullable = false, length = 15)
-    private String detailedLocation;
+    @Column(name = "meeting_spot", nullable = false, length = 15)
+    private String meetingSpot;
 
     @Column(name = "latitude", nullable = false)
     private Double latitude;

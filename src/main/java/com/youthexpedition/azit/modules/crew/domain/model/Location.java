@@ -8,9 +8,9 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class Location {
-    private final String name;      // 장소 명칭
-    private final String address;   // 상세 주소
-    private final String detailedLocation; // 세부 장소
+    private final String placeName;      // 집합 장소명
+    private final String address;   // 주소
+    private final String meetingSpot; // 모이는 지점
     private final Double latitude;  // 위도
     private final Double longitude; // 경도
 }
