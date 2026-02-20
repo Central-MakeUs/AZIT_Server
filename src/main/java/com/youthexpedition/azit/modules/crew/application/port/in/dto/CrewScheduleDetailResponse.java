@@ -37,9 +37,9 @@ public record CrewScheduleDetailResponse(
         boolean isMine,
         @Schema(description = "내가 참여 중인 일정인지 여부")
         boolean isParticipating,
-        @Schema(description = "참여 멤버 미리보기 리스트(최대 6명)")
+        @Schema(description = "참여 멤버 미리보기 리스트(최대 10명)")
         List<ParticipantResponse> participants,
-        @Schema(description = "참여자 명단이 더 있는지 여부 (6명 초과 시 true)")
+        @Schema(description = "참여자 명단이 더 있는지 여부 (10명 초과 시 true)")
         boolean hasMoreParticipants,
         @Schema(description = "생성 시간")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

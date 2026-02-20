@@ -27,13 +27,13 @@ public class CrewScheduleResponseMapper {
         // 전체 참여자 정보를 조합하여 정렬
         List<ParticipantResponse> allParticipants = getAllSortedParticipants(schedule, profileMap, crewMemberMap);
 
-        // 미리보기용으로 6명 추출
+        // 미리보기용으로 10명 추출
         List<ParticipantResponse> previewParticipants = allParticipants.stream()
-                .limit(6)
+                .limit(10)
                 .toList();
 
-        // 전체 인원이 6명보다 많으면 더보기 true
-        boolean hasMoreParticipants = allParticipants.size() > 6;
+        // 전체 인원이 10명보다 많으면 더보기 true
+        boolean hasMoreParticipants = allParticipants.size() > 10;
 
         return CrewScheduleDetailResponse.of(schedule, currentMemberId, previewParticipants, hasMoreParticipants);
     }
