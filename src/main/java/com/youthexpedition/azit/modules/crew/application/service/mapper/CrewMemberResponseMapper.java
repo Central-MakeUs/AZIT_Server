@@ -19,7 +19,7 @@ public class CrewMemberResponseMapper {
     private final ImageUrlFormatUtil imageUrlFormatUtil;
 
 
-    public JoinRequestMemberResponse toResponse(JoinRequestDto joinRequestDto) {
+    public JoinRequestMemberResponse toJoinRequestResponse(JoinRequestDto joinRequestDto) {
         return new JoinRequestMemberResponse(
                 joinRequestDto.memberId(),
                 joinRequestDto.nickname(),

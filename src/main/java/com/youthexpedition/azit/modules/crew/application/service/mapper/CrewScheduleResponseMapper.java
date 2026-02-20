@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
@@ -22,18 +23,20 @@ import java.util.stream.IntStream;
 public class CrewScheduleResponseMapper {
     private final ImageUrlFormatUtil imageUrlFormatUtil;
 
+    private static final int PARTICIPANT_PREVIEW_LIMIT = 10;
+
     public CrewScheduleDetailResponse toDetailResponse(
             CrewSchedule schedule, Long currentMemberId, Map<Long, MemberProfileDto> profileMap, Map<Long, CrewMember> crewMemberMap) {
         // 전체 참여자 정보를 조합하여 정렬
         List<ParticipantResponse> allParticipants = getAllSortedParticipants(schedule, profileMap, crewMemberMap);
 
-        // 미리보기용으로 6명 추출
+        // 미리보기용으로 10명 추출
         List<ParticipantResponse> previewParticipants = allParticipants.stream()
-                .limit(6)
+                .limit(PARTICIPANT_PREVIEW_LIMIT)
                 .toList();
 
-        // 전체 인원이 6명보다 많으면 더보기 true
-        boolean hasMoreParticipants = allParticipants.size() > 6;
+        // 전체 인원이 10명보다 많으면 더보기 true
+        boolean hasMoreParticipants = allParticipants.size() > PARTICIPANT_PREVIEW_LIMIT;
 
         return CrewScheduleDetailResponse.of(schedule, currentMemberId, previewParticipants, hasMoreParticipants);
     }
@@ -91,6 +94,12 @@ public class CrewScheduleResponseMapper {
                 .sorted(Comparator.comparing((ParticipantResponse p) -> p.isCreator() ? 0 : 1)
                         .thenComparing(p -> p.role() == CrewMemberRole.LEADER ? 0 : 1)
                         .thenComparing(ParticipantResponse::participatedAt))
+                .toList();
+    }
+
+    public List<CrewScheduleListResponse> toScheduleListResponse(List<CrewSchedule> schedules, Long currentMemberId) {
+        return schedules.stream()
+                .map(schedule -> CrewScheduleListResponse.of(schedule, currentMemberId))
                 .toList();
     }
 

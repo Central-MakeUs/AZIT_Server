@@ -10,7 +10,9 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateS
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleQuery;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
@@ -221,6 +223,18 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         return new ScheduleData(schedule, profileMap, crewMemberMap);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<CrewScheduleListResponse> getSchedules(CrewScheduleQuery query) {
+        // 정회원인지 확인
+        getJoinedMember(query.crewId(), query.memberId());
+
+        // 필터링된 일정 목록 조회
+        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.runType());
+
+        return crewScheduleResponseMapper.toScheduleListResponse(schedules, query.memberId());
     }
 
     // 일정이 존재하는지 확인

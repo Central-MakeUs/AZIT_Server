@@ -203,7 +203,7 @@ public class CrewService implements CrewUseCase {
         validateLeader(crewId, memberId);
 
         return loadCrewMemberPort.findJoinRequestsByCrewId(crewId).stream()
-                .map(crewMemberResponseMapper::toResponse)
+                .map(crewMemberResponseMapper::toJoinRequestResponse)
                 .toList();
     }
 
