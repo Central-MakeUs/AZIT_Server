@@ -22,6 +22,8 @@ public class CrewScheduleResponseMapper {
             CrewSchedule schedule, Long currentMemberId, Map<Long, MemberProfileDto> profileMap, Map<Long, CrewMember> crewMemberMap) {
         // 전체 참여자 정보를 조합하여 정렬
         List<CrewScheduleDetailResponse.ParticipantResponse> allParticipants = schedule.getParticipants().stream()
+                // 데이터가 존재하는 참여자들만 필터링
+                .filter(participant -> profileMap.containsKey(participant.getMemberId()) && crewMemberMap.containsKey(participant.getMemberId()))
                 .map(participant -> {
                     Long id = participant.getMemberId();
                     MemberProfileDto profile = profileMap.get(id);

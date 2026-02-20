@@ -22,6 +22,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class CrewScheduleService implements CrewScheduleUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
@@ -188,6 +190,12 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 성능을 위해 Map 으로 가져옴
         Map<Long, MemberProfileDto> memberProfileMap = loadMemberPort.findAllByIds(participantIds);
         Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
+
+        // 데이터 정합성 검증
+        if (memberProfileMap.size() != participantIds.size() || crewMemberMap.size() != participantIds.size()) {
+            log.warn("Data inconsistency detected for schedule {}: participants={}, profiles={}, crewMembers={}",
+                    schedule.getId(), participantIds.size(), memberProfileMap.size(), crewMemberMap.size());
+        }
 
         return crewScheduleResponseMapper.toDetailResponse(schedule, command.memberId(), memberProfileMap, crewMemberMap);
     }
