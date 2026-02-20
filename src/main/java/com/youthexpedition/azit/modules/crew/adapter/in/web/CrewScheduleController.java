@@ -1,7 +1,9 @@
 package com.youthexpedition.azit.modules.crew.adapter.in.web;
 
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
+import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
+import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.docs.CrewScheduleControllerDocs;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateScheduleRequest;
@@ -10,6 +12,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUse
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -64,6 +67,15 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
             @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId) {
         CrewScheduleCommand command = CrewScheduleCommand.of(crewId, scheduleId, memberId);
         CrewScheduleDetailResponse response = crewScheduleUseCase.getScheduleDetail(command);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/{scheduleId}/participants")
+    public CommonResponse<SliceResponse<ParticipantResponse>> getScheduleParticipants(
+            @PathVariable Long crewId, @PathVariable Long scheduleId, @CurrentMemberId Long memberId, CursorPageQuery query) {
+        CrewScheduleCommand command = CrewScheduleCommand.of(crewId, scheduleId, memberId);
+        SliceResponse<ParticipantResponse> response = crewScheduleUseCase.getScheduleParticipants(command, query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }

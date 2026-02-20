@@ -132,7 +132,7 @@ public interface CrewControllerDocs {
             @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
-            summary = "크루 멤버 목록 조회",
+            summary = "크루 멤버 목록 조회 (무한스크롤)",
             description = """
             커서 기반 페이징을 사용하여 해당 크루에 가입되어 있는 모든 멤버의 목록을 조회합니다. <br><br>
             
