@@ -23,6 +23,8 @@ import java.util.stream.IntStream;
 public class CrewScheduleResponseMapper {
     private final ImageUrlFormatUtil imageUrlFormatUtil;
 
+    private static final int PARTICIPANT_PREVIEW_LIMIT = 10;
+
     public CrewScheduleDetailResponse toDetailResponse(
             CrewSchedule schedule, Long currentMemberId, Map<Long, MemberProfileDto> profileMap, Map<Long, CrewMember> crewMemberMap) {
         // 전체 참여자 정보를 조합하여 정렬
@@ -30,11 +32,11 @@ public class CrewScheduleResponseMapper {
 
         // 미리보기용으로 10명 추출
         List<ParticipantResponse> previewParticipants = allParticipants.stream()
-                .limit(10)
+                .limit(PARTICIPANT_PREVIEW_LIMIT)
                 .toList();
 
         // 전체 인원이 10명보다 많으면 더보기 true
-        boolean hasMoreParticipants = allParticipants.size() > 10;
+        boolean hasMoreParticipants = allParticipants.size() > PARTICIPANT_PREVIEW_LIMIT;
 
         return CrewScheduleDetailResponse.of(schedule, currentMemberId, previewParticipants, hasMoreParticipants);
     }

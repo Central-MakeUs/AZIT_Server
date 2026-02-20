@@ -88,8 +88,7 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
 
     @GetMapping
     public CommonResponse<List<CrewScheduleListResponse>> getCrewSchedules(
-            @PathVariable Long crewId, @RequestParam(required = false) LocalDate date, @RequestParam(required = false) RunType runType, @CurrentMemberId Long memberId
-    ) {
+            @PathVariable Long crewId, @RequestParam(required = false) LocalDate date, @RequestParam(required = false) RunType runType, @CurrentMemberId Long memberId) {
         CrewScheduleQuery query = CrewScheduleQuery.of(crewId, date, runType, memberId);
         List<CrewScheduleListResponse> response = crewScheduleUseCase.getSchedules(query);
 
