@@ -12,11 +12,13 @@ import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMember
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
+import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
+import com.youthexpedition.azit.modules.crew.domain.model.provider.CrewImageProvider;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -57,6 +59,10 @@ class CrewServiceTest {
     private LoadMemberPort loadMemberPort;
     @Mock
     private CrewMemberResponseMapper crewMemberResponseMapper;
+    @Mock
+    private CrewResponseMapper crewResponseMapper;
+    @Mock
+    private CrewImageProvider crewImageProvider;
     @InjectMocks
     private CrewService crewService;
 
@@ -66,8 +72,14 @@ class CrewServiceTest {
         // given
         Long leaderId = 1L;
         CreateCrewCommand command = CreateCrewCommand.of("아지트 러닝크루", "RUNNING", "SEOUL", leaderId);
+        given(crewImageProvider.getCrewDefaultImage()).willReturn("defaultImageUrl");
 
-        Crew mockCrew = Crew.builder().id(100L).invitationCode("ABC123").build();
+        Crew mockCrew = Crew.builder()
+                .id(100L)
+                .imageUrl("imageUrl")
+                .invitationCode("ABC123")
+                .memberCount(1)
+                .build();
         given(saveCrewPort.save(any(Crew.class))).willReturn(mockCrew);
 
         Member member = Member.builder()
@@ -75,6 +87,8 @@ class CrewServiceTest {
                 .status(MemberStatus.PENDING_ONBOARDING)
                 .build();
         given(loadMemberPort.findById(leaderId)).willReturn(Optional.of(member));
+
+        given(crewResponseMapper.toCreateResponse(any())).willReturn(new CreateCrewResponse("ABC123", "imageUrl"));
 
         // when
         CreateCrewResponse response = crewService.createCrew(command);
@@ -205,7 +219,7 @@ class CrewServiceTest {
     class ProcessJoinRequestsTest {
 
         @Test
-        @DisplayName("리더가 가입 요청을 승인하면, 신청자의 상태가 JOINED로 변경되고 정회원(ACTIVE)이 된다.")
+        @DisplayName("리더가 가입 요청을 승인하면, 신청자의 상태가 JOINED로 변경되고 신청자의 상태가 APPROVED_PENDING_CONFIRM이 된다.")
         void approveJoinRequest_Success() {
             // given
             Long crewId = 100L;
@@ -215,16 +229,26 @@ class CrewServiceTest {
 
             // 리더 권한 설정
             CrewMember leader = CrewMember.builder()
-                    .crewId(crewId).memberId(leaderId).role(CrewMemberRole.LEADER).build();
+                    .role(CrewMemberRole.LEADER)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)).willReturn(Optional.of(leader));
 
             // 가입 대상자 상태 설정 (상태: REQUESTED)
             CrewMember targetCrewMember = CrewMember.builder()
-                    .crewId(crewId).memberId(targetMemberId).status(CrewMemberStatus.REQUESTED).build();
+                    .status(CrewMemberStatus.REQUESTED).build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, targetMemberId)).willReturn(Optional.of(targetCrewMember));
 
+            Crew mockCrew = Crew.builder()
+                    .id(crewId)
+                    .memberCount(0)
+                    .build();
+            given(loadCrewPort.findById(crewId)).willReturn(Optional.of(mockCrew));
+
             Member targetMember = Member.builder()
-                    .id(targetMemberId).status(MemberStatus.WAITING_FOR_APPROVE).build();
+                    .id(targetMemberId)
+                    .status(MemberStatus.WAITING_FOR_APPROVE)
+                    .build();
             given(loadMemberPort.findById(targetMemberId)).willReturn(Optional.of(targetMember));
 
             // when
@@ -232,7 +256,7 @@ class CrewServiceTest {
 
             // then
             assertThat(targetCrewMember.getStatus()).isEqualTo(CrewMemberStatus.JOINED); // 크루 상태 변경 확인
-            assertThat(targetMember.getStatus()).isEqualTo(MemberStatus.ACTIVE); // 정회원 전환 확인
+            assertThat(targetMember.getStatus()).isEqualTo(MemberStatus.APPROVED_PENDING_CONFIRM); // 정회원 전환 확인
 
             verify(saveCrewMemberPort, times(1)).save(targetCrewMember);
             verify(saveMemberPort, times(1)).save(targetMember);
@@ -265,9 +289,16 @@ class CrewServiceTest {
             Long targetMemberId = 2L;
             ProcessJoinCommand command = ProcessJoinCommand.of(crewId, targetMemberId, leaderId);
 
-            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId))
-                    .willReturn(Optional.of(CrewMember.builder().role(CrewMemberRole.LEADER).build()));
+            // 리더 권한 설정
+            CrewMember leader = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(leaderId)
+                    .role(CrewMemberRole.LEADER)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)).willReturn(Optional.of(leader));
 
+            // 가입 대상자 상태 설정 (상태: REQUESTED)
             CrewMember targetCrewMember = CrewMember.builder()
                     .status(CrewMemberStatus.REQUESTED).build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, targetMemberId)).willReturn(Optional.of(targetCrewMember));
@@ -286,9 +317,10 @@ class CrewServiceTest {
             assertThat(targetCrewMember.getStatus()).isEqualTo(CrewMemberStatus.REJECTED);
             verify(saveCrewMemberPort, times(1)).save(targetCrewMember);
 
-            // 회원 상태가 PENDING_ONBOARDING으로 변경되고 저장되었는지 확인
-            assertThat(targetMember.getStatus()).isEqualTo(MemberStatus.PENDING_ONBOARDING);
+            // 회원 상태가 REJECTED_PENDING_CONFIRM으로 변경되고 저장되었는지 확인
+            assertThat(targetMember.getStatus()).isEqualTo(MemberStatus.REJECTED_PENDING_CONFIRM);
             verify(saveMemberPort, times(1)).save(targetMember);
+            verify(saveCrewMemberPort, times(1)).save(targetCrewMember);
         }
 
         @Test
@@ -296,15 +328,24 @@ class CrewServiceTest {
         void approveJoinRequest_Fail_InvalidStatus() {
             // given
             Long crewId = 100L;
+            Long leaderId = 1L;
+            long targetMemberId = 2L;
             ProcessJoinCommand command = ProcessJoinCommand.of(crewId, 2L, 1L);
 
-            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, 1L))
-                    .willReturn(Optional.of(CrewMember.builder().role(CrewMemberRole.LEADER).build()));
+            // 리더 권한 설정
+            CrewMember leader = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(leaderId)
+                    .role(CrewMemberRole.LEADER)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)).willReturn(Optional.of(leader));
 
             // 이미 JOINED 상태인 멤버
             CrewMember alreadyJoinedMember = CrewMember.builder()
-                    .status(CrewMemberStatus.JOINED).build();
-            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, 2L)).willReturn(Optional.of(alreadyJoinedMember));
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, targetMemberId)).willReturn(Optional.of(alreadyJoinedMember));
 
             // when & then
             assertThatThrownBy(() -> crewService.approveJoinRequest(command))
@@ -325,7 +366,11 @@ class CrewServiceTest {
 
             // 리더 권한 모킹
             CrewMember leader = CrewMember.builder()
-                    .crewId(crewId).memberId(leaderId).role(CrewMemberRole.LEADER).build();
+                    .crewId(crewId)
+                    .memberId(leaderId)
+                    .role(CrewMemberRole.LEADER)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)).willReturn(Optional.of(leader));
 
             // 가입 신청 목록 모킹
@@ -337,8 +382,8 @@ class CrewServiceTest {
             JoinRequestMemberResponse response2 = new JoinRequestMemberResponse(3L, "러너B", "img2.png", LocalDateTime.now());
 
             // any()를 사용하거나 특정 객체를 지정하여 스터빙
-            given(crewMemberResponseMapper.toResponse(result1)).willReturn(response1);
-            given(crewMemberResponseMapper.toResponse(result2)).willReturn(response2);
+            given(crewMemberResponseMapper.toJoinRequestResponse(result1)).willReturn(response1);
+            given(crewMemberResponseMapper.toJoinRequestResponse(result2)).willReturn(response2);
 
             // when
             List<JoinRequestMemberResponse> responses = crewService.getJoinRequests(crewId, leaderId);

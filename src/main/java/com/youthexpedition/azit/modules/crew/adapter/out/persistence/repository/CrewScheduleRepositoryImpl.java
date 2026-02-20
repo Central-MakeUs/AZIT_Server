@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.QCrewScheduleEntity.crewScheduleEntity;
+import static com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.QCrewScheduleMemberEntity.crewScheduleMemberEntity;
 
 @Repository
 @RequiredArgsConstructor
@@ -61,6 +62,19 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                         tuple -> Objects.requireNonNull(tuple.get(crewScheduleEntity.meetingAt)).toLocalDate(),
                         Collectors.mapping(tuple -> tuple.get(crewScheduleEntity.runType), Collectors.toSet()) // 해당 타입이 존재하는지만 알면 되므로 set
                 ));
+    }
+
+    @Override
+    public List<CrewScheduleEntity> findAllByMemberId(Long memberId) {
+        return queryFactory.selectFrom(crewScheduleEntity)
+                .join(crewScheduleEntity.members, crewScheduleMemberEntity)
+                .where(
+                        crewScheduleMemberEntity.memberId.eq(memberId),
+                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 취소된 일정 제외
+                        crewScheduleEntity.meetingAt.goe(LocalDateTime.now()) // 지난 일정 제외
+                )
+                .orderBy(crewScheduleEntity.meetingAt.asc()) // 가장 가까운 순서대로 정렬
+                .fetch();
     }
 
     private BooleanExpression eqDate(LocalDate date) {

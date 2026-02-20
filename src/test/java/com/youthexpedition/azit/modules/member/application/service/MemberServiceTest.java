@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.member.application.service;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
@@ -19,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,6 +38,8 @@ class MemberServiceTest {
     private SaveMemberPort saveMemberPort;
     @Mock
     private SaveCrewMemberPort saveCrewMemberPort;
+    @Mock
+    private LoadCrewMemberPort loadCrewMemberPort;
     @Mock
     private SocialAuthPort socialAuthPort;
     @Mock
@@ -57,6 +61,7 @@ class MemberServiceTest {
         void withdraw_success() {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doNothing().when(socialAuthPort).revoke(any());
             doNothing().when(tokenPort).deleteByMemberId(memberId);
             doNothing().when(tokenPort).addToBlacklist(anyString(), anyString());
@@ -67,6 +72,7 @@ class MemberServiceTest {
 
             // then
             verify(loadMemberPort, times(1)).findById(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(socialAuthPort, times(1)).revoke(any());
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, times(1)).addToBlacklist(accessToken, "withdrawn");
@@ -116,6 +122,7 @@ class MemberServiceTest {
         void withdraw_fail_tokenDeletionFails() {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doNothing().when(socialAuthPort).revoke(any());
             doThrow(new RuntimeException("Token deletion failed")).when(tokenPort).deleteByMemberId(memberId);
 
@@ -126,6 +133,7 @@ class MemberServiceTest {
 
             verify(loadMemberPort, times(1)).findById(memberId);
             verify(socialAuthPort, times(1)).revoke(any());
+            verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, never()).addToBlacklist(anyString(), anyString());
             verify(saveMemberPort, never()).save(any(Member.class));

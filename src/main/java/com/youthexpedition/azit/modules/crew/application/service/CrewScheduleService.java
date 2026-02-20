@@ -252,6 +252,15 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return crewScheduleResponseMapper.toScheduleMonthlyListResponse(monthlyScheduleMap);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public List<CrewScheduleListResponse> getMySchedules(Long memberId) {
+        // 참여 중인 일정 조회
+        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberId(memberId);
+
+        return crewScheduleResponseMapper.toScheduleListResponse(schedules, memberId);
+    }
+
     // 일정이 존재하는지 확인
     private CrewSchedule getSchedule(Long scheduleId) {
         return loadCrewSchedulePort.findById(scheduleId)

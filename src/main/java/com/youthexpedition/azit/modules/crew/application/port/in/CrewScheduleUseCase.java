@@ -25,4 +25,5 @@ public interface CrewScheduleUseCase {
     SliceResponse<ParticipantResponse> getScheduleParticipants(CrewScheduleCommand command, CursorPageQuery query);
     List<CrewScheduleListResponse> getSchedules(CrewScheduleQuery query);
     List<CrewScheduleMonthlyListResponse> getMonthlySchedulesForCalendar(CrewScheduleMonthlyQuery query);
+    List<CrewScheduleListResponse> getMySchedules(Long memberId);
 }
