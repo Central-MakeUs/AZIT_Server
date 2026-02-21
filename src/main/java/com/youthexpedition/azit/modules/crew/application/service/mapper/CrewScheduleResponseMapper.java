@@ -12,7 +12,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
-import com.youthexpedition.azit.modules.member.application.port.in.dto.CheckInStatusResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.member.application.port.in.dto;
+package com.youthexpedition.azit.modules.crew.application.port.in.dto;
 
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;

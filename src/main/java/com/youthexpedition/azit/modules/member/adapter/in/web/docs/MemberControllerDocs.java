@@ -6,7 +6,7 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
-import com.youthexpedition.azit.modules.member.application.port.in.dto.CheckInStatusResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

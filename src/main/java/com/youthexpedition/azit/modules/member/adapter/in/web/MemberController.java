@@ -9,7 +9,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewSchedul
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
-import com.youthexpedition.azit.modules.member.application.port.in.dto.CheckInStatusResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
