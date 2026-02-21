@@ -54,6 +54,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private static final int CHECK_IN_COOL_DOWN_MINUTES = 30; // 출석 완료 후 최소 유지 시간
     private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1; // 출석 버튼 활성화 윈도우 (전후 1시간)
     private static final int COMPLETED_RETENTION_HOURS = 3;    // 지난 일정 완료 표시 유지 시간
+    private static final int MINIMUM_SCHEDULE_INTERVAL_MINUTES = 60; // 최소 일정 간격
 
     @Override
     public void createSchedule(CreateScheduleCommand command) {
@@ -165,6 +166,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (schedule.isFull()) {
             throw new BusinessException(CrewErrorCode.EXCEEDED_MAX_PARTICIPANTS);
         }
+
+        // 기존 일정과의 시간 간격 검증
+        validateScheduleInterval(command.memberId(), schedule.getMeetingAt());
 
         schedule.addParticipant(command.memberId());
         saveCrewSchedulePort.save(schedule);
@@ -354,9 +358,24 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
     }
 
-    // 일정 유효성 체크
+    // 생성할 일정 유효성 체크
     private void validateSchedule(CrewSchedule schedule) {
         // 현재보다 이후의 시간인지 검증
         if (!schedule.isMeetingTimeValid()) throw new BusinessException(CrewErrorCode.INVALID_SCHEDULE_TIME);
+    }
+
+    // 신청하려는 일정과 기존 일정 사이의 간격 검증
+    private void validateScheduleInterval(Long memberId, LocalDateTime newMeetingAt) {
+        // 사용자가 현재 참여 중인 일정 목록 조회
+        List<CrewSchedule> joinedSchedules = loadCrewSchedulePort.findAllByMemberId(memberId);
+
+        for (CrewSchedule joined : joinedSchedules) {
+            // 두 일정 사이의 차이 계산
+            long minutesBetween = Math.abs(ChronoUnit.MINUTES.between(joined.getMeetingAt(), newMeetingAt));
+
+            if (minutesBetween < MINIMUM_SCHEDULE_INTERVAL_MINUTES) {
+                throw new BusinessException(CrewErrorCode.SCHEDULE_INTERVAL_TOO_CLOSE);
+            }
+        }
     }
 }
