@@ -37,10 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +50,10 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private final SaveCrewSchedulePort saveCrewSchedulePort;
     private final LoadMemberPort loadMemberPort;
     private final CrewScheduleResponseMapper crewScheduleResponseMapper;
+
+    private static final int CHECK_IN_COOL_DOWN_MINUTES = 30; // 출석 완료 후 최소 유지 시간
+    private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1; // 출석 버튼 활성화 윈도우 (전후 1시간)
+    private static final int COMPLETED_RETENTION_HOURS = 3;    // 지난 일정 완료 표시 유지 시간
 
     @Override
     public void createSchedule(CreateScheduleCommand command) {
@@ -271,11 +273,65 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         // 오늘 참여하는 모든 일정 조회
         List<CrewSchedule> todaySchedules = loadCrewSchedulePort.findAllTodaySchedulesByMemberId(memberId, now);
-
         // 가장 가까운 미래 일정 조회
         Optional<CrewSchedule> nextSchedule = loadCrewSchedulePort.findNextClosestScheduleByMemberId(memberId, now);
 
-        return crewScheduleResponseMapper.toCheckInStatusResponse(todaySchedules, nextSchedule, memberId);
+        // 30분 이내에 출석을 완료한 경우, 다음 일정이 있더라도 출석 완료 상태를 30분간 노출
+        // 출석하기 비활성화
+        Optional<CrewSchedule> justCompletedSchedule = todaySchedules.stream()
+                .filter(s -> s.isCheckedIn(memberId))
+                .filter(s -> s.getMeetingAt().isBefore(now) &&
+                        now.isBefore(s.getMeetingAt().plusMinutes(CHECK_IN_COOL_DOWN_MINUTES))) // 30분간 출석 완료 상태 유지
+                .findFirst();
+
+        if (justCompletedSchedule.isPresent()) {
+            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(justCompletedSchedule.get(), true, false);
+        }
+
+        // 출석 가능하거나 곧 시작할 일정 필터링 (일정 시작 1시간 전후 기준)
+        // 출석하기 활성화
+        Optional<CrewSchedule> activeSchedule = todaySchedules.stream()
+                .filter(s -> !s.isCheckedIn(memberId))
+                .filter(s -> now.isAfter(s.getMeetingAt().minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS)) &&
+                        now.isBefore(s.getMeetingAt().plusHours(ACTIVE_CHECK_IN_WINDOW_HOURS))).min(Comparator.comparing(CrewSchedule::getMeetingAt)
+                        .thenComparing(s -> s.getRunType() == RunType.REGULAR ? 0 : 1)); // 동일 시간대일 경우 정기런 우선 노출
+
+        if (activeSchedule.isPresent()) {
+            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(activeSchedule.get(), false, true);
+        }
+
+        // 출석을 완료했고, 일정이 시작한지 3시간 이내인 일정 필터링
+        // 출석 완료 활성화, 출석하기 비활성화
+        Optional<CrewSchedule> recentlyCompletedSchedule = todaySchedules.stream()
+                .filter(s -> s.isCheckedIn(memberId))
+                .filter(s -> s.getMeetingAt().isBefore(now) &&
+                        s.getMeetingAt().isAfter(now.minusHours(COMPLETED_RETENTION_HOURS)))
+                .max(Comparator.comparing(CrewSchedule::getMeetingAt));
+
+        if (recentlyCompletedSchedule.isPresent()) {
+            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(recentlyCompletedSchedule.get(), true, false);
+        }
+
+        // 오늘 남은 일정 중 가장 빠른 일정 필터링
+        // 출석하기 비활성화
+        Optional<CrewSchedule> upcomingTodaySchedule = todaySchedules.stream()
+                .filter(s -> !s.isCheckedIn(memberId))
+                .filter(s -> s.getMeetingAt().isAfter(now))
+                .findFirst();
+
+        if (upcomingTodaySchedule.isPresent()) {
+            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(upcomingTodaySchedule.get(), false, false);
+        }
+
+        // 오늘 일정은 없고 다음 일정이 있는 경우
+        if (nextSchedule.isPresent()) {
+            CrewSchedule targetSchedule = nextSchedule.get();
+            long daysLeft = ChronoUnit.DAYS.between(now.toLocalDate(), targetSchedule.getMeetingAt().toLocalDate());
+            return crewScheduleResponseMapper.toNextScheduleCheckInStatus(nextSchedule.get(), daysLeft);
+        }
+
+        // 아예 일정이 없는 경우
+        return crewScheduleResponseMapper.toEmptyScheduleCheckInStatus();
     }
 
     // 일정이 존재하는지 확인
