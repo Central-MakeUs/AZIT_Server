@@ -12,5 +12,7 @@ import java.time.LocalDateTime;
 public class CrewScheduleMember {
     private final Long id;
     private final Long memberId;
+    private final boolean isCheckedIn;
+    private final LocalDateTime checkedInAt;
     private final LocalDateTime createdAt;
 }

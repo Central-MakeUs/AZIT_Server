@@ -13,10 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.QCrewScheduleEntity.crewScheduleEntity;
@@ -75,6 +72,35 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 )
                 .orderBy(crewScheduleEntity.meetingAt.asc()) // 가장 가까운 순서대로 정렬
                 .fetch();
+    }
+
+    @Override
+    public List<CrewScheduleEntity> findAllTodaySchedulesByMemberId(Long memberId, LocalDateTime now) {
+        return queryFactory.selectFrom(crewScheduleEntity)
+                .join(crewScheduleEntity.members, crewScheduleMemberEntity)
+                .where(
+                        crewScheduleMemberEntity.memberId.eq(memberId),
+                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
+                        // 오늘 00:00:00 ~ 23:59:59 사이
+                        crewScheduleEntity.meetingAt.between(now.with(LocalTime.MIN), now.with(LocalTime.MAX))
+                )
+                .orderBy(crewScheduleEntity.meetingAt.asc())
+                .fetch();
+    }
+
+    @Override
+    public Optional<CrewScheduleEntity> findNextClosestScheduleByMemberId(Long memberId, LocalDateTime now) {
+        return Optional.ofNullable(
+                queryFactory.selectFrom(crewScheduleEntity)
+                        .join(crewScheduleEntity.members, crewScheduleMemberEntity)
+                        .where(
+                                crewScheduleMemberEntity.memberId.eq(memberId),
+                                crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
+                                crewScheduleEntity.meetingAt.gt(now.with(LocalTime.MAX)) // 오늘 이후
+                        )
+                        .orderBy(crewScheduleEntity.meetingAt.asc())
+                        .fetchFirst() // 첫번째 일정만 조회
+        );
     }
 
     private BooleanExpression eqDate(LocalDate date) {

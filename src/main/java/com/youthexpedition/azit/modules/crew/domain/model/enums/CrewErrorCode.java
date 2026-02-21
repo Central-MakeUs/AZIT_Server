@@ -29,7 +29,8 @@ public enum CrewErrorCode implements BaseErrorCode {
     ALREADY_PARTICIPATED("ALREADY_PARTICIPATED", "이미 참여한 일정입니다.", HttpStatus.BAD_REQUEST),
     EXCEEDED_MAX_PARTICIPANTS("EXCEEDED_MAX_PARTICIPANTS", "최대 참여 인원을 초과했습니다.", HttpStatus.BAD_REQUEST),
     NOT_PARTICIPATING_SCHEDULE("NOT_PARTICIPATING_SCHEDULE", "해당 일정의 참여자가 아닙니다.", HttpStatus.BAD_REQUEST),
-    CREATOR_CANNOT_CANCEL_PARTICIPATION("CREATOR_CANNOT_CANCEL_PARTICIPATION", "일정 생성자는 참여 취소가 불가능합니다.", HttpStatus.BAD_REQUEST)
+    CREATOR_CANNOT_CANCEL_PARTICIPATION("CREATOR_CANNOT_CANCEL_PARTICIPATION", "일정 생성자는 참여 취소가 불가능합니다.", HttpStatus.BAD_REQUEST),
+    SCHEDULE_INTERVAL_TOO_CLOSE("SCHEDULE_INTERVAL_TOO_CLOSE", "기존 일정과 시작 시간이 너무 가깝습니다. 최소 1시간 간격이 필요합니다.", HttpStatus.BAD_REQUEST),
     ;
 
     private final String code;

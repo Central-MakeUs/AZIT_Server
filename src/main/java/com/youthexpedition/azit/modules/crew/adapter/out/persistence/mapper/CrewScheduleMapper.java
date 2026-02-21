@@ -44,6 +44,8 @@ public class CrewScheduleMapper {
                         .map(m -> CrewScheduleMember.builder()
                                 .id(m.getId())
                                 .memberId(m.getMemberId())
+                                .isCheckedIn(m.isCheckedIn())
+                                .checkedInAt(m.getCheckedInAt())
                                 .createdAt(m.getCreatedAt())
                                 .build())
                         .collect(Collectors.toCollection(ArrayList::new)))

@@ -12,14 +12,14 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Component
@@ -116,6 +116,26 @@ public class CrewScheduleResponseMapper {
                 ))
                 .sorted(Comparator.comparing(CrewScheduleMonthlyListResponse::date)) // 날짜순 정렬
                 .toList();
+    }
+
+    public CheckInStatusResponse toTodayScheduleCheckInStatus(CrewSchedule schedule, boolean isCheckedIn, boolean isAvailableTime) {
+        return CheckInStatusResponse.of(
+                true,
+                CheckInStatusResponse.TodayScheduleResponse.of(schedule, isCheckedIn, isAvailableTime),
+                null
+        );
+    }
+
+    public CheckInStatusResponse toNextScheduleCheckInStatus(CrewSchedule nextSchedule, long daysLeft) {
+        return CheckInStatusResponse.of(
+                false,
+                null,
+                CheckInStatusResponse.NextScheduleResponse.of(nextSchedule, daysLeft)
+        );
+    }
+
+    public CheckInStatusResponse toEmptyScheduleCheckInStatus() {
+        return CheckInStatusResponse.of(false, null, null);
     }
 
 }

@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewSchedul
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,13 @@ public class MemberController implements MemberControllerDocs {
     @GetMapping("/me/schedules")
     public CommonResponse<List<CrewScheduleListResponse>> getMySchedules(@CurrentMemberId Long memberId) {
         List<CrewScheduleListResponse> response = crewScheduleUseCase.getMySchedules(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/me/check-in-status")
+    public CommonResponse<CheckInStatusResponse> getCheckInStatus(@CurrentMemberId Long memberId) {
+        CheckInStatusResponse response = crewScheduleUseCase.getCheckInStatus(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
