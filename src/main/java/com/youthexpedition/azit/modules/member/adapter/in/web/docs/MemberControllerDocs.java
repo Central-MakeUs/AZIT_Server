@@ -115,7 +115,7 @@ public interface MemberControllerDocs {
             * 출석하기 활성화: isCheckedIn == false && isAvailableTime == true && (GPS 거리 100m 이내) <br>
             * 출석하기 비활성화: isCheckedIn == false && (isAvailableTime == false || GPS 거리 100m 밖) <br>
             * 출석 완료: isCheckedIn == true <br>
-            * D-Day: hasScheduleToday == false
+            * D-Day: hasScheduleToday == false 일 경우 daysLeft 필드 활용
             """
     )
     @ApiErrorCodeExamples({
