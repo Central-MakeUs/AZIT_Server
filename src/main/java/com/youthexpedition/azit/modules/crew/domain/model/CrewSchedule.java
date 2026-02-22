@@ -7,8 +7,10 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.SequencedMap;
 
 @Getter
 @Builder
@@ -26,7 +28,8 @@ public class CrewSchedule {
     private Double pace;            // 목표 페이스
     private Integer maxParticipants; // 최대 인원
     private List<String> supplies;  // 준비물 리스트
-    private List<CrewScheduleMember> participants; // 참여 인원
+    @Builder.Default
+    private final SequencedMap<Long, CrewScheduleMember> participants = new LinkedHashMap<>(); // 참여 인원, 순서가 있는 map 사용하여 성능 향상
     private ScheduleStatus status;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -35,13 +38,7 @@ public class CrewSchedule {
                                       LocalDateTime meetingAt, Location location, String description,
                                       Double distance, Double pace, Integer maxParticipants, List<String> supplies
     ) {
-        List<CrewScheduleMember> participants = new ArrayList<>(); // 참여 인원에 작성자 추가
-        participants.add(CrewScheduleMember.builder()
-                        .memberId(creatorId)
-                        .createdAt(LocalDateTime.now())
-                .build());
-
-        return CrewSchedule.builder()
+        CrewSchedule schedule = CrewSchedule.builder()
                 .crewId(crewId)
                 .creatorId(creatorId)
                 .title(title)
@@ -53,9 +50,11 @@ public class CrewSchedule {
                 .pace(pace)
                 .maxParticipants(maxParticipants)
                 .supplies(supplies)
-                .participants(participants)
                 .status(ScheduleStatus.ACTIVE)
                 .build();
+
+        schedule.addParticipant(creatorId); // 참여 인원에 작성자 추가
+        return schedule;
     }
 
     // 현재보다 과거 시간인지 검증
@@ -95,12 +94,12 @@ public class CrewSchedule {
 
     // 일정에 참여하고 있는지 확인
     public boolean isParticipating(Long memberId) {
-        return participants.stream().anyMatch(m -> m.getMemberId().equals(memberId));
+        return participants.containsKey(memberId);
     }
 
     // 일정 참여
     public void addParticipant(Long memberId) {
-        this.participants.add(CrewScheduleMember.builder()
+        participants.put(memberId, CrewScheduleMember.builder()
                 .memberId(memberId)
                 .createdAt(LocalDateTime.now())
                 .build());
@@ -108,20 +107,31 @@ public class CrewSchedule {
 
     // 일정 참여 취소
     public void removeParticipant(Long memberId) {
-        this.participants.removeIf(m -> m.getMemberId().equals(memberId));
+        participants.remove(memberId);
     }
 
     // ID 리스트만 필요할 때 사용
     public List<Long> getParticipantIds() {
-        return participants.stream().map(CrewScheduleMember::getMemberId).toList();
+        return List.copyOf(participants.keySet());
     }
 
     // 특정 멤버의 출석 여부 확인
     public boolean isCheckedIn(Long memberId) {
-        return participants.stream()
-                .filter(m -> m.getMemberId().equals(memberId))
+        return Optional.ofNullable(participants.get(memberId))
                 .map(CrewScheduleMember::isCheckedIn)
-                .findFirst()
                 .orElse(false);
+    }
+
+    // 출석 체크
+    public boolean checkIn(Long memberId, LocalDateTime checkInTime) {
+        return participants.computeIfPresent(memberId, (id, m) ->
+                CrewScheduleMember.builder()
+                        .id(m.getId())
+                        .memberId(m.getMemberId())
+                        .isCheckedIn(true)
+                        .checkedInAt(checkInTime)
+                        .createdAt(m.getCreatedAt())
+                        .build()
+        ) != null;
     }
 }

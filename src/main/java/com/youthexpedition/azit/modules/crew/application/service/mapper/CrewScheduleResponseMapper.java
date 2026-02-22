@@ -77,7 +77,7 @@ public class CrewScheduleResponseMapper {
     private List<ParticipantResponse> getAllSortedParticipants(
             CrewSchedule schedule, Map<Long, MemberProfileDto> profileMap, Map<Long, CrewMember> crewMemberMap) {
 
-        return schedule.getParticipants().stream()
+        return schedule.getParticipants().values().stream()
                 // 데이터 정합성 검증 필터링
                 .filter(participant -> profileMap.containsKey(participant.getMemberId()) && crewMemberMap.containsKey(participant.getMemberId()))
                 .map(participant -> {
