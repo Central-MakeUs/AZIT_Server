@@ -74,4 +74,11 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
         return crewScheduleRepository.findNextClosestScheduleByMemberId(memberId, now)
                 .map(crewScheduleMapper::toDomain);
     }
+
+    @Override
+    public List<CrewSchedule> findAllByCrewIdAndMemberId(Long crewId, Long memberId) {
+        return crewScheduleRepository.findAllByCrewIdAndMemberId(crewId, memberId).stream()
+                .map(crewScheduleMapper::toDomain)
+                .toList();
+    }
 }

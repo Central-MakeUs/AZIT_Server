@@ -103,6 +103,16 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
         );
     }
 
+    @Override
+    public List<CrewScheduleEntity> findAllByCrewIdAndMemberId(Long crewId, Long memberId) {
+        return queryFactory.selectFrom(crewScheduleEntity)
+                .join(crewScheduleEntity.members, crewScheduleMemberEntity).fetchJoin()
+                .where(crewScheduleEntity.crewId.eq(crewId)
+                        .and(crewScheduleMemberEntity.memberId.eq(memberId))
+                        .and(crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE)))
+                .fetch();
+    }
+
     private BooleanExpression eqDate(LocalDate date) {
         if (date == null) return null;
         // LocalDateTime의 시작(00:00:00)과 끝(23:59:59) 사이 조회
