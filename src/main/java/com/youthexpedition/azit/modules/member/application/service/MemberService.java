@@ -160,11 +160,17 @@ public class MemberService implements MemberUseCase {
                 .filter(cm -> cm.getRole() == CrewMemberRole.LEADER)
                 .toList();
 
-        for (CrewMember crewMember : crewMembersAsLeader) {
-            Crew crew = loadCrewPort.findById(crewMember.getCrewId())
-                    .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+        if (crewMembersAsLeader.isEmpty()) return;
 
-            // 크루 인원수가 1명보다 많으면 탈퇴 불가
+        // 리더로 속한 모든 크루 ID 가져오기
+        List<Long> crewIds = crewMembersAsLeader.stream()
+                .map(CrewMember::getCrewId)
+                .toList();
+
+        List<Crew> crews= loadCrewPort.findAllByIds(crewIds);
+
+        // 크루 인원수가 1명보다 많으면 탈퇴 불가
+        for (Crew crew : crews) {
             if (crew.getMemberCount() > 1) {
                 throw new BusinessException(CrewErrorCode.CANNOT_WITHDRAW_AS_LEADER);
             }
