@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.crew.application.port.in;
 import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.CheckInCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
@@ -28,4 +29,5 @@ public interface CrewScheduleUseCase {
     List<CrewScheduleMonthlyListResponse> getMonthlySchedulesForCalendar(CrewScheduleMonthlyQuery query);
     List<CrewScheduleListResponse> getMySchedules(Long memberId);
     CheckInStatusResponse getCheckInStatus(Long memberId);
+    void checkInSchedule(CheckInCommand command);
 }

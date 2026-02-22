@@ -31,4 +31,9 @@ public class CrewScheduleMemberEntity extends BaseTimeEntity {
 
     @Column(name = "checked_in_at")
     private LocalDateTime checkedInAt;
+
+    public void syncCheckIn(boolean isCheckedIn, LocalDateTime checkedInAt) {
+        this.isCheckedIn = isCheckedIn;
+        this.checkedInAt = checkedInAt;
+    }
 }

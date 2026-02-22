@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.annotation.CurrentAccessTo
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CheckInRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
@@ -122,5 +123,30 @@ public interface MemberControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CheckInStatusResponse> getCheckInStatus(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    // MemberControllerDocs.java
+
+    @Operation(
+            summary = "일정 출석",
+            description = """
+            사용자의 현재 위치와 시간을 검증하여 특정 일정에 대한 출석을 처리합니다. <br><br>
+            
+            **[참고 사항]** <br>
+            * 일정 시작 시간 전후 1시간 이내여야 합니다. (NOT_CHECK_IN_TIME) <br>
+            * 사용자의 현재 위치가 일정 집결지로부터 100m 이내여야 합니다. (TOO_FAR_FROM_LOCATION) <br>
+            * 해당 일정에 참여 신청이 완료된 회원이어야 합니다. (NOT_PARTICIPATING_SCHEDULE) <br>
+            * 이미 출석을 완료한 일정은 다시 처리할 수 없습니다. (ALREADY_CHECKED_IN) <br>
+            * 출석 보상으로 100 포인트가 즉시 적립됩니다. <br><br>
+            """
+    )
+    @ApiErrorCodeExamples({
+            "SCHEDULE_NOT_FOUND", "MEMBER_NOT_FOUND", "NOT_CHECK_IN_TIME", "TOO_FAR_FROM_LOCATION", "ALREADY_CHECKED_IN", "NOT_PARTICIPATING_SCHEDULE",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> checkInSchedule(
+            @Parameter(hidden = true) @CurrentMemberId Long memberId,
+            @Parameter(description = "일정 ID", example = "1") Long scheduleId,
+            @Valid @RequestBody CheckInRequest request
+    );
 
 }
