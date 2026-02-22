@@ -11,6 +11,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
@@ -57,6 +58,9 @@ public class MemberService implements MemberUseCase {
     public void withdraw(Long memberId, String accessToken) {
         Member member = getMember(memberId);
 
+        // 탈퇴 가능한지 확인
+        validateWithdrawal(memberId);
+
         // 소셜 연동 해제
         socialAuthPort.revoke(SocialRevokeCommand.from(member));
 
@@ -74,6 +78,9 @@ public class MemberService implements MemberUseCase {
     public void withdrawBySocialInfo(String socialProviderId, SocialProvider socialProvider) {
         Member member = loadMemberPort.findBySocialInfo(socialProvider, socialProviderId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // 탈퇴 가능한지 확인
+        validateWithdrawal(member.getId());
 
         // 가입한 크루 인원 수 차감 및 상태 변경
         processCrewWithdrawal(member.getId());
@@ -143,5 +150,24 @@ public class MemberService implements MemberUseCase {
         // 가입한 모든 크루 상태를 EXITED로 변경 및 저장
         crewMembers.forEach(CrewMember::exit);
         saveCrewMemberPort.saveAll(crewMembers);
+    }
+
+    // 본인이 리더인 크루에 다른 멤버가 남아있는지 확인
+    private void validateWithdrawal(Long memberId) {
+        // 사용자가 JOINED 상태이면서 리더인 크루 조회
+        List<CrewMember> crewMembersAsLeader = loadCrewMemberPort.findAllByMemberId(memberId).stream()
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
+                .filter(cm -> cm.getRole() == CrewMemberRole.LEADER)
+                .toList();
+
+        for (CrewMember crewMember : crewMembersAsLeader) {
+            Crew crew = loadCrewPort.findById(crewMember.getCrewId())
+                    .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+            // 크루 인원수가 1명보다 많으면 탈퇴 불가
+            if (crew.getMemberCount() > 1) {
+                throw new BusinessException(CrewErrorCode.CANNOT_WITHDRAW_AS_LEADER);
+            }
+        }
     }
 }
