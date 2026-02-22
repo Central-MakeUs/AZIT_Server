@@ -145,7 +145,7 @@ public interface MemberControllerDocs {
     })
     CommonResponse<Void> checkInSchedule(
             @Parameter(hidden = true) @CurrentMemberId Long memberId,
-            @Parameter(description = "일정 ID", example = "1") Long scheduleId,
+            @Parameter(description = "일정 ID") Long scheduleId,
             @Valid @RequestBody CheckInRequest request
     );
 
