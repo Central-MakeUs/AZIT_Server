@@ -9,9 +9,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewScheduleMember;
 import com.youthexpedition.azit.modules.crew.domain.model.Location;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -120,16 +118,19 @@ public class CrewScheduleMapper {
         );
 
         // 준비물 업데이트
-        List<String> currentSupplies = entity.getSupplies().stream()
-                .map(CrewScheduleSupplyEntity::getContent)
-                .toList();
+        List<String> domainSupplies = domain.getSupplies();
+        Set<String> domainSupplySet = new HashSet<>(domainSupplies);
 
         // 도메인 리스트에 없는 준비물만 엔티티에서 제거
-        entity.getSupplies().removeIf(s -> !domain.getSupplies().contains(s.getContent()));
+        entity.getSupplies().removeIf(s -> !domainSupplySet.contains(s.getContent()));
+
+        Set<String> currentSupplySet = entity.getSupplies().stream()
+                .map(CrewScheduleSupplyEntity::getContent)
+                .collect(Collectors.toSet());
 
         // 엔티티에 아직 없는 준비물만 새로 추가
-        domain.getSupplies().stream()
-                .filter(content -> !currentSupplies.contains(content))
+        domainSupplies.stream()
+                .filter(content -> !currentSupplySet.contains(content))
                 .map(content -> CrewScheduleSupplyEntity.builder()
                         .content(content)
                         .schedule(entity)
@@ -138,9 +139,10 @@ public class CrewScheduleMapper {
 
         // 참여 멤버 업데이트
         List<Long> domainMemberIds = domain.getParticipantIds();
+        Set<Long> domainMemberIdSet = new HashSet<>(domainMemberIds);
 
         // 도메인에 없는 멤버 삭제
-        entity.getMembers().removeIf(m -> !domainMemberIds.contains(m.getMemberId()));
+        entity.getMembers().removeIf(m -> !domainMemberIdSet.contains(m.getMemberId()));
 
         // 기존 멤버의 출석 상태 동기화
         entity.getMembers().forEach(memberEntity -> {
@@ -151,9 +153,12 @@ public class CrewScheduleMapper {
         });
 
         // 새로 추가된 멤버 등록
-        List<Long> currentMemberIds = entity.getMembers().stream().map(CrewScheduleMemberEntity::getMemberId).toList();
+        Set<Long> currentMemberIdSet = entity.getMembers().stream()
+                .map(CrewScheduleMemberEntity::getMemberId)
+                .collect(Collectors.toSet()); // O(m) 변환
+
         domainMemberIds.stream()
-                .filter(id -> !currentMemberIds.contains(id))
+                .filter(id -> !currentMemberIdSet.contains(id))
                 .forEach(entity::addMember);
     }
 }
