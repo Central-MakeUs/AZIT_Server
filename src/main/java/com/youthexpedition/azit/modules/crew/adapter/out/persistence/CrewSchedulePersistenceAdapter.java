@@ -13,10 +13,9 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -80,5 +79,25 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
         return crewScheduleRepository.findAllByCrewIdAndMemberId(crewId, memberId).stream()
                 .map(crewScheduleMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public void saveAll(List<CrewSchedule> crewSchedules) {
+        List<Long> ids = crewSchedules.stream()
+                .map(CrewSchedule::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (ids.isEmpty()) return;
+
+        Map<Long, CrewScheduleEntity> entityMap = crewScheduleRepository.findAllByIdsWithDetails(ids).stream()
+                .collect(Collectors.toMap(CrewScheduleEntity::getId, Function.identity()));
+
+        crewSchedules.forEach(domain -> {
+            CrewScheduleEntity entity = entityMap.get(domain.getId());
+            if (entity != null) {
+                crewScheduleMapper.updateEntity(entity, domain);
+            }
+        });
     }
 }
