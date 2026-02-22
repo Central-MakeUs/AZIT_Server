@@ -3,17 +3,11 @@ package com.youthexpedition.azit.modules.crew.application.service;
 import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
+import com.youthexpedition.azit.infrastructure.common.util.LocationDistanceUtil;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.CheckInCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleMonthlyListResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.*;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleMonthlyQuery;
 import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleQuery;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
@@ -29,7 +23,6 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -62,7 +55,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private static final int MINIMUM_SCHEDULE_INTERVAL_MINUTES = 60; // 최소 일정 간격
     private static final long CHECK_IN_POINTS = 100L;
     private static final double CHECK_IN_AVAILABLE_DISTANCE_METERS = 100.0;
-    private static final double EARTH_RADIUS = 6371000;
 
     @Override
     public void createSchedule(CreateScheduleCommand command) {
@@ -360,7 +352,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         // 거리 검증 (100m 이내)
-        double distance = calculateDistance(
+        double distance = LocationDistanceUtil.calculateDistance(
                 schedule.getLocation().getLatitude(), schedule.getLocation().getLongitude(), command.latitude(), command.longitude());
         log.debug("distance: {}", distance);
 
@@ -426,16 +418,5 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                 throw new BusinessException(CrewErrorCode.SCHEDULE_INTERVAL_TOO_CLOSE);
             }
         }
-    }
-
-    // 하버사인 공식 기반 거리 계산 (m)
-    // 출석 체크 시 사용
-    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return EARTH_RADIUS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 }
