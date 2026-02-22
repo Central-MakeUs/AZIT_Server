@@ -70,7 +70,7 @@ public class MemberController implements MemberControllerDocs {
 
     @PostMapping("/me/schedules/{scheduleId}/check-in")
     public CommonResponse<Void> checkInSchedule(@CurrentMemberId Long memberId, @PathVariable Long scheduleId, @Valid @RequestBody CheckInRequest request) {
-        CheckInCommand command = CheckInCommand.of(memberId, scheduleId, request.latitude(), request.longitude());
+        CheckInCommand command = request.toCommand(memberId, scheduleId);
         crewScheduleUseCase.checkInSchedule(command);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);

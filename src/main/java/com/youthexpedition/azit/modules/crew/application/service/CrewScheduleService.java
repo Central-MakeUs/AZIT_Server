@@ -5,7 +5,11 @@ import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.*;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.CheckInCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleMonthlyListResponse;
@@ -370,10 +374,10 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         // 출석 처리
-        boolean success = schedule.checkIn(command.memberId(), now);
-        if (!success) {
+        if (!schedule.isParticipating(command.memberId())) {
             throw new BusinessException(CrewErrorCode.NOT_PARTICIPATING_SCHEDULE);
         }
+        schedule.checkIn(command.memberId(), now);
 
         // 포인트 적립
         member.addPoints(CHECK_IN_POINTS);
