@@ -1,14 +1,12 @@
 package com.youthexpedition.azit.modules.crew.adapter.in.web.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
-import com.youthexpedition.azit.modules.crew.domain.model.enums.AmPm;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 public record CreateScheduleRequest(
@@ -21,21 +19,10 @@ public record CreateScheduleRequest(
         @NotNull(message = "런 종류는 필수입니다.")
         RunType runType,
 
-        @Schema(description = "모임 날짜")
-        @NotNull(message = "날짜는 필수입니다.")
-        LocalDate date,
-
-        @Schema(description = "오전/오후 구분 (AM, PM)")
-        @NotNull(message = "오전/오후 선택은 필수입니다.")
-        AmPm amPm,
-
-        @Schema(description = "시간 (1~12)")
-        @Min(1) @Max(12)
-        int hour,
-
-        @Schema(description = "분 (0~59)")
-        @Min(0) @Max(59)
-        int minute,
+        @Schema(description = "일정 일시 (yyyy-MM-dd HH:mm:ss)")
+        @NotNull(message = "일정 일시는 필수입니다.")
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime meetingAt,
 
         @Schema(description = "집합 장소 명칭")
         @NotBlank(message = "장소 명칭은 필수입니다.")
@@ -79,8 +66,6 @@ public record CreateScheduleRequest(
         List<@Size(max = 15, message = "준비물 내용은 최대 15자까지 가능합니다.") String> supplies
 ) {
     public CreateScheduleCommand toCommand(Long crewId, Long memberId) {
-            LocalDateTime meetingAt = LocalDateTime.of(date, LocalTime.of(amPm.to24Hour(hour), minute));
-
         return CreateScheduleCommand.of(
                 crewId,
                 memberId,

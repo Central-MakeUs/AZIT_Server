@@ -30,4 +30,5 @@ public interface CrewScheduleUseCase {
     List<CrewScheduleListResponse> getMySchedules(Long memberId);
     CheckInStatusResponse getCheckInStatus(Long memberId);
     void checkInSchedule(CheckInCommand command);
+    void cancelAllParticipationInCrew(Long crewId, Long memberId);
 }

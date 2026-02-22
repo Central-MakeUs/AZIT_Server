@@ -66,7 +66,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
         return queryFactory.selectFrom(crewScheduleEntity)
                 .join(crewScheduleEntity.members, crewScheduleMemberEntity)
                 .where(
-                        crewScheduleMemberEntity.memberId.eq(memberId),
+                        crewScheduleEntity.members.any().memberId.eq(memberId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 취소된 일정 제외
                         crewScheduleEntity.meetingAt.goe(LocalDateTime.now()) // 지난 일정 제외
                 )
@@ -79,7 +79,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
         return queryFactory.selectFrom(crewScheduleEntity)
                 .join(crewScheduleEntity.members, crewScheduleMemberEntity)
                 .where(
-                        crewScheduleMemberEntity.memberId.eq(memberId),
+                        crewScheduleEntity.members.any().memberId.eq(memberId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
                         // 오늘 00:00:00 ~ 23:59:59 사이
                         crewScheduleEntity.meetingAt.between(now.with(LocalTime.MIN), now.with(LocalTime.MAX))
@@ -94,13 +94,24 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 queryFactory.selectFrom(crewScheduleEntity)
                         .join(crewScheduleEntity.members, crewScheduleMemberEntity)
                         .where(
-                                crewScheduleMemberEntity.memberId.eq(memberId),
+                                crewScheduleEntity.members.any().memberId.eq(memberId),
                                 crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
                                 crewScheduleEntity.meetingAt.gt(now.with(LocalTime.MAX)) // 오늘 이후
                         )
                         .orderBy(crewScheduleEntity.meetingAt.asc())
                         .fetchFirst() // 첫번째 일정만 조회
         );
+    }
+
+    @Override
+    public List<CrewScheduleEntity> findAllByCrewIdAndMemberId(Long crewId, Long memberId) {
+        return queryFactory.selectFrom(crewScheduleEntity)
+                .where(
+                        crewScheduleEntity.crewId.eq(crewId),
+                        crewScheduleEntity.members.any().memberId.eq(memberId),
+                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE)
+                )
+                .fetch();
     }
 
     private BooleanExpression eqDate(LocalDate date) {

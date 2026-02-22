@@ -378,6 +378,19 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         saveMemberPort.save(member);
     }
 
+    @Override
+    @Transactional
+    public void cancelAllParticipationInCrew(Long crewId, Long memberId) {
+        // 해당 크루의 일정 중 사용자가 참여 중인 모든 일정 조회
+        List<CrewSchedule> joinedSchedules = loadCrewSchedulePort.findAllByCrewIdAndMemberId(crewId, memberId);
+
+        if (joinedSchedules.isEmpty()) return;
+        // 참여한 일정 데이터 삭제
+        joinedSchedules.forEach(schedule -> schedule.removeParticipant(memberId));
+
+        saveCrewSchedulePort.saveAll(joinedSchedules);
+    }
+
 
     // 일정이 존재하는지 확인
     private CrewSchedule getSchedule(Long scheduleId) {

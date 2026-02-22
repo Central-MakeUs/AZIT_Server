@@ -33,7 +33,6 @@ public interface CrewScheduleControllerDocs {
             
             **[입력 데이터]** <br>
             * 런 종류(runType): REGULAR(정기런), LIGHTNING(번개런) <br>
-            * 오전/오후(amPm): 오전, 오후 <br>
             * 준비물(supplies): 문자열 리스트 형식으로 전달 <br><br>
             
             **[참고 사항]** <br>

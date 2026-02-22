@@ -18,4 +18,5 @@ public interface LoadCrewSchedulePort {
     List<CrewSchedule> findAllByMemberId(Long memberId);
     List<CrewSchedule> findAllTodaySchedulesByMemberId(Long memberId, LocalDateTime now);
     Optional<CrewSchedule> findNextClosestScheduleByMemberId(Long memberId, LocalDateTime now);
+    List<CrewSchedule> findAllByCrewIdAndMemberId(Long crewId, Long memberId);
 }
