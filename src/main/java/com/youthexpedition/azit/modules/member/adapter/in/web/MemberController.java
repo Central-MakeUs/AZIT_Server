@@ -4,7 +4,9 @@ import com.youthexpedition.azit.infrastructure.common.annotation.CurrentAccessTo
 import com.youthexpedition.azit.infrastructure.common.annotation.CurrentMemberId;
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonSuccessCode;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CheckInRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.CheckInCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
@@ -64,5 +66,13 @@ public class MemberController implements MemberControllerDocs {
         CheckInStatusResponse response = crewScheduleUseCase.getCheckInStatus(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @PostMapping("/me/schedules/{scheduleId}/check-in")
+    public CommonResponse<Void> checkInSchedule(@CurrentMemberId Long memberId, @PathVariable Long scheduleId, @Valid @RequestBody CheckInRequest request) {
+        CheckInCommand command = CheckInCommand.of(memberId, scheduleId, request.latitude(), request.longitude());
+        crewScheduleUseCase.checkInSchedule(command);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 }

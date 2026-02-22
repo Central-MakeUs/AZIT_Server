@@ -5,10 +5,7 @@ import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.CancelScheduleCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateScheduleCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.CrewScheduleCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateScheduleCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.*;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleMonthlyListResponse;
@@ -30,6 +27,9 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,12 +49,16 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private final LoadCrewSchedulePort loadCrewSchedulePort;
     private final SaveCrewSchedulePort saveCrewSchedulePort;
     private final LoadMemberPort loadMemberPort;
+    private final SaveMemberPort saveMemberPort;
     private final CrewScheduleResponseMapper crewScheduleResponseMapper;
 
     private static final int CHECK_IN_COOL_DOWN_MINUTES = 30; // 출석 완료 후 최소 유지 시간
     private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1; // 출석 버튼 활성화 윈도우 (전후 1시간)
     private static final int COMPLETED_RETENTION_HOURS = 3;    // 지난 일정 완료 표시 유지 시간
     private static final int MINIMUM_SCHEDULE_INTERVAL_MINUTES = 60; // 최소 일정 간격
+    private static final long CHECK_IN_POINTS = 100L;
+    private static final double CHECK_IN_AVAILABLE_DISTANCE_METERS = 100.0;
+    private static final double EARTH_RADIUS = 6371000;
 
     @Override
     public void createSchedule(CreateScheduleCommand command) {
@@ -338,6 +342,47 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return crewScheduleResponseMapper.toEmptyScheduleCheckInStatus();
     }
 
+    @Override
+    public void checkInSchedule(CheckInCommand command) {
+        LocalDateTime now = LocalDateTime.now();
+        CrewSchedule schedule = getSchedule(command.scheduleId());
+        Member member = loadMemberPort.findById(command.memberId())
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // 시간 검증 (1시간 전후)
+        if (now.isBefore(schedule.getMeetingAt().minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS)) ||
+                now.isAfter(schedule.getMeetingAt().plusHours(ACTIVE_CHECK_IN_WINDOW_HOURS))) {
+            throw new BusinessException(CrewErrorCode.NOT_CHECK_IN_TIME);
+        }
+
+        // 거리 검증 (100m 이내)
+        double distance = calculateDistance(
+                schedule.getLocation().getLatitude(), schedule.getLocation().getLongitude(), command.latitude(), command.longitude());
+        log.debug("distance: {}", distance);
+
+        if (distance > CHECK_IN_AVAILABLE_DISTANCE_METERS) {
+            throw new BusinessException(CrewErrorCode.TOO_FAR_FROM_LOCATION);
+        }
+
+        // 이미 출석했는지 확인
+        if (schedule.isCheckedIn(command.memberId())) {
+            throw new BusinessException(CrewErrorCode.ALREADY_CHECKED_IN);
+        }
+
+        // 출석 처리
+        boolean success = schedule.checkIn(command.memberId(), now);
+        if (!success) {
+            throw new BusinessException(CrewErrorCode.NOT_PARTICIPATING_SCHEDULE);
+        }
+
+        // 포인트 적립
+        member.addPoints(CHECK_IN_POINTS);
+
+        saveCrewSchedulePort.save(schedule);
+        saveMemberPort.save(member);
+    }
+
+
     // 일정이 존재하는지 확인
     private CrewSchedule getSchedule(Long scheduleId) {
         return loadCrewSchedulePort.findById(scheduleId)
@@ -377,5 +422,16 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                 throw new BusinessException(CrewErrorCode.SCHEDULE_INTERVAL_TOO_CLOSE);
             }
         }
+    }
+
+    // 하버사인 공식 기반 거리 계산 (m)
+    // 출석 체크 시 사용
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return EARTH_RADIUS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 }
