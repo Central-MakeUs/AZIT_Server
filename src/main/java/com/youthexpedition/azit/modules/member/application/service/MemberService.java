@@ -105,7 +105,10 @@ public class MemberService implements MemberUseCase {
     @Transactional
     public void confirmMemberStatus(Long memberId) {
         Member member = getMember(memberId);
-        member.confirmStatus();
+
+        // 가입되어 있는 나머지 크루가 있는지 확인
+        boolean hasJoinedCrews = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId) > 0;
+        member.confirmStatus(hasJoinedCrews);
 
         saveMemberPort.save(member);
     }
