@@ -67,7 +67,8 @@ public class SecurityConfig {
                                 "STATUS_ACTIVE",
                                 "STATUS_WAITING_FOR_APPROVE",
                                 "STATUS_APPROVED_PENDING_CONFIRM",
-                                "STATUS_REJECTED_PENDING_CONFIRM"
+                                "STATUS_REJECTED_PENDING_CONFIRM",
+                                "STATUS_KICKED_PENDING_CONFIRM"
                         )
 
                         // 사용자 인증 시 상태 상관없이 허용
