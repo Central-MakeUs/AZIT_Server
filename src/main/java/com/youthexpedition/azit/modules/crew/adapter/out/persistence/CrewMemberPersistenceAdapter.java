@@ -88,4 +88,10 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
                 .map(crewMemberMapper::toDomain)
                 .collect(Collectors.toMap(CrewMember::getMemberId, cm -> cm));
     }
+
+    @Override
+    public Optional<CrewMember> findLatestByMemberIdAndStatus(Long memberId, CrewMemberStatus status) {
+        return crewMemberRepository.findFirstByMemberIdAndStatusOrderByIdDesc(memberId, status)
+                .map(crewMemberMapper::toDomain);
+    }
 }

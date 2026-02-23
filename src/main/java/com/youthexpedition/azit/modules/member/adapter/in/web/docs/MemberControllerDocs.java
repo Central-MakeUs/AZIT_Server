@@ -70,16 +70,24 @@ public interface MemberControllerDocs {
     CommonResponse<Void> confirmMemberStatus(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
-            summary = "내 정보 조회(마이페이지)",
+            summary = "내 정보 조회 (마이페이지 및 크루 정보 확인용)",
             description = """
-            로그인한 사용자의 기본 정보를 조회합니다. <br><br>
+            로그인한 사용자의 기본 프로필 정보와 소속(또는 관련) 크루 정보를 조회합니다. <br>
+            회원의 현재 상태에 따라 반환되는 크루 정보의 의미가 달라집니다. <br><br>
+            
+            **[상태별 크루 정보 반환 규칙]** <br>
+            1. ACTIVE: 가장 최근에 가입한 크루 정보를 반환합니다. <br>
+            2. KICKED_PENDING_CONFIRM: 방출 통보 화면을 띄우기 위해, 방금 방출된 크루 정보를 반환합니다. <br>
+            3. REJECTED_PENDING_CONFIRM: 가입 거절 안내 화면을 위해, 가장 최근에 가입이 거절된 크루 정보를 반환합니다. <br>
+            4. WAITING_FOR_APPROVE: 승인 대기 화면을 위해, 가장 최근에 가입 신청한 크루 정보를 반환합니다. <br>
+            5. PENDING_TERMS, PENDING_ONBOARDING, WITHDRAWN: 크루 관련 정보는 모두 null로 반환됩니다. <br><br>
             
             **[참고 사항]** <br>
-            * 소속 크루가 없으면 null을 반환합니다.
+            * invitationCode: 사용자가 해당 크루의 리더이면서 JOINED 상태일 때만 값이 존재하며, 그 외의 경우에는 null로 내려갑니다.
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND",
+            "MEMBER_NOT_FOUND", "CREW_MEMBER_NOT_FOUND", "CREW_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<MyInfoResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId
