@@ -80,7 +80,7 @@ public class Member {
 
     // 리더가 크루 생성 완료했을 경우 상태 변경 (ACTIVE)
     public void completeOnboarding() {
-        if (this.status != MemberStatus.PENDING_ONBOARDING) {
+        if (!this.status.isJoinable()) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
         this.status = MemberStatus.ACTIVE;
@@ -88,7 +88,7 @@ public class Member {
 
     // 크루원이 초대 코드 입력 후 승인 대기할 경우 상태 변경 (WAITING_FOR_APPROVE)
     public void applyForJoin() {
-        if (this.status != MemberStatus.PENDING_ONBOARDING) {
+        if (!this.status.isJoinable()) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
         this.status = MemberStatus.WAITING_FOR_APPROVE;
