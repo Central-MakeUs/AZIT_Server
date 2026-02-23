@@ -46,12 +46,14 @@ public record CreateScheduleRequest(
         Double longitude,
 
         @Schema(description = "목표 거리 (km)")
-        @Positive(message = "거리는 양수여야 합니다.")
-        Double distance,
+        @Min(value = 1, message = "최소 1 이상이어야 합니다.")
+        @Max(value = 999, message = "최대 999까지 가능합니다.")
+        Integer distance,
 
         @Schema(description = "목표 페이스 (분/km)")
-        @Positive(message = "페이스는 양수여야 합니다.")
-        Double pace,
+        @Min(value = 1, message = "최소 1 이상이어야 합니다.")
+        @Max(value = 99, message = "최대 99까지 가능합니다.")
+        Integer pace,
 
         @Schema(description = "최대 모집 인원")
         @Min(value = 1, message = "최소 1명 이상이어야 합니다.")

@@ -21,9 +21,9 @@ public record CrewScheduleListResponse(
         @Schema(description = "집합 장소명")
         String placeName,
         @Schema(description = "목표 거리 (km)")
-        Double distance,
+        Integer distance,
         @Schema(description = "목표 페이스")
-        Double pace,
+        Integer pace,
         @Schema(description = "최대 인원")
         Integer maxParticipants,
         @Schema(description = "현재 참여 인원")

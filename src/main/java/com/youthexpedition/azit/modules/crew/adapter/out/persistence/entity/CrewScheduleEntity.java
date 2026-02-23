@@ -42,10 +42,10 @@ public class CrewScheduleEntity extends BaseTimeEntity {
     private LocationEntity locationEntity;
 
     @Column(name = "distance", nullable = false)
-    private Double distance;
+    private Integer distance;
 
     @Column(name = "pace", nullable = false)
-    private Double pace;
+    private Integer pace;
 
     @Column(name = "max_participants", nullable = false)
     private Integer maxParticipants;
@@ -88,8 +88,8 @@ public class CrewScheduleEntity extends BaseTimeEntity {
             Double latitude,
             Double longitude,
             String description,
-            Double distance,
-            Double pace,
+            Integer distance,
+            Integer pace,
             Integer maxParticipants,
             ScheduleStatus status
     ) {

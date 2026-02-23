@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.auth.adapter.out.external.Feign;
+package com.youthexpedition.azit.modules.auth.adapter.out.external.feign;
 
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.ApplePublicKeyResponse;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.AppleTokenResponse;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "AppleFeignClient", url = "${oauth.apple-url}")
+@FeignClient(name = "AppleFeignClient", url = "${apple.oauth.apple-url}")
 public interface AppleFeignClient {
 
     @PostMapping(value = "/auth/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)

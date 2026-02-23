@@ -17,8 +17,8 @@ public record UpdateScheduleCommand(
         String meetingSpot,
         Double latitude,
         Double longitude,
-        Double distance,
-        Double pace,
+        Integer distance,
+        Integer pace,
         Integer maxParticipants,
         String description,
         List<String> supplies
@@ -26,7 +26,7 @@ public record UpdateScheduleCommand(
     public static UpdateScheduleCommand of(
             Long scheduleId, Long crewId, Long creatorId, String title, RunType runType, LocalDateTime meetingAt,
             String placeName, String address, String meetingSpot, Double latitude, Double longitude,
-            Double distance, Double pace, Integer maxParticipants, String description, List<String> supplies
+            Integer distance, Integer pace, Integer maxParticipants, String description, List<String> supplies
     ) {
         return new UpdateScheduleCommand(
                 scheduleId, crewId, creatorId, title, runType, meetingAt,
