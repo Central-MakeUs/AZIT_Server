@@ -39,9 +39,15 @@ public class NaverLocationAdapter implements LoadLocationPort {
                         item.title().replaceAll(TITLE_TAG_REMOVAL_REGEX, ""), // <b> 태그 제거
                         item.category(),
                         item.roadAddress().isBlank() ? item.address() : item.roadAddress(),
-                        Double.parseDouble(item.mapy()) / NAVER_COORDINATE_PRECISION,
-                        Double.parseDouble(item.mapx()) / NAVER_COORDINATE_PRECISION
+                        parseCoordinate(item.mapy()),
+                        parseCoordinate(item.mapx())
                 ))
                 .toList();
+    }
+
+    // 값이 1,000만 단위 이상인 경우에만 스케일링 적용
+    private double parseCoordinate(String value) {
+        double raw = Double.parseDouble(value);
+        return (raw > NAVER_COORDINATE_PRECISION) ? raw / NAVER_COORDINATE_PRECISION : raw;
     }
 }
