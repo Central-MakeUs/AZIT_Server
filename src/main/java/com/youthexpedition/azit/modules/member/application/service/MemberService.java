@@ -118,8 +118,18 @@ public class MemberService implements MemberUseCase {
     public MyInfoResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
 
-        // TODO: 쿼리 하나로 조회하게 개선 필요
-        CrewMember crewMember = loadCrewMemberPort.findRecentJoinedCrewMember(memberId)
+        if (!member.getStatus().isCrewInfoRequired()) {
+            return memberResponseMapper.toMyPageResponse(member, null, null);
+        }
+
+        CrewMemberStatus targetStatus = switch (member.getStatus()) {
+            case KICKED_PENDING_CONFIRM -> CrewMemberStatus.EXITED;   // 방출 확인 대기 시 EXITED 조회
+            case REJECTED_PENDING_CONFIRM -> CrewMemberStatus.REJECTED; // 가입 거절 확인 대기 시 REJECTED 조회
+            case WAITING_FOR_APPROVE -> CrewMemberStatus.REQUESTED;    // 가입 승인 대기 시 REQUESTED 조회
+            default -> CrewMemberStatus.JOINED;                        // 그 외(ACTIVE 등) JOINED 조회
+        };
+
+        CrewMember crewMember = loadCrewMemberPort.findLatestByMemberIdAndStatus(memberId, targetStatus)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_MEMBER_NOT_FOUND));
 
         Crew crew = loadCrewPort.findById(crewMember.getCrewId())

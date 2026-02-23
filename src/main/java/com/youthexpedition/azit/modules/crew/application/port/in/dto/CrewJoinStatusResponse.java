@@ -8,10 +8,12 @@ public record CrewJoinStatusResponse(
         Long crewId,
         @Schema(description = "크루 이름")
         String name,
+        @Schema(description = "크루 이미지 url")
+        String crewImageUrl,
         @Schema(description = "멤버 상태")
         CrewMemberStatus status
 ) {
-    public static CrewJoinStatusResponse of(Long crewId, String crewName, CrewMemberStatus status) {
-        return new CrewJoinStatusResponse(crewId, crewName, status);
+    public static CrewJoinStatusResponse of(Long crewId, String crewName, String crewImageUrl, CrewMemberStatus status) {
+        return new CrewJoinStatusResponse(crewId, crewName, crewImageUrl, status);
     }
 }

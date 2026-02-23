@@ -1,6 +1,7 @@
 package com.youthexpedition.azit.modules.member.application.port.in.dto;
 
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record MyInfoResponse(
@@ -8,6 +9,8 @@ public record MyInfoResponse(
         Long id,
         @Schema(description = "닉네임")
         String nickname,
+        @Schema(description = "회원 상태")
+        MemberStatus status,
         @Schema(description = "크루 ID")
         Long crewId,
         @Schema(description = "크루 이름")
@@ -25,10 +28,10 @@ public record MyInfoResponse(
         @Schema(description = "포인트")
         Long totalPoints
 ) {
-    public static MyInfoResponse of(Long id, String nickname, Long crewId, String crewName, String invitationCode,
+    public static MyInfoResponse of(Long id, String nickname, MemberStatus memberStatus, Long crewId, String crewName, String invitationCode,
                                     String crewImageUrl, CrewMemberRole crewMemberRole, String profileImageUrl,
                                     Integer totalAttendanceCount, Long totalPoints) {
         return new MyInfoResponse(
-                id, nickname, crewId, crewName, invitationCode, crewImageUrl, crewMemberRole, profileImageUrl, totalAttendanceCount, totalPoints);
+                id, nickname, memberStatus, crewId, crewName, invitationCode, crewImageUrl, crewMemberRole, profileImageUrl, totalAttendanceCount, totalPoints);
     }
 }

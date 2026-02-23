@@ -20,4 +20,5 @@ public interface LoadCrewMemberPort {
     long countJoinedCrewsByMemberId(Long memberId);
     List<CrewMember> findAllByMemberId(Long memberId);
     Map<Long, CrewMember> findAllByCrewIdAndMemberIds(Long crewId, List<Long> memberIds);
+    Optional<CrewMember> findLatestByMemberIdAndStatus(Long memberId, CrewMemberStatus status);
 }
