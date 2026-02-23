@@ -6,7 +6,7 @@ import com.youthexpedition.azit.infrastructure.auth.util.AppleJwtUtils;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.ApplePublicKeyResponse;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.AppleUserInfoResponse;
-import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.AppleFeignClient;
+import com.youthexpedition.azit.modules.auth.adapter.out.external.feign.AppleFeignClient;
 import com.youthexpedition.azit.modules.auth.adapter.in.web.dto.AppleNotificationPayload;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.AppleTokenResponse;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
@@ -30,9 +30,9 @@ public class AppleAuthAdapter implements SocialAuthPort {
     private final AppleJwtUtils appleJwtUtils;
     private final ObjectMapper objectMapper;
 
-    @Value("${oauth.apple.client-id}")
+    @Value("${apple.oauth.client-id}")
     private String clientId;
-    @Value("${oauth.apple.redirect-url}")
+    @Value("${apple.oauth.redirect-url}")
     private String redirectUrl;
 
     private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";

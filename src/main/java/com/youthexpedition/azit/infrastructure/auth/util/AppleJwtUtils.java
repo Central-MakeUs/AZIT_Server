@@ -29,16 +29,16 @@ import java.util.Date;
 @Component
 @RequiredArgsConstructor
 public class AppleJwtUtils {
-    @Value("${oauth.apple.team-id}")
+    @Value("${apple.oauth.team-id}")
     private String teamId;
 
-    @Value("${oauth.apple.client-id}")
+    @Value("${apple.oauth.client-id}")
     private String clientId;
 
-    @Value("${oauth.apple.key-id}")
+    @Value("${apple.oauth.key-id}")
     private String keyId;
 
-    @Value("${oauth.apple.key-path}")
+    @Value("${apple.oauth.key-path}")
     private String keyPath;
 
     private final ObjectMapper objectMapper;
