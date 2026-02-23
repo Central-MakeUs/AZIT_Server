@@ -3,7 +3,6 @@ package com.youthexpedition.azit.modules.crew.application.service;
 import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
@@ -48,7 +47,6 @@ public class CrewService implements CrewUseCase {
     private final CrewMemberResponseMapper crewMemberResponseMapper;
     private final CrewResponseMapper crewResponseMapper;
     private final CrewImageProvider crewImageProvider;
-    private final CrewScheduleUseCase crewScheduleUseCase;
 
     @Override
     @Retryable(
@@ -245,9 +243,6 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
         crew.decreaseMemberCount();
         saveCrewPort.save(crew);
-
-        // 신청한 모든 일정 삭제
-        crewScheduleUseCase.cancelAllParticipationInCrew(crewId, targetMemberId);
 
         // 가입된 잔여 크루 확인 멤버 상태 변경
         long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(targetMemberId);
