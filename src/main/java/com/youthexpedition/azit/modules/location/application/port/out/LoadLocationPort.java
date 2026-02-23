@@ -5,5 +5,5 @@ import com.youthexpedition.azit.modules.location.domain.model.LocationSearchResu
 import java.util.List;
 
 public interface LoadLocationPort {
-    List<LocationSearchResult> searchByKeyword(String keyword);
+    List<LocationSearchResult> searchLocation(String query);
 }

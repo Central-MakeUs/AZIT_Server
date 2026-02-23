@@ -18,7 +18,7 @@ public class LocationService implements LocationUseCase {
 
     @Override
     public List<LocationSearchResponse> searchLocation(String query) {
-        List<LocationSearchResult> locationSearchResults = loadLocationPort.searchByKeyword(query);
+        List<LocationSearchResult> locationSearchResults = loadLocationPort.searchLocation(query);
         return locationResponseMapper.toSearchResponseList(locationSearchResults);
     }
 }

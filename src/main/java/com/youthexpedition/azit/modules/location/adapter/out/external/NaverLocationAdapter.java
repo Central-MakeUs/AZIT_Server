@@ -29,10 +29,10 @@ public class NaverLocationAdapter implements LoadLocationPort {
     private static final double NAVER_COORDINATE_PRECISION = 10000000.0; // 좌표 정밀도 변환값
 
     @Override
-    public List<LocationSearchResult> searchByKeyword(String keyword) {
+    public List<LocationSearchResult> searchLocation(String query) {
         // 네이버 지역 검색 API 호출
         NaverLocalSearchResponse response = naverSearchFeignClient.searchLocal(
-                clientId, clientSecret, keyword, MAX_DISPLAY_COUNT, SEARCH_SORT_TYPE);
+                clientId, clientSecret, query, MAX_DISPLAY_COUNT, SEARCH_SORT_TYPE);
 
         return response.items().stream()
                 .map(item -> LocationSearchResult.of(
