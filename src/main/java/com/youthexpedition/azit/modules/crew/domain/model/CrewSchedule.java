@@ -24,8 +24,8 @@ public class CrewSchedule {
     private LocalDateTime meetingAt;
     private Location location;
     private String description;
-    private Double distance;        // 목표 거리
-    private Double pace;            // 목표 페이스
+    private Integer distance;        // 목표 거리
+    private Integer pace;            // 목표 페이스
     private Integer maxParticipants; // 최대 인원
     private List<String> supplies;  // 준비물 리스트
     @Builder.Default
@@ -36,7 +36,7 @@ public class CrewSchedule {
 
     public static CrewSchedule create(Long crewId, Long creatorId, String title, RunType runType,
                                       LocalDateTime meetingAt, Location location, String description,
-                                      Double distance, Double pace, Integer maxParticipants, List<String> supplies
+                                      Integer distance, Integer pace, Integer maxParticipants, List<String> supplies
     ) {
         CrewSchedule schedule = CrewSchedule.builder()
                 .crewId(crewId)
@@ -65,7 +65,7 @@ public class CrewSchedule {
     // 일정 수정
     public void update(
             String title, RunType runType, LocalDateTime meetingAt, Location location,
-            String description, Double distance, Double pace, Integer maxParticipants, List<String> supplies
+            String description, Integer distance, Integer pace, Integer maxParticipants, List<String> supplies
     ) {
         this.title = title;
         this.runType = runType;

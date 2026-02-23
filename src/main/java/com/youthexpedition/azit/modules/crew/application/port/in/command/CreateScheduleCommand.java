@@ -16,8 +16,8 @@ public record CreateScheduleCommand(
         String meetingSpot,
         Double latitude,
         Double longitude,
-        Double distance,
-        Double pace,
+        Integer distance,
+        Integer pace,
         Integer maxParticipants,
         String description,
         List<String> supplies
@@ -25,7 +25,7 @@ public record CreateScheduleCommand(
     public static CreateScheduleCommand of(
             Long crewId, Long creatorId, String title, RunType runType, LocalDateTime meetingAt,
             String placeName, String address, String meetingSpot, Double latitude, Double longitude,
-            Double distance, Double pace, Integer maxParticipants, String description, List<String> supplies
+            Integer distance, Integer pace, Integer maxParticipants, String description, List<String> supplies
     ) {
         return new CreateScheduleCommand(
                 crewId, creatorId, title, runType, meetingAt,
