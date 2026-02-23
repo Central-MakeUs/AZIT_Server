@@ -2,7 +2,7 @@ package com.youthexpedition.azit.modules.location.adapter.in.web.docs;
 
 import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
-import com.youthexpedition.azit.modules.location.adapter.in.web.dto.LocationSearchResponse;
+import com.youthexpedition.azit.modules.location.application.port.in.dto.LocationSearchResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestParam;

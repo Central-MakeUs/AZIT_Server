@@ -23,19 +23,24 @@ public class NaverLocationAdapter implements LoadLocationPort {
     @Value("${naver.search.client-secret}")
     private String clientSecret;
 
+    private static final int MAX_DISPLAY_COUNT = 5;
+    private static final String SEARCH_SORT_TYPE = "random";
+    private static final String TITLE_TAG_REMOVAL_REGEX = "<(/)?b>";
+    private static final double NAVER_COORDINATE_PRECISION = 10000000.0; // 좌표 정밀도 변환값
+
     @Override
     public List<LocationSearchResult> searchByKeyword(String keyword) {
         // 네이버 지역 검색 API 호출
         NaverLocalSearchResponse response = naverSearchFeignClient.searchLocal(
-                clientId, clientSecret, keyword, 10, "random");
+                clientId, clientSecret, keyword, MAX_DISPLAY_COUNT, SEARCH_SORT_TYPE);
 
         return response.items().stream()
                 .map(item -> LocationSearchResult.of(
-                        item.title().replaceAll("<(/)?b>", ""), // <b> 태그 제거
+                        item.title().replaceAll(TITLE_TAG_REMOVAL_REGEX, ""), // <b> 태그 제거
                         item.category(),
                         item.roadAddress().isBlank() ? item.address() : item.roadAddress(),
-                        Double.parseDouble(item.mapy()) / 10000000.0,
-                        Double.parseDouble(item.mapx()) / 10000000.0
+                        Double.parseDouble(item.mapy()) / NAVER_COORDINATE_PRECISION,
+                        Double.parseDouble(item.mapx()) / NAVER_COORDINATE_PRECISION
                 ))
                 .toList();
     }

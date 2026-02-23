@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.modules.location.adapter.in.web.dto;
+package com.youthexpedition.azit.modules.location.application.port.in.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
