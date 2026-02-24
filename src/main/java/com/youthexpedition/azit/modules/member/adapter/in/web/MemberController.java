@@ -81,7 +81,7 @@ public class MemberController implements MemberControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
-    @GetMapping("/me/attendance-logs")
+    @GetMapping("/me/attendances")
     public CommonResponse<MyAttendanceLogResponse> getMyAttendanceLogs(
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
         MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
@@ -90,7 +90,7 @@ public class MemberController implements MemberControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
-    @GetMapping("/me/attendance-logs/calendar")
+    @GetMapping("/me/attendances/calendar")
     public CommonResponse<List<MyAttendanceMonthlyListResponse>> getMyAttendancesForCalendar(
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
         MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
