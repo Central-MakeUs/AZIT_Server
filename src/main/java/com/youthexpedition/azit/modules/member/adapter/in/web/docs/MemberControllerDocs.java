@@ -203,7 +203,8 @@ public interface MemberControllerDocs {
     )
     CommonResponse<List<MyAttendanceMonthlyListResponse>> getMyAttendancesForCalendar(
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
-            @Parameter(hidden = true) Long memberId
+            @Parameter(hidden = true) @CurrentMemberId Long memberId
+
     );
 
 }

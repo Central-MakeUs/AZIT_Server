@@ -416,11 +416,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     @Transactional(readOnly = true)
     @Override
     public List<MyAttendanceMonthlyListResponse> getMyAttendancesForCalendar(MyAttendanceMonthlyQuery query) {
-        // 1. 사용자의 월별 출석 현황(날짜별 RunType 세트) 조회
         Map<LocalDate, Set<RunType>> attendanceMap = loadCrewSchedulePort.findMyMonthlyAttendanceForCalendar(
                 query.memberId(), query.yearMonth());
 
-        // 2. 캘린더용 응답 객체로 변환하여 반환
         return crewScheduleResponseMapper.toMyAttendanceMonthlyListResponse(attendanceMap);
     }
 
