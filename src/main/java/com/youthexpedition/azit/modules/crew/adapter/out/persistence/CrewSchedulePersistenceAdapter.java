@@ -107,4 +107,9 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
                 .map(crewScheduleMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth) {
+        return crewScheduleRepository.findMyMonthlyAttendanceForCalendar(memberId, yearMonth);
+    }
 }

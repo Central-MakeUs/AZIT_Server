@@ -24,6 +24,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.query.MyAttendanceMonthlyQuery;
@@ -410,6 +411,17 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         long totalPoints = attendanceCount * CHECK_IN_POINTS;
 
         return crewScheduleResponseMapper.toMyAttendanceLogResponse(attendanceCount, totalPoints, attendanceLogs);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<MyAttendanceMonthlyListResponse> getMyAttendancesForCalendar(MyAttendanceMonthlyQuery query) {
+        // 1. 사용자의 월별 출석 현황(날짜별 RunType 세트) 조회
+        Map<LocalDate, Set<RunType>> attendanceMap = loadCrewSchedulePort.findMyMonthlyAttendanceForCalendar(
+                query.memberId(), query.yearMonth());
+
+        // 2. 캘린더용 응답 객체로 변환하여 반환
+        return crewScheduleResponseMapper.toMyAttendanceMonthlyListResponse(attendanceMap);
     }
 
 
