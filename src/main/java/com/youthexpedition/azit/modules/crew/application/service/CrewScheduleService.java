@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -250,7 +251,16 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 필터링된 일정 목록 조회
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.runType());
 
-        return crewScheduleResponseMapper.toScheduleListResponse(schedules, query.memberId());
+        List<Long> allParticipantIds = schedules.stream()
+                .flatMap(s -> s.getParticipantIds().stream()).distinct().toList();
+        Map<Long, MemberProfileDto> activeProfiles = loadMemberPort.findAllByIds(allParticipantIds);
+
+        // 탈퇴한 멤버는 제외하고 조회
+        Map<Long, List<Long>> activeMemberIdsMap = schedules.stream()
+                .collect(Collectors.toMap(CrewSchedule::getId,
+                        s -> s.getParticipantIds().stream().filter(activeProfiles::containsKey).toList()));
+
+        return crewScheduleResponseMapper.toScheduleListResponse(schedules, query.memberId(), activeMemberIdsMap);
     }
 
     @Transactional(readOnly = true)
@@ -270,7 +280,15 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 참여 중인 일정 조회
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberId(memberId);
 
-        return crewScheduleResponseMapper.toScheduleListResponse(schedules, memberId);
+        List<Long> allParticipantIds = schedules.stream()
+                .flatMap(s -> s.getParticipantIds().stream()).distinct().toList();
+        Map<Long, MemberProfileDto> activeProfiles = loadMemberPort.findAllByIds(allParticipantIds);
+
+        Map<Long, List<Long>> activeMemberIdsMap = schedules.stream()
+                .collect(Collectors.toMap(CrewSchedule::getId,
+                        s -> s.getParticipantIds().stream().filter(activeProfiles::containsKey).toList()));
+
+        return crewScheduleResponseMapper.toScheduleListResponse(schedules, memberId, activeMemberIdsMap);
     }
 
     @Transactional(readOnly = true)

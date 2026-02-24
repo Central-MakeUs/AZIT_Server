@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.ScheduleStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record CrewScheduleListResponse(
         @Schema(description = "일정 ID")
@@ -40,7 +41,8 @@ public record CrewScheduleListResponse(
 ) {
         public static CrewScheduleListResponse of(
                 CrewSchedule schedule,
-                Long currentMemberId
+                Long currentMemberId,
+                List<Long> activeParticipantIds
         ) {
                 return new CrewScheduleListResponse(
                         schedule.getId(),
@@ -51,7 +53,7 @@ public record CrewScheduleListResponse(
                         schedule.getDistance(),
                         schedule.getPace(),
                         schedule.getMaxParticipants(),
-                        schedule.getParticipantIds().size(),
+                        activeParticipantIds.size(),
                         schedule.getCreatorId().equals(currentMemberId),
                         schedule.isParticipating(currentMemberId),
                         schedule.getCreatedAt(),

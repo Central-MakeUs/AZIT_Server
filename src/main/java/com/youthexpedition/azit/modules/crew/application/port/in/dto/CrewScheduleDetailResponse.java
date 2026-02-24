@@ -51,7 +51,8 @@ public record CrewScheduleDetailResponse(
                 CrewSchedule schedule,
                 Long currentMemberId,
                 List<ParticipantResponse> participants,
-                boolean hasMoreParticipants
+                boolean hasMoreParticipants,
+                int totalActiveParticipantCount
         ) {
                 return new CrewScheduleDetailResponse(
                         schedule.getId(),
@@ -63,7 +64,7 @@ public record CrewScheduleDetailResponse(
                         schedule.getDistance(),
                         schedule.getPace(),
                         schedule.getMaxParticipants(),
-                        schedule.getParticipantIds().size(),
+                        totalActiveParticipantCount,
                         schedule.getSupplies(),
                         schedule.getCreatorId().equals(currentMemberId), // 생성자 여부 판단
                         schedule.isParticipating(currentMemberId), // 참여 여부 판단

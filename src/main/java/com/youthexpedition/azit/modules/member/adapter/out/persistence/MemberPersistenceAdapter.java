@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPo
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -44,6 +45,7 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
     @Override
     public Map<Long, MemberProfileDto> findAllByIds(List<Long> memberIds) {
         return memberRepository.findAllById(memberIds).stream()
+                .filter(entity -> entity.getStatus() != MemberStatus.WITHDRAWN)
                 .collect(Collectors.toMap(
                         MemberEntity::getId,
                         entity -> MemberProfileDto.of(entity.getId(), entity.getNickname(), entity.getProfileImageUrl())
