@@ -114,6 +114,25 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 .fetch();
     }
 
+    @Override
+    public List<CrewScheduleEntity> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth) {
+        LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime end = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
+        LocalDateTime now = LocalDateTime.now();
+
+        return queryFactory.selectFrom(crewScheduleEntity)
+                .join(crewScheduleEntity.members, crewScheduleMemberEntity)
+                .where(
+                        crewScheduleMemberEntity.memberId.eq(memberId),
+                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 삭제된 일정 제외
+                        crewScheduleEntity.meetingAt.between(start, end),
+                        crewScheduleEntity.meetingAt.before(now) // 과거의 일정 또는 미리 출석한 일정
+                                .or(crewScheduleMemberEntity.checkedInAt.isNotNull())
+                )
+                .orderBy(crewScheduleEntity.meetingAt.desc()) // 최신순 정렬
+                .fetch();
+    }
+
     private BooleanExpression eqDate(LocalDate date) {
         if (date == null) return null;
         // LocalDateTime의 시작(00:00:00)과 끝(23:59:59) 사이 조회

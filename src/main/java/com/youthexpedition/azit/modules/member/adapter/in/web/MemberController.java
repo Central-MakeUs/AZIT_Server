@@ -12,11 +12,15 @@ import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControl
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
+import com.youthexpedition.azit.modules.member.application.port.query.MyAttendanceMonthlyQuery;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -74,5 +78,14 @@ public class MemberController implements MemberControllerDocs {
         crewScheduleUseCase.checkInSchedule(command);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @GetMapping("/me/attendance-logs")
+    public CommonResponse<MyAttendanceLogResponse> getMyAttendanceLogs(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
+        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
+        MyAttendanceLogResponse response = crewScheduleUseCase.getMyAttendanceLogs(query);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 }
