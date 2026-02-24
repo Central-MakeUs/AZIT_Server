@@ -399,6 +399,8 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberIdAndMonth(
                 query.memberId(), query.yearMonth());
 
+        List<MyAttendanceLogResponse.DailyAttendanceLog> attendanceLogs = crewScheduleResponseMapper.toDailyAttendanceLogs(schedules, query.memberId());
+
         // 총 출석 날짜 계산
         int attendanceCount = (int) schedules.stream()
                 .filter(s -> s.isCheckedIn(query.memberId()))
@@ -407,7 +409,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 총 적립 포인트 계산
         long totalPoints = attendanceCount * CHECK_IN_POINTS;
 
-        return crewScheduleResponseMapper.toMyAttendanceLogResponse(schedules, query.memberId(), attendanceCount, totalPoints);
+        return crewScheduleResponseMapper.toMyAttendanceLogResponse(attendanceCount, totalPoints, attendanceLogs);
     }
 
 

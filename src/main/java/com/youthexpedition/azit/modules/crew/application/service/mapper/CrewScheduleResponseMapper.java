@@ -137,8 +137,12 @@ public class CrewScheduleResponseMapper {
         return CheckInStatusResponse.of(false, null, null);
     }
 
-    public MyAttendanceLogResponse toMyAttendanceLogResponse(List<CrewSchedule> schedules, Long memberId, int attendanceCount, long totalPoints) {
-        List<MyAttendanceLogResponse.DailyAttendanceLog> logs = schedules.stream()
+    public MyAttendanceLogResponse toMyAttendanceLogResponse(int attendanceCount, long totalPoints, List<MyAttendanceLogResponse.DailyAttendanceLog> attendanceLogs) {
+        return MyAttendanceLogResponse.of(attendanceCount, totalPoints, attendanceLogs);
+    }
+
+    public List<MyAttendanceLogResponse.DailyAttendanceLog> toDailyAttendanceLogs(List<CrewSchedule> schedules, Long memberId) {
+        return schedules.stream()
                 .map(s -> {
                     boolean isCheckedIn = s.isCheckedIn(memberId);
                     AttendanceStatus status = isCheckedIn ? AttendanceStatus.ATTENDED : AttendanceStatus.ABSENT;
@@ -153,8 +157,6 @@ public class CrewScheduleResponseMapper {
                     );
                 })
                 .toList();
-
-        return MyAttendanceLogResponse.of(attendanceCount, totalPoints, logs);
     }
 
 }
