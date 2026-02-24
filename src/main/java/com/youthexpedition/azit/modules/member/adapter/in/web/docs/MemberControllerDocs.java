@@ -8,13 +8,17 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CheckInRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @Tag(name = "Member" , description = "회원 API")
@@ -158,6 +162,28 @@ public interface MemberControllerDocs {
             @Parameter(hidden = true) @CurrentMemberId Long memberId,
             @Parameter(description = "일정 ID") Long scheduleId,
             @Valid @RequestBody CheckInRequest request
+    );
+
+    @Operation(
+            summary = "내 출석 기록 조회",
+            description = """
+            사용자의 월별 출석 횟수, 누적 획득 포인트 및 상세 활동 이력을 조회합니다. <br>
+            
+            **[쿼리 파라미터]** <br>
+            * yearMonth (선택): 조회할 연월(yyyy-MM)입니다. 미입력 시 현재 시간 기준의 월을 조회합니다.<br>
+            
+            **[참고 사항]** <br>
+            * 아직 모임 시간이 지나지 않았고 출석도 하지 않은 예정 일정은 리스트에 나타나지 않습니다. <br>
+            * 모임 시간이 이미 지난 일정(출석/결석 확정) 또는 모임 시간 전이라도 출석을 완료한 일정만 반환됩니다. <br><br>
+            """
+    )
+    @ApiErrorCodeExamples({
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<MyAttendanceLogResponse> getMyAttendanceLogs(
+            @Parameter(description = "조회 연월 (yyyy-MM)")
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
 }
