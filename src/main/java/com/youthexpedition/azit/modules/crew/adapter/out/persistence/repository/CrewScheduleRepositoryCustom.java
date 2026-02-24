@@ -18,4 +18,5 @@ public interface CrewScheduleRepositoryCustom {
     List<CrewScheduleEntity> findAllTodaySchedulesByMemberId(Long memberId, LocalDateTime now);
     Optional<CrewScheduleEntity> findNextClosestScheduleByMemberId(Long memberId, LocalDateTime now);
     List<CrewScheduleEntity> findAllByCrewIdAndMemberId(Long crewId, Long memberId);
+    List<CrewScheduleEntity> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth);
 }

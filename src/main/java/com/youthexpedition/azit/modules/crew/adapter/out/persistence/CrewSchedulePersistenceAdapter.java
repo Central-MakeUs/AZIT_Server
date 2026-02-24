@@ -100,4 +100,11 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
             }
         });
     }
+
+    @Override
+    public List<CrewSchedule> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth) {
+        return crewScheduleRepository.findAllByMemberIdAndMonth(memberId, yearMonth).stream()
+                .map(crewScheduleMapper::toDomain)
+                .toList();
+    }
 }

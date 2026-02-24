@@ -23,8 +23,10 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.query.MyAttendanceMonthlyQuery;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -389,6 +391,23 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         joinedSchedules.forEach(schedule -> schedule.removeParticipant(memberId));
 
         saveCrewSchedulePort.saveAll(joinedSchedules);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyAttendanceLogResponse getMyAttendanceLogs(MyAttendanceMonthlyQuery query) {
+        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberIdAndMonth(
+                query.memberId(), query.yearMonth());
+
+        // 총 출석 날짜 계산
+        int attendanceCount = (int) schedules.stream()
+                .filter(s -> s.isCheckedIn(query.memberId()))
+                .count();
+
+        // 총 적립 포인트 계산
+        long totalPoints = attendanceCount * CHECK_IN_POINTS;
+
+        return crewScheduleResponseMapper.toMyAttendanceLogResponse(schedules, query.memberId(), attendanceCount, totalPoints);
     }
 
 

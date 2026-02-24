@@ -3,23 +3,22 @@ package com.youthexpedition.azit.modules.crew.application.service.mapper;
 import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleDetailResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleMonthlyListResponse;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.ParticipantResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
+import com.youthexpedition.azit.modules.member.domain.model.enums.AttendanceStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 @Component
@@ -136,6 +135,26 @@ public class CrewScheduleResponseMapper {
 
     public CheckInStatusResponse toEmptyScheduleCheckInStatus() {
         return CheckInStatusResponse.of(false, null, null);
+    }
+
+    public MyAttendanceLogResponse toMyAttendanceLogResponse(List<CrewSchedule> schedules, Long memberId, int attendanceCount, long totalPoints) {
+        List<MyAttendanceLogResponse.DailyAttendanceLog> logs = schedules.stream()
+                .map(s -> {
+                    boolean isCheckedIn = s.isCheckedIn(memberId);
+                    AttendanceStatus status = isCheckedIn ? AttendanceStatus.ATTENDED : AttendanceStatus.ABSENT;
+
+                    return MyAttendanceLogResponse.DailyAttendanceLog.of(
+                            s.getId(),
+                            s.getTitle(),
+                            s.getRunType(),
+                            s.getMeetingAt(),
+                            s.getLocation().getPlaceName(),
+                            status
+                    );
+                })
+                .toList();
+
+        return MyAttendanceLogResponse.of(attendanceCount, totalPoints, logs);
     }
 
 }
