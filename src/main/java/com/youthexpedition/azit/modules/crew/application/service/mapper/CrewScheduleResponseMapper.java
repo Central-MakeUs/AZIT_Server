@@ -16,10 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Component
@@ -32,17 +30,17 @@ public class CrewScheduleResponseMapper {
     public CrewScheduleDetailResponse toDetailResponse(
             CrewSchedule schedule, Long currentMemberId, Map<Long, MemberProfileDto> profileMap, Map<Long, CrewMember> crewMemberMap) {
         // 전체 참여자 정보를 조합하여 정렬
-        List<ParticipantResponse> allParticipants = getAllSortedParticipants(schedule, profileMap, crewMemberMap);
+        List<ParticipantResponse> allActiveParticipants = getAllSortedParticipants(schedule, profileMap, crewMemberMap);
 
         // 미리보기용으로 10명 추출
-        List<ParticipantResponse> previewParticipants = allParticipants.stream()
+        List<ParticipantResponse> previewParticipants = allActiveParticipants.stream()
                 .limit(PARTICIPANT_PREVIEW_LIMIT)
                 .toList();
 
         // 전체 인원이 10명보다 많으면 더보기 true
-        boolean hasMoreParticipants = allParticipants.size() > PARTICIPANT_PREVIEW_LIMIT;
+        boolean hasMoreParticipants = allActiveParticipants.size() > PARTICIPANT_PREVIEW_LIMIT;
 
-        return CrewScheduleDetailResponse.of(schedule, currentMemberId, previewParticipants, hasMoreParticipants);
+        return CrewScheduleDetailResponse.of(schedule, currentMemberId, previewParticipants, hasMoreParticipants, allActiveParticipants.size());
     }
 
     public SliceResponse<ParticipantResponse> toParticipantSliceResponse(
@@ -101,9 +99,12 @@ public class CrewScheduleResponseMapper {
                 .toList();
     }
 
-    public List<CrewScheduleListResponse> toScheduleListResponse(List<CrewSchedule> schedules, Long currentMemberId) {
+    public List<CrewScheduleListResponse> toScheduleListResponse(List<CrewSchedule> schedules, Long currentMemberId, Map<Long, List<Long>> activeMemberIdsMap) {
         return schedules.stream()
-                .map(schedule -> CrewScheduleListResponse.of(schedule, currentMemberId))
+                .map(schedule -> {
+                    List<Long> activeIds = activeMemberIdsMap.getOrDefault(schedule.getId(), Collections.emptyList());
+                    return CrewScheduleListResponse.of(schedule, currentMemberId, activeIds);
+                })
                 .toList();
     }
 
@@ -118,10 +119,10 @@ public class CrewScheduleResponseMapper {
                 .toList();
     }
 
-    public CheckInStatusResponse toTodayScheduleCheckInStatus(CrewSchedule schedule, boolean isCheckedIn, boolean isAvailableTime) {
+    public CheckInStatusResponse toTodayScheduleCheckInStatus(CrewSchedule schedule, boolean isCheckedIn, LocalDateTime checkedInAt, boolean isAvailableTime) {
         return CheckInStatusResponse.of(
                 true,
-                CheckInStatusResponse.TodayScheduleResponse.of(schedule, isCheckedIn, isAvailableTime),
+                CheckInStatusResponse.TodayScheduleResponse.of(schedule, isCheckedIn, checkedInAt, isAvailableTime),
                 null
         );
     }

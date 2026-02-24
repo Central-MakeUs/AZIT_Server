@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -250,7 +251,16 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 필터링된 일정 목록 조회
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.runType());
 
-        return crewScheduleResponseMapper.toScheduleListResponse(schedules, query.memberId());
+        List<Long> allParticipantIds = schedules.stream()
+                .flatMap(s -> s.getParticipantIds().stream()).distinct().toList();
+        Map<Long, MemberProfileDto> activeProfiles = loadMemberPort.findAllByIds(allParticipantIds);
+
+        // 탈퇴한 멤버는 제외하고 조회
+        Map<Long, List<Long>> activeMemberIdsMap = schedules.stream()
+                .collect(Collectors.toMap(CrewSchedule::getId,
+                        s -> s.getParticipantIds().stream().filter(activeProfiles::containsKey).toList()));
+
+        return crewScheduleResponseMapper.toScheduleListResponse(schedules, query.memberId(), activeMemberIdsMap);
     }
 
     @Transactional(readOnly = true)
@@ -270,7 +280,15 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 참여 중인 일정 조회
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberId(memberId);
 
-        return crewScheduleResponseMapper.toScheduleListResponse(schedules, memberId);
+        List<Long> allParticipantIds = schedules.stream()
+                .flatMap(s -> s.getParticipantIds().stream()).distinct().toList();
+        Map<Long, MemberProfileDto> activeProfiles = loadMemberPort.findAllByIds(allParticipantIds);
+
+        Map<Long, List<Long>> activeMemberIdsMap = schedules.stream()
+                .collect(Collectors.toMap(CrewSchedule::getId,
+                        s -> s.getParticipantIds().stream().filter(activeProfiles::containsKey).toList()));
+
+        return crewScheduleResponseMapper.toScheduleListResponse(schedules, memberId, activeMemberIdsMap);
     }
 
     @Transactional(readOnly = true)
@@ -292,7 +310,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                 .findFirst();
 
         if (justCompletedSchedule.isPresent()) {
-            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(justCompletedSchedule.get(), true, false);
+            CrewSchedule schedule = justCompletedSchedule.get();
+            LocalDateTime checkInTime = schedule.getParticipants().get(memberId).getCheckedInAt();
+            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(schedule, true, checkInTime, false);
         }
 
         // 출석 가능하거나 곧 시작할 일정 필터링 (일정 시작 1시간 전후 기준)
@@ -304,7 +324,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                         .thenComparing(s -> s.getRunType() == RunType.REGULAR ? 0 : 1)); // 동일 시간대일 경우 정기런 우선 노출
 
         if (activeSchedule.isPresent()) {
-            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(activeSchedule.get(), false, true);
+            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(activeSchedule.get(), false, null, true);
         }
 
         // 출석을 완료했고, 일정이 시작한지 3시간 이내인 일정 필터링
@@ -316,7 +336,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                 .max(Comparator.comparing(CrewSchedule::getMeetingAt));
 
         if (recentlyCompletedSchedule.isPresent()) {
-            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(recentlyCompletedSchedule.get(), true, false);
+            CrewSchedule schedule = recentlyCompletedSchedule.get();
+            LocalDateTime checkInTime = schedule.getParticipants().get(memberId).getCheckedInAt();
+            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(recentlyCompletedSchedule.get(), true, checkInTime, false);
         }
 
         // 오늘 남은 일정 중 가장 빠른 일정 필터링
@@ -327,7 +349,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                 .findFirst();
 
         if (upcomingTodaySchedule.isPresent()) {
-            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(upcomingTodaySchedule.get(), false, false);
+            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(upcomingTodaySchedule.get(), false, null, false);
         }
 
         // 오늘 일정은 없고 다음 일정이 있는 경우
