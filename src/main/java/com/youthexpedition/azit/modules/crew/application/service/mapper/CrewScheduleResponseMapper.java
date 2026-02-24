@@ -10,6 +10,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.domain.model.enums.AttendanceStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -156,6 +157,17 @@ public class CrewScheduleResponseMapper {
                             status
                     );
                 })
+                .toList();
+    }
+
+    public List<MyAttendanceMonthlyListResponse> toMyAttendanceMonthlyListResponse(Map<LocalDate, Set<RunType>> attendanceMap) {
+        return attendanceMap.entrySet().stream()
+                .map(entry -> MyAttendanceMonthlyListResponse.of(
+                        entry.getKey(),
+                        entry.getValue().contains(RunType.REGULAR), // 정기런 존재 여부
+                        entry.getValue().contains(RunType.LIGHTNING) // 번개런 존재 여부
+                ))
+                .sorted(Comparator.comparing(MyAttendanceMonthlyListResponse::date)) // 날짜순 정렬
                 .toList();
     }
 

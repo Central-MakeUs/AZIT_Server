@@ -7,12 +7,13 @@ import com.youthexpedition.azit.infrastructure.common.response.code.CommonSucces
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CheckInRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CheckInCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.query.MyAttendanceMonthlyQuery;
 import jakarta.validation.Valid;
@@ -80,11 +81,20 @@ public class MemberController implements MemberControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
-    @GetMapping("/me/attendance-logs")
+    @GetMapping("/me/attendances")
     public CommonResponse<MyAttendanceLogResponse> getMyAttendanceLogs(
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
         MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
         MyAttendanceLogResponse response = crewScheduleUseCase.getMyAttendanceLogs(query);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/me/attendances/calendar")
+    public CommonResponse<List<MyAttendanceMonthlyListResponse>> getMyAttendancesForCalendar(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
+        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
+        List<MyAttendanceMonthlyListResponse> response = crewScheduleUseCase.getMyAttendancesForCalendar(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }

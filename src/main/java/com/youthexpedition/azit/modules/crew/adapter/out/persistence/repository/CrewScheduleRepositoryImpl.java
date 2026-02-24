@@ -133,6 +133,32 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 .fetch();
     }
 
+    @Override
+    public Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth) {
+        LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime end = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Tuple> results = queryFactory
+                .select(crewScheduleEntity.meetingAt, crewScheduleEntity.runType)
+                .from(crewScheduleEntity)
+                .join(crewScheduleEntity.members, crewScheduleMemberEntity)
+                .where(
+                        crewScheduleMemberEntity.memberId.eq(memberId),
+                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
+                        crewScheduleEntity.meetingAt.between(start, end),
+                        crewScheduleEntity.meetingAt.before(now)
+                                .or(crewScheduleMemberEntity.checkedInAt.isNotNull())
+                )
+                .fetch();
+
+        return results.stream()
+                .collect(Collectors.groupingBy(
+                        tuple -> Objects.requireNonNull(tuple.get(crewScheduleEntity.meetingAt)).toLocalDate(),
+                        Collectors.mapping(tuple -> tuple.get(crewScheduleEntity.runType), Collectors.toSet())
+                ));
+    }
+
     private BooleanExpression eqDate(LocalDate date) {
         if (date == null) return null;
         // LocalDateTime의 시작(00:00:00)과 끝(23:59:59) 사이 조회

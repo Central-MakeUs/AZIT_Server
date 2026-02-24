@@ -24,6 +24,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.query.MyAttendanceMonthlyQuery;
@@ -410,6 +411,15 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         long totalPoints = attendanceCount * CHECK_IN_POINTS;
 
         return crewScheduleResponseMapper.toMyAttendanceLogResponse(attendanceCount, totalPoints, attendanceLogs);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<MyAttendanceMonthlyListResponse> getMyAttendancesForCalendar(MyAttendanceMonthlyQuery query) {
+        Map<LocalDate, Set<RunType>> attendanceMap = loadCrewSchedulePort.findMyMonthlyAttendanceForCalendar(
+                query.memberId(), query.yearMonth());
+
+        return crewScheduleResponseMapper.toMyAttendanceMonthlyListResponse(attendanceMap);
     }
 
 
