@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -118,10 +119,10 @@ public class CrewScheduleResponseMapper {
                 .toList();
     }
 
-    public CheckInStatusResponse toTodayScheduleCheckInStatus(CrewSchedule schedule, boolean isCheckedIn, boolean isAvailableTime) {
+    public CheckInStatusResponse toTodayScheduleCheckInStatus(CrewSchedule schedule, boolean isCheckedIn, LocalDateTime checkedInAt, boolean isAvailableTime) {
         return CheckInStatusResponse.of(
                 true,
-                CheckInStatusResponse.TodayScheduleResponse.of(schedule, isCheckedIn, isAvailableTime),
+                CheckInStatusResponse.TodayScheduleResponse.of(schedule, isCheckedIn, checkedInAt, isAvailableTime),
                 null
         );
     }

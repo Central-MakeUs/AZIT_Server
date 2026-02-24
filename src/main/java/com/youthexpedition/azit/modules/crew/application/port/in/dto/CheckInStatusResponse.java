@@ -1,8 +1,11 @@
 package com.youthexpedition.azit.modules.crew.application.port.in.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.time.LocalDateTime;
 
 public record CheckInStatusResponse(
         @Schema(description = "오늘 참여할 일정이 있는지 여부")
@@ -25,10 +28,13 @@ public record CheckInStatusResponse(
             Double longitude,
             @Schema(description = "출석 완료 여부")
             boolean isCheckedIn,
+            @Schema(description = "출석 완료 시간")
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+            LocalDateTime checkedInAt,
             @Schema(description = "출석 가능 시간 여부 (시작 1시간 전~후)")
             boolean isAvailableTime
     ) {
-        public static TodayScheduleResponse of(CrewSchedule schedule, boolean isCheckedIn, boolean isAvailableTime) {
+        public static TodayScheduleResponse of(CrewSchedule schedule, boolean isCheckedIn, LocalDateTime checkedInAt, boolean isAvailableTime) {
             return new TodayScheduleResponse(
                     schedule.getId(),
                     schedule.getTitle(),
@@ -36,6 +42,7 @@ public record CheckInStatusResponse(
                     schedule.getLocation().getLatitude(),
                     schedule.getLocation().getLongitude(),
                     isCheckedIn,
+                    checkedInAt,
                     isAvailableTime
             );
         }
