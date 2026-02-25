@@ -30,7 +30,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 .where(
                         crewScheduleEntity.crewId.eq(crewId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 삭제된 일정은 제외
-                        eqDate(date),
+                        date == null ? crewScheduleEntity.meetingAt.goe(LocalDateTime.now().minusHours(1)) : eqDate(date),
                         eqRunType(runType)
                 )
                 .orderBy(crewScheduleEntity.meetingAt.asc())
@@ -68,7 +68,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 .where(
                         crewScheduleEntity.members.any().memberId.eq(memberId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 취소된 일정 제외
-                        crewScheduleEntity.meetingAt.goe(LocalDateTime.now()) // 지난 일정 제외
+                        crewScheduleEntity.meetingAt.goe(LocalDateTime.now().minusHours(1)) // 시작 이후 한시간 지난 일정(출첵 가능한 일정)부터 미래의 일정 조회
                 )
                 .orderBy(crewScheduleEntity.meetingAt.asc()) // 가장 가까운 순서대로 정렬
                 .fetch();
