@@ -14,7 +14,7 @@ public record AgreeToTermsRequest(
         Boolean privacyPolicyAgreed,
 
         @Schema(description = "위치기반 서비스 이용약관 동의 여부 (필수)")
-//        @NotNull(message = "위치기반 서비스 이용약관 동의 여부는 필수입니다.")
+        @NotNull(message = "위치기반 서비스 이용약관 동의 여부는 필수입니다.")
         Boolean locationServiceAgreed,
 
         @Schema(description = "제3자 정보제공 동의 여부 (필수)")
@@ -22,7 +22,7 @@ public record AgreeToTermsRequest(
         Boolean thirdPartyInfoAgreed,
 
         @Schema(description = "마케팅 정보 수신 동의 여부 (선택)")
-//        @NotNull(message = "마케팅 정보 수신 동의 여부는 필수입니다.")
+        @NotNull(message = "마케팅 정보 수신 동의 여부는 필수입니다.")
         Boolean marketingTermsAgreed,
 
         @Schema(description = "알림 수신 동의 여부 (선택)")
