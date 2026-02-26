@@ -159,6 +159,27 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 ));
     }
 
+    @Override
+    public boolean existsConflictingSchedule(Long memberId, LocalDateTime newMeetingAt, Long excludeScheduleId) {
+        // 기준 시간 전후 59분 계산 (간격이 60분 이상이어야 하므로 59분까지 겹치면 충돌)
+        LocalDateTime start = newMeetingAt.minusMinutes(59);
+        LocalDateTime end = newMeetingAt.plusMinutes(59);
+
+        Integer fetchOne = queryFactory
+                .selectOne()
+                .from(crewScheduleEntity)
+                .join(crewScheduleEntity.members, crewScheduleMemberEntity)
+                .where(
+                        crewScheduleMemberEntity.memberId.eq(memberId),
+                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 취소된 일정 제외
+                        crewScheduleEntity.meetingAt.between(start, end),    // 생성하려는 시간 기준 전후 59분 내에 일정이 있는지 확인
+                        excludeScheduleId != null ? crewScheduleEntity.id.ne(excludeScheduleId) : null // 일정 수정 시 자기 자신은 제외
+                )
+                .fetchFirst(); // 하나라도 찾으면 즉시 탐색 종료
+
+        return fetchOne != null;
+    }
+
     private BooleanExpression eqDate(LocalDate date) {
         if (date == null) return null;
         // LocalDateTime의 시작(00:00:00)과 끝(23:59:59) 사이 조회

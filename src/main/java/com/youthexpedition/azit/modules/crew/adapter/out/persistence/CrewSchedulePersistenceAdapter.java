@@ -112,4 +112,9 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
     public Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth) {
         return crewScheduleRepository.findMyMonthlyAttendanceForCalendar(memberId, yearMonth);
     }
+
+    @Override
+    public boolean existsConflictingSchedule(Long memberId, LocalDateTime newMeetingAt, Long excludeScheduleId) {
+        return crewScheduleRepository.existsConflictingSchedule(memberId, newMeetingAt, excludeScheduleId);
+    }
 }

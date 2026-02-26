@@ -478,21 +478,11 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
     // 신청하려는 일정과 기존 일정 사이의 간격 검증, 일정 수정 시 사용 (수정중인 일정 제외)
     private void validateScheduleInterval(Long memberId, LocalDateTime newMeetingAt, Long excludeScheduleId) {
-        // 사용자가 현재 참여 중인 일정 목록 조회
-        List<CrewSchedule> joinedSchedules = loadCrewSchedulePort.findAllByMemberId(memberId);
+        // 사용자가 현재 참여 중인 일정 목록 중 전후 1시간 내에 겹치는 일정 조회
+        boolean hasConflict = loadCrewSchedulePort.existsConflictingSchedule(memberId, newMeetingAt, excludeScheduleId);
 
-        for (CrewSchedule joined : joinedSchedules) {
-            // 수정 중인 본인 일정은 간격 비교에서 제외
-            if (Objects.equals(joined.getId(), excludeScheduleId)) {
-                continue;
-            }
-
-            // 두 일정 사이의 차이 계산
-            long minutesBetween = Math.abs(ChronoUnit.MINUTES.between(joined.getMeetingAt(), newMeetingAt));
-
-            if (minutesBetween < MINIMUM_SCHEDULE_INTERVAL_MINUTES) {
-                throw new BusinessException(CrewErrorCode.SCHEDULE_INTERVAL_TOO_CLOSE);
-            }
+        if (hasConflict) {
+            throw new BusinessException(CrewErrorCode.SCHEDULE_INTERVAL_TOO_CLOSE);
         }
     }
 }
