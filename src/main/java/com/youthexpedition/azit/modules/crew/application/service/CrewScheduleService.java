@@ -94,6 +94,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         // 유효성 체크
         validateSchedule(crewSchedule);
+        validateScheduleInterval(command.creatorId(), command.meetingAt());
         saveCrewSchedulePort.save(crewSchedule);
     }
 
@@ -129,6 +130,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         // 유효성 체크
         validateSchedule(schedule);
+        validateScheduleInterval(command.creatorId(), command.meetingAt(), schedule.getId());
         saveCrewSchedulePort.save(schedule);
     }
 
@@ -469,12 +471,22 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (!schedule.isMeetingTimeValid()) throw new BusinessException(CrewErrorCode.INVALID_SCHEDULE_TIME);
     }
 
-    // 신청하려는 일정과 기존 일정 사이의 간격 검증
+    // 신청하려는 일정과 기존 일정 사이의 간격 검증, 신청하기/일정 생성 시 사용
     private void validateScheduleInterval(Long memberId, LocalDateTime newMeetingAt) {
+        validateScheduleInterval(memberId, newMeetingAt, null);
+    }
+
+    // 신청하려는 일정과 기존 일정 사이의 간격 검증, 일정 수정 시 사용 (수정중인 일정 제외)
+    private void validateScheduleInterval(Long memberId, LocalDateTime newMeetingAt, Long excludeScheduleId) {
         // 사용자가 현재 참여 중인 일정 목록 조회
         List<CrewSchedule> joinedSchedules = loadCrewSchedulePort.findAllByMemberId(memberId);
 
         for (CrewSchedule joined : joinedSchedules) {
+            // 수정 중인 본인 일정은 간격 비교에서 제외
+            if (Objects.equals(joined.getId(), excludeScheduleId)) {
+                continue;
+            }
+
             // 두 일정 사이의 차이 계산
             long minutesBetween = Math.abs(ChronoUnit.MINUTES.between(joined.getMeetingAt(), newMeetingAt));
 
