@@ -38,9 +38,10 @@ public interface CrewScheduleControllerDocs {
             **[참고 사항]** <br>
             * 해당 크루의 정회원(JOINED)만 일정을 생성할 수 있습니다. (NOT_A_CREW_MEMBER)
             * 정기런은 크루의 리더만 생성 가능합니다. (ONLY_LEADER_CAN_CREATE_REGULAR_RUN)
+            * 이미 신청한 일정과 현재 신청하는 일정 간의 시간 차가 60분 미만일 경우 생성이 불가합니다. (SCHEDULE_INTERVAL_TOO_CLOSE)
             * 일정 제목: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
             * 세부 장소: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
-            * 준비물: 최대 5개까지 등록 가능하며, 각 항목은 15자 이내여야 합니다. (INVALID_INPUT_VALUE)
+            * 준비물(선택): 최대 5개까지 등록 가능하며, 각 항목은 15자 이내여야 합니다. (INVALID_INPUT_VALUE)
             * 모임 시간: 현재 시간보다 과거의 시간으로 생성할 수 없습니다. (INVALID_SCHEDULE_TIME)
             """
     )
@@ -62,9 +63,10 @@ public interface CrewScheduleControllerDocs {
             * 해당 크루의 정회원(JOINED)이어야 합니다. (NOT_A_CREW_MEMBER)
             * 정기런으로 수정하거나 정기런을 수정할 경우, 반드시 리더 권한이 있어야 합니다. (ONLY_LEADER_CAN_CREATE_REGULAR_RUN)
             * 존재하지 않는 일정 ID를 입력할 경우 수정이 불가합니다. (SCHEDULE_NOT_FOUND)
+            * 이미 신청한 일정과 현재 신청하는 일정 간의 시간 차가 60분 미만일 경우 수정이 불가합니다. (SCHEDULE_INTERVAL_TOO_CLOSE)
             * 일정 제목: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
             * 세부 장소: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
-            * 준비물: 최대 5개까지 등록 가능하며, 각 항목은 15자 이내여야 합니다. (INVALID_INPUT_VALUE)
+            * 준비물(선택): 최대 5개까지 등록 가능하며, 각 항목은 15자 이내여야 합니다. (INVALID_INPUT_VALUE)
             * 모임 시간: 현재 시간보다 과거의 시간으로 수정할 수 없습니다. (INVALID_SCHEDULE_TIME) <br><br>
             """
     )
