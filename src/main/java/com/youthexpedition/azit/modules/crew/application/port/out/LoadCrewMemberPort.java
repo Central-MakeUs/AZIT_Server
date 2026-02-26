@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface LoadCrewMemberPort {
@@ -18,4 +19,6 @@ public interface LoadCrewMemberPort {
     SliceResponse<CrewMemberInfoDto> findAllJoinedMembersByCrewId(Long crewId, CursorPageQuery query);
     long countJoinedCrewsByMemberId(Long memberId);
     List<CrewMember> findAllByMemberId(Long memberId);
+    Map<Long, CrewMember> findAllByCrewIdAndMemberIds(Long crewId, List<Long> memberIds);
+    Optional<CrewMember> findLatestByMemberIdAndStatus(Long memberId, CrewMemberStatus status);
 }

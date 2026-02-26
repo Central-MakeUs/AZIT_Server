@@ -1,8 +1,8 @@
 package com.youthexpedition.azit.modules.auth.adapter.out.external;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.KakaoApiFeignClient;
-import com.youthexpedition.azit.modules.auth.adapter.out.external.Feign.KakaoAuthFeignClient;
+import com.youthexpedition.azit.modules.auth.adapter.out.external.feign.KakaoApiFeignClient;
+import com.youthexpedition.azit.modules.auth.adapter.out.external.feign.KakaoAuthFeignClient;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.KakaoTokenResponse;
 import com.youthexpedition.azit.modules.auth.adapter.out.external.dto.KakaoUserInfoResponse;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
@@ -25,13 +25,13 @@ public class KakaoAuthAdapter implements SocialAuthPort {
     private final KakaoAuthFeignClient kakaoAuthFeignClient;
     private final KakaoApiFeignClient kakaoApiFeignClient;
 
-    @Value("${oauth.kakao.client-id}")
+    @Value("${kakao.oauth.client-id}")
     private String clientId;
-    @Value("${oauth.kakao.redirect-url}")
+    @Value("${kakao.oauth.redirect-url}")
     private String redirectUri;
-    @Value("${oauth.kakao.client-secret}")
+    @Value("${kakao.oauth.client-secret}")
     private String clientSecret;
-    @Value("${oauth.kakao.admin-key}")
+    @Value("${kakao.oauth.admin-key}")
     private String adminKey;
 
     private static final String TARGET_ID_TYPE = "user_id";

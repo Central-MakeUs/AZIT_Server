@@ -120,6 +120,8 @@ jobs:
             PAYMENT_BANK_NAME=${{ secrets.PAYMENT_BANK_NAME }}
             PAYMENT_BANK_ACCOUNT_NUMBER=${{ secrets.PAYMENT_BANK_ACCOUNT_NUMBER }}
             PAYMENT_BANK_ACCOUNT_HOLDER=${{ secrets.PAYMENT_BANK_ACCOUNT_HOLDER }}
+            NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+            NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
             EOF
 
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/azit-server:${{ github.event.inputs.version }}

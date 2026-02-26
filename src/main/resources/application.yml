@@ -17,6 +17,10 @@ spring:
       hibernate:
         default_batch_fetch_size: 100
 
+  jackson:
+    deserialization:
+      read_unknown_enum_values_as_null: true
+
 security:
   permit-all-paths:
     - "/v3/api-docs/**"
@@ -24,11 +28,18 @@ security:
     - "/swagger-ui.html"
     - "/api/v1/swagger-test/**"
 
-oauth:
-  kakao:
+kakao:
+  oauth:
     auth-url: https://kauth.kakao.com
     api-url: https://kapi.kakao.com
-  apple-url: https://appleid.apple.com
+
+apple:
+  oauth:
+    apple-url: https://appleid.apple.com
+
+naver:
+  search:
+    api-url: https://openapi.naver.com
 
 default:
   member:
@@ -50,3 +61,8 @@ management:
   endpoint:
     health:
       show-details: never # 서버 내부 정보(DB 상태, 디스크 용량 등)를 숨기고 "UP/DOWN" 결과만 보여줌
+
+springdoc:
+  swagger-ui:
+    tags-sorter: alpha # 컨트롤러 알파벳 순
+    operations-sorter: method # HTTP 메서드 순

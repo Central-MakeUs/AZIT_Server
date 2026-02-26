@@ -42,19 +42,25 @@ security:
     allowed-headers: ["*"]
     allow-credentials: true
 
-oauth:
-  kakao:
+kakao:
+  oauth:
     client-id: ${KAKAO_REST_API_KEY}
     client-secret: ${KAKAO_CLIENT_SECRET}
     admin-key: ${KAKAO_ADMIN_KEY}
     redirect-url: ${KAKAO_REDIRECT_URL}
 
-  apple:
+apple:
+  oauth:
     team-id: ${APPLE_TEAM_ID}
     client-id: ${APPLE_SERVICE_ID}
     key-id: ${APPLE_KEY_ID}
     key-path: ${APPLE_KEY_PATH}
     redirect-url: ${APPLE_REDIRECT_URL}
+
+naver:
+  search:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
 
 jwt:
   secret: ${JWT_SECRET_KEY}

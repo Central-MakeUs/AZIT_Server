@@ -10,8 +10,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
 @Builder
@@ -82,7 +80,7 @@ public class Member {
 
     // 리더가 크루 생성 완료했을 경우 상태 변경 (ACTIVE)
     public void completeOnboarding() {
-        if (this.status != MemberStatus.PENDING_ONBOARDING) {
+        if (!this.status.isJoinable()) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
         this.status = MemberStatus.ACTIVE;
@@ -90,7 +88,7 @@ public class Member {
 
     // 크루원이 초대 코드 입력 후 승인 대기할 경우 상태 변경 (WAITING_FOR_APPROVE)
     public void applyForJoin() {
-        if (this.status != MemberStatus.PENDING_ONBOARDING) {
+        if (!this.status.isJoinable()) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
         this.status = MemberStatus.WAITING_FOR_APPROVE;
@@ -112,11 +110,22 @@ public class Member {
         this.status = MemberStatus.REJECTED_PENDING_CONFIRM;
     }
 
+    // 리더가 방출했을 경우 상태 변경 (KICKED_PENDING_CONFIRM)
+    public void expel() {
+        // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
+        if (this.status == MemberStatus.WITHDRAWN) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+        }
+        this.status = MemberStatus.KICKED_PENDING_CONFIRM;
+    }
+
     // 승인/거절 결과 확인 후 상태 확정
-    public void confirmStatus() {
+    public void confirmStatus(boolean hasJoinedCrews) {
         this.status = switch (this.status) {
             case APPROVED_PENDING_CONFIRM -> MemberStatus.ACTIVE; // 승인 확인 시 정회원으로 변경
-            case REJECTED_PENDING_CONFIRM -> MemberStatus.PENDING_ONBOARDING; // 거절 확인 시 다시 크루 선택 전 단계로 변경
+            // 거절 또는 방출 확인 시: 가입된 크루가 하나라도 있으면 ACTIVE, 없으면 온보딩 상태로 변경
+            case REJECTED_PENDING_CONFIRM, KICKED_PENDING_CONFIRM ->
+                    hasJoinedCrews ? MemberStatus.ACTIVE : MemberStatus.PENDING_ONBOARDING;
             default -> throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS); // 그 외 상태는 예외 처리
         };
     }

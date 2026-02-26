@@ -9,7 +9,9 @@
 - **Domain 계층**:
   - 모든 비즈니스 핵심 로직과 엔티티를 포함합니다.
   - **도메인 순수성**: 외부 프레임워크(Spring, JPA, Jakarta 등) 및 라이브러리에 대한 의존성이 전혀 없는 **순수 자바 객체(POJO)**여야 합니다.
-  - `@Entity`는 물론, `@NotBlank`와 같은 유효성 검사 어노테이션도 도메인 모델에는 직접 사용하지 않습니다.
+  - **Lombok 사용 허용 (실용적 예외)**: 개발 효율성과 코드 가독성을 위해 Lombok 사용을 허용합니다.
+    - 단, 컴파일 시점에만 사용되는 어노테이션(`@Getter`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor` 등)에 한하며, 도메인 로직의 가독성을 저해하지 않는 수준에서 사용합니다.
+  - `@Entity`, `@Table`과 같은 JPA 어노테이션이나 `@NotBlank` 같은 유효성 검사 라이브러리는 도메인 모델에 직접 사용하지 않습니다.
 - **Application 계층**:
   - 비즈니스 유즈케이스를 수행하고 흐름을 제어합니다.
   - **포트(Port) 정의**: 외부와의 통신을 위한 인터페이스(Inbound: UseCase / Outbound: Port)를 정의합니다.

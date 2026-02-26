@@ -37,6 +37,7 @@ public class CrewResponseMapper {
         return CrewJoinStatusResponse.of(
                 crew.getId(),
                 crew.getName(),
+                imageUrlFormatUtil.buildFullImageUrl(crew.getImageUrl()),
                 status
         );
     }

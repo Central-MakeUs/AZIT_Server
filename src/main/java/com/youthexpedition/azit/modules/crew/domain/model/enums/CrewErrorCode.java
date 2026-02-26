@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum CrewErrorCode implements BaseErrorCode {
+    // 크루 관련
     CREW_NOT_FOUND("CREW_NOT_FOUND", "존재하지 않는 크루입니다.", HttpStatus.NOT_FOUND),
     INVALID_CREW_CATEGORY("INVALID_CREW_CATEGORY", "유효하지 않은 크루 카테고리입니다.", HttpStatus.BAD_REQUEST),
     INVALID_REGION("INVALID_REGION", "유효하지 않은 활동 지역입니다.", HttpStatus.BAD_REQUEST),
@@ -18,7 +19,23 @@ public enum CrewErrorCode implements BaseErrorCode {
     NOT_CREW_LEADER("NOT_CREW_LEADER", "해당 크루의 리더 권한이 없습니다.", HttpStatus.FORBIDDEN),
     NOT_A_CREW_MEMBER("NOT_A_CREW_MEMBER", "해당 크루의 멤버가 아닙니다.", HttpStatus.FORBIDDEN),
     CREW_MEMBER_NOT_FOUND("CREW_MEMBER_NOT_FOUND", "가입한 크루가 없습니다.", HttpStatus.NOT_FOUND),
-    CANNOT_KICK_SELF("CANNOT_KICK_SELF", "스스로를 방출할 수 없습니다.", HttpStatus.BAD_REQUEST),;
+    CANNOT_KICK_SELF("CANNOT_KICK_SELF", "스스로를 방출할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    CANNOT_WITHDRAW_AS_LEADER("CANNOT_WITHDRAW_AS_LEADER", "리더로 활동 중인 크루에 다른 멤버가 존재하여 탈퇴가 불가능합니다.", HttpStatus.BAD_REQUEST),
+
+    // 일정 관련
+    INVALID_SCHEDULE_TIME("INVALID_SCHEDULE_TIME", "유효하지 않은 일정 시간입니다.", HttpStatus.BAD_REQUEST),
+    ONLY_LEADER_CAN_CREATE_REGULAR_RUN("ONLY_LEADER_CAN_CREATE_REGULAR_RUN", "크루 리더만 정기런을 등록할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    SCHEDULE_NOT_FOUND("SCHEDULE_NOT_FOUND", "존재하지 않는 일정입니다.", HttpStatus.NOT_FOUND),
+    ALREADY_CANCELLED_SCHEDULE("ALREADY_CANCELLED_SCHEDULE", "이미 취소된 일정입니다.", HttpStatus.BAD_REQUEST),
+    ALREADY_PARTICIPATED("ALREADY_PARTICIPATED", "이미 참여한 일정입니다.", HttpStatus.BAD_REQUEST),
+    EXCEEDED_MAX_PARTICIPANTS("EXCEEDED_MAX_PARTICIPANTS", "최대 참여 인원을 초과했습니다.", HttpStatus.BAD_REQUEST),
+    NOT_PARTICIPATING_SCHEDULE("NOT_PARTICIPATING_SCHEDULE", "해당 일정의 참여자가 아닙니다.", HttpStatus.BAD_REQUEST),
+    CREATOR_CANNOT_CANCEL_PARTICIPATION("CREATOR_CANNOT_CANCEL_PARTICIPATION", "일정 생성자는 참여 취소가 불가능합니다.", HttpStatus.BAD_REQUEST),
+    SCHEDULE_INTERVAL_TOO_CLOSE("SCHEDULE_INTERVAL_TOO_CLOSE", "기존 일정과 시작 시간이 너무 가깝습니다. 최소 1시간 간격이 필요합니다.", HttpStatus.BAD_REQUEST),
+    NOT_CHECK_IN_TIME("NOT_CHECK_IN_TIME", "출석 가능 시간이 아닙니다.", HttpStatus.BAD_REQUEST),
+    TOO_FAR_FROM_LOCATION("TOO_FAR_FROM_LOCATION", "집결지 100m 이내에서만 출석이 가능합니다.", HttpStatus.BAD_REQUEST),
+    ALREADY_CHECKED_IN("ALREADY_CHECKED_IN", "이미 출석 완료된 일정입니다.", HttpStatus.BAD_REQUEST),
+    ;
 
     private final String code;
     private final String message;

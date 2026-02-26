@@ -203,7 +203,7 @@ public class CrewService implements CrewUseCase {
         validateLeader(crewId, memberId);
 
         return loadCrewMemberPort.findJoinRequestsByCrewId(crewId).stream()
-                .map(crewMemberResponseMapper::toResponse)
+                .map(crewMemberResponseMapper::toJoinRequestResponse)
                 .toList();
     }
 
@@ -254,6 +254,13 @@ public class CrewService implements CrewUseCase {
             member.resetToOnboarding();
             saveMemberPort.save(member);
         }
+
+        Member member = loadMemberPort.findById(targetMemberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // 멤버 상태 변경
+        member.expel();
+        saveMemberPort.save(member);
     }
 
     // 리더 여부 체크
