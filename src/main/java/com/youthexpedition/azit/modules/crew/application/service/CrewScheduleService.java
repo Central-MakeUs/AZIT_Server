@@ -94,6 +94,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         // 유효성 체크
         validateSchedule(crewSchedule);
+        validateScheduleInterval(command.creatorId(), command.meetingAt());
         saveCrewSchedulePort.save(crewSchedule);
     }
 
@@ -129,6 +130,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         // 유효성 체크
         validateSchedule(schedule);
+        validateScheduleInterval(command.creatorId(), command.meetingAt(), schedule.getId());
         saveCrewSchedulePort.save(schedule);
     }
 
@@ -249,7 +251,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         getJoinedMember(query.crewId(), query.memberId());
 
         // 필터링된 일정 목록 조회
-        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.runType());
+        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.yearMonth(), query.runType());
 
         List<Long> allParticipantIds = schedules.stream()
                 .flatMap(s -> s.getParticipantIds().stream()).distinct().toList();
@@ -301,18 +303,42 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 가장 가까운 미래 일정 조회
         Optional<CrewSchedule> nextSchedule = loadCrewSchedulePort.findNextClosestScheduleByMemberId(memberId, now);
 
-        // 30분 이내에 출석을 완료한 경우, 다음 일정이 있더라도 출석 완료 상태를 30분간 노출
-        // 출석하기 비활성화
-        Optional<CrewSchedule> justCompletedSchedule = todaySchedules.stream()
+        // 출석을 완료한 일정 확인 (가장 최근 일정 기준, 과거/미래 상관x)
+        Optional<CrewSchedule> checkedInScheduleOpt = todaySchedules.stream()
                 .filter(s -> s.isCheckedIn(memberId))
-                .filter(s -> s.getMeetingAt().isBefore(now) &&
-                        now.isBefore(s.getMeetingAt().plusMinutes(CHECK_IN_COOL_DOWN_MINUTES))) // 30분간 출석 완료 상태 유지
-                .findFirst();
+                .max(Comparator.comparing(CrewSchedule::getMeetingAt));
 
-        if (justCompletedSchedule.isPresent()) {
-            CrewSchedule schedule = justCompletedSchedule.get();
-            LocalDateTime checkInTime = schedule.getParticipants().get(memberId).getCheckedInAt();
-            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(schedule, true, checkInTime, false);
+        if (checkedInScheduleOpt.isPresent()) {
+            CrewSchedule checkedInSchedule = checkedInScheduleOpt.get();
+
+            // 이 일정 뒤에 이어지는 오늘의 다음 일정 찾기
+            Optional<CrewSchedule> nextTodaySchedule = todaySchedules.stream()
+                    .filter(s -> s.getMeetingAt().isAfter(checkedInSchedule.getMeetingAt()))
+                    .min(Comparator.comparing(CrewSchedule::getMeetingAt));
+
+            LocalDateTime retentionEndTime;
+
+            if (nextTodaySchedule.isPresent()) {
+                LocalDateTime nextCheckInOpenTime = nextTodaySchedule.get().getMeetingAt().minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS);
+                LocalDateTime defaultRetentionTime = checkedInSchedule.getMeetingAt().plusHours(COMPLETED_RETENTION_HOURS);
+
+                // 기존 3시간 유지 시간이 다음 일정의 출석 오픈 시간과 겹치는지 확인
+                if (!defaultRetentionTime.isBefore(nextCheckInOpenTime)) {
+                    // 겹칠 경우 노출 시간을 1시간으로 변경
+                    retentionEndTime = checkedInSchedule.getMeetingAt().plusHours(ACTIVE_CHECK_IN_WINDOW_HOURS);
+                } else {
+                    retentionEndTime = defaultRetentionTime;
+                }
+            } else {
+                // 뒤에 일정이 없으면 기본 3시간 유지
+                retentionEndTime = checkedInSchedule.getMeetingAt().plusHours(COMPLETED_RETENTION_HOURS);
+            }
+
+            // 계산된 유지 시간 이내라면 완료 상태 노출
+            if (now.isBefore(retentionEndTime)) {
+                LocalDateTime checkInTime = checkedInSchedule.getParticipants().get(memberId).getCheckedInAt();
+                return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(checkedInSchedule, true, checkInTime, false);
+            }
         }
 
         // 출석 가능하거나 곧 시작할 일정 필터링 (일정 시작 1시간 전후 기준)
@@ -327,26 +353,12 @@ public class CrewScheduleService implements CrewScheduleUseCase {
             return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(activeSchedule.get(), false, null, true);
         }
 
-        // 출석을 완료했고, 일정이 시작한지 3시간 이내인 일정 필터링
-        // 출석 완료 활성화, 출석하기 비활성화
-        Optional<CrewSchedule> recentlyCompletedSchedule = todaySchedules.stream()
-                .filter(s -> s.isCheckedIn(memberId))
-                .filter(s -> s.getMeetingAt().isBefore(now) &&
-                        s.getMeetingAt().isAfter(now.minusHours(COMPLETED_RETENTION_HOURS)))
-                .max(Comparator.comparing(CrewSchedule::getMeetingAt));
-
-        if (recentlyCompletedSchedule.isPresent()) {
-            CrewSchedule schedule = recentlyCompletedSchedule.get();
-            LocalDateTime checkInTime = schedule.getParticipants().get(memberId).getCheckedInAt();
-            return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(recentlyCompletedSchedule.get(), true, checkInTime, false);
-        }
-
-        // 오늘 남은 일정 중 가장 빠른 일정 필터링
+        // 오늘 남은 일정 중 가장 빠른 일정 필터링 (출석 오픈 전)
         // 출석하기 비활성화
         Optional<CrewSchedule> upcomingTodaySchedule = todaySchedules.stream()
                 .filter(s -> !s.isCheckedIn(memberId))
                 .filter(s -> s.getMeetingAt().isAfter(now))
-                .findFirst();
+                .min(Comparator.comparing(CrewSchedule::getMeetingAt));
 
         if (upcomingTodaySchedule.isPresent()) {
             return crewScheduleResponseMapper.toTodayScheduleCheckInStatus(upcomingTodaySchedule.get(), false, null, false);
@@ -471,18 +483,18 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (!schedule.isMeetingTimeValid()) throw new BusinessException(CrewErrorCode.INVALID_SCHEDULE_TIME);
     }
 
-    // 신청하려는 일정과 기존 일정 사이의 간격 검증
+    // 신청하려는 일정과 기존 일정 사이의 간격 검증, 신청하기/일정 생성 시 사용
     private void validateScheduleInterval(Long memberId, LocalDateTime newMeetingAt) {
-        // 사용자가 현재 참여 중인 일정 목록 조회
-        List<CrewSchedule> joinedSchedules = loadCrewSchedulePort.findAllByMemberId(memberId);
+        validateScheduleInterval(memberId, newMeetingAt, null);
+    }
 
-        for (CrewSchedule joined : joinedSchedules) {
-            // 두 일정 사이의 차이 계산
-            long minutesBetween = Math.abs(ChronoUnit.MINUTES.between(joined.getMeetingAt(), newMeetingAt));
+    // 신청하려는 일정과 기존 일정 사이의 간격 검증, 일정 수정 시 사용 (수정중인 일정 제외)
+    private void validateScheduleInterval(Long memberId, LocalDateTime newMeetingAt, Long excludeScheduleId) {
+        // 사용자가 현재 참여 중인 일정 목록 중 전후 1시간 내에 겹치는 일정 조회
+        boolean hasConflict = loadCrewSchedulePort.existsConflictingSchedule(memberId, newMeetingAt, excludeScheduleId);
 
-            if (minutesBetween < MINIMUM_SCHEDULE_INTERVAL_MINUTES) {
-                throw new BusinessException(CrewErrorCode.SCHEDULE_INTERVAL_TOO_CLOSE);
-            }
+        if (hasConflict) {
+            throw new BusinessException(CrewErrorCode.SCHEDULE_INTERVAL_TOO_CLOSE);
         }
     }
 }

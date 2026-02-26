@@ -46,21 +46,25 @@ public record CreateScheduleRequest(
         Double longitude,
 
         @Schema(description = "목표 거리 (km)")
+        @NotNull(message = "목표 거리는 필수입니다.")
         @Min(value = 1, message = "최소 1 이상이어야 합니다.")
         @Max(value = 999, message = "최대 999까지 가능합니다.")
         Integer distance,
 
         @Schema(description = "목표 페이스 (분/km)")
+        @NotNull(message = "목표 페이스는 필수입니다.")
         @Min(value = 1, message = "최소 1 이상이어야 합니다.")
         @Max(value = 99, message = "최대 99까지 가능합니다.")
         Integer pace,
 
         @Schema(description = "최대 모집 인원")
+        @NotNull(message = "최대 모집 인원은 필수입니다.")
         @Min(value = 1, message = "최소 1명 이상이어야 합니다.")
         @Max(value = 999, message = "최대 999명까지 가능합니다.")
         Integer maxParticipants,
 
         @Schema(description = "상세 설명")
+        @NotBlank(message = "상세 설명은 필수입니다.")
         String description,
 
         @Schema(description = "준비물 리스트 (각 최대 15자, 최대 5개)", example = "[\"러닝화\", \"생수\"]")
