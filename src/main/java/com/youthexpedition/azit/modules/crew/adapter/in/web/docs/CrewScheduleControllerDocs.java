@@ -177,7 +177,8 @@ public interface CrewScheduleControllerDocs {
             
             **[쿼리 파라미터]** <br>
             * date (선택): 특정 날짜(yyyy-MM-dd)의 일정만 조회하고 싶을 때 사용합니다. 미입력 시 전체 기간을 조회합니다.
-            * runType (선택): REGULAR 또는 LIGHTNING으로 필터링합니다. 미입력 시 모든 타입을 조회합니다. <br><br>
+            * runType (선택): REGULAR 또는 LIGHTNING으로 필터링합니다. 미입력 시 모든 타입을 조회합니다.
+            * yearMonth (선택): 조회할 연월(yyyy-MM)입니다. 미입력 시 현재 시간 기준의 월로, 출석 가능한 일정부터 조회합니다. <br><br>
             
             **[참고 사항]** <br>
             * 해당 크루의 정회원(JOINED)만 조회가 가능합니다. (NOT_A_CREW_MEMBER)
@@ -191,6 +192,7 @@ public interface CrewScheduleControllerDocs {
     CommonResponse<List<CrewScheduleListResponse>> getCrewSchedules(
             @PathVariable Long crewId,
             @Parameter(description = "조회 날짜 (yyyy-MM-dd)") LocalDate date,
+            @Parameter(description = "조회 연월 (yyyy-MM)") YearMonth yearMonth,
             @Parameter(description = "러닝 타입") RunType runType,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 

@@ -25,12 +25,12 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, RunType runType) {
+    public List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, YearMonth yearMonth, RunType runType) {
         return queryFactory.selectFrom(crewScheduleEntity)
                 .where(
                         crewScheduleEntity.crewId.eq(crewId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 삭제된 일정은 제외
-                        date == null ? crewScheduleEntity.meetingAt.goe(LocalDateTime.now().minusHours(1)) : eqDate(date),
+                        filterByDateOrMonth(date, yearMonth),
                         eqRunType(runType)
                 )
                 .orderBy(crewScheduleEntity.meetingAt.asc())
@@ -170,6 +170,25 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
 
     private BooleanExpression eqRunType(RunType runType) {
         return runType != null ? crewScheduleEntity.runType.eq(runType) : null;
+    }
+
+    private BooleanExpression filterByDateOrMonth(LocalDate date, YearMonth yearMonth) {
+        // 특정 날짜가 있으면 해당 일자 조회
+        if (date != null) return eqDate(date);
+
+        // 월 정보가 있으면 해당 월 전체 조회 (과거 일정 포함)
+        if (yearMonth != null) {
+            return crewScheduleEntity.meetingAt.between(
+                    yearMonth.atDay(1).atStartOfDay(),
+                    yearMonth.atEndOfMonth().atTime(LocalTime.MAX)
+            );
+        }
+
+        // 날짜, 월 둘 다 없으면 현재 시간 기준 1시간 전 (출석 가능한 일정) 부터 이번달 말일까지 조회
+        LocalDateTime start = LocalDateTime.now().minusHours(1);
+        LocalDateTime end = YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
+
+        return crewScheduleEntity.meetingAt.between(start, end);
     }
 
 }

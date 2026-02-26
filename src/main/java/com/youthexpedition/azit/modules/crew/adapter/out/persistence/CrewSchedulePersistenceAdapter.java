@@ -43,8 +43,8 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
     }
 
     @Override
-    public List<CrewSchedule> findAllByFilter(Long crewId, LocalDate date, RunType runType) {
-        return crewScheduleRepository.findAllByFilter(crewId, date, runType).stream()
+    public List<CrewSchedule> findAllByFilter(Long crewId, LocalDate date, YearMonth yearMonth, RunType runType) {
+        return crewScheduleRepository.findAllByFilter(crewId, date, yearMonth, runType).stream()
                 .map(crewScheduleMapper::toDomain)
                 .toList();
     }

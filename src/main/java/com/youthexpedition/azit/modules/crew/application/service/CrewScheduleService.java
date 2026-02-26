@@ -249,7 +249,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         getJoinedMember(query.crewId(), query.memberId());
 
         // 필터링된 일정 목록 조회
-        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.runType());
+        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.yearMonth(), query.runType());
 
         List<Long> allParticipantIds = schedules.stream()
                 .flatMap(s -> s.getParticipantIds().stream()).distinct().toList();
@@ -301,12 +301,11 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 가장 가까운 미래 일정 조회
         Optional<CrewSchedule> nextSchedule = loadCrewSchedulePort.findNextClosestScheduleByMemberId(memberId, now);
 
-        // 30분 이내에 출석을 완료한 경우, 다음 일정이 있더라도 출석 완료 상태를 30분간 노출
+        // 1시간 이내에 출석을 완료한 경우, 다음 일정이 있더라도 출석 완료 상태를 1시간동안 노출
         // 출석하기 비활성화
         Optional<CrewSchedule> justCompletedSchedule = todaySchedules.stream()
                 .filter(s -> s.isCheckedIn(memberId))
-                .filter(s -> s.getMeetingAt().isBefore(now) &&
-                        now.isBefore(s.getMeetingAt().plusMinutes(CHECK_IN_COOL_DOWN_MINUTES))) // 30분간 출석 완료 상태 유지
+                .filter(s -> now.isBefore(s.getMeetingAt().plusMinutes(ACTIVE_CHECK_IN_WINDOW_HOURS))) // 1시간동안 출석 완료 상태 유지
                 .findFirst();
 
         if (justCompletedSchedule.isPresent()) {
@@ -331,8 +330,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 출석 완료 활성화, 출석하기 비활성화
         Optional<CrewSchedule> recentlyCompletedSchedule = todaySchedules.stream()
                 .filter(s -> s.isCheckedIn(memberId))
-                .filter(s -> s.getMeetingAt().isBefore(now) &&
-                        s.getMeetingAt().isAfter(now.minusHours(COMPLETED_RETENTION_HOURS)))
+                .filter(s -> s.getMeetingAt().isAfter(now.minusHours(COMPLETED_RETENTION_HOURS)))
                 .max(Comparator.comparing(CrewSchedule::getMeetingAt));
 
         if (recentlyCompletedSchedule.isPresent()) {
