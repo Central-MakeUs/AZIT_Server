@@ -197,10 +197,10 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
         // 특정 날짜가 있으면 해당 일자 조회
         if (date != null) return eqDate(date);
 
-        // 월 정보가 있으면 해당 월 전체 조회 (과거 일정 포함)
+        // 월 정보가 없으면 현재 시간 기준 월로 설정
         YearMonth targetMonth = (yearMonth != null) ? yearMonth : YearMonth.now();
 
-        // 날짜, 월 둘 다 없으면 현재 시간 기준 월로 조회
+        // 해당 월 전체 조회
         return crewScheduleEntity.meetingAt.between(
                 targetMonth.atDay(1).atStartOfDay(),
                 targetMonth.atEndOfMonth().atTime(LocalTime.MAX)
