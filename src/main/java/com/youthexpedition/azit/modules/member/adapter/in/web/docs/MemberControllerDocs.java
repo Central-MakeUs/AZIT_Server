@@ -140,8 +140,6 @@ public interface MemberControllerDocs {
     })
     CommonResponse<CheckInStatusResponse> getCheckInStatus(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
-    // MemberControllerDocs.java
-
     @Operation(
             summary = "일정 출석",
             description = """
