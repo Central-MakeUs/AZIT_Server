@@ -7,16 +7,27 @@
 
 ## 📱 Download AZIT
 
-<a href="https://apps.apple.com/kr/app/%EC%95%84%EC%A7%80%ED%8A%B8-azit/id6758881115" target="_blank">
-  <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="40" align="middle">
-</a>
-<a href="https://play.google.com/store/apps/details?id=com.azitcrew.app&hl=ko" target="_blank">
-  <img src="https://play.google.com/intl/en_us/badges/static/images/badges/ko_badge_web_generic.png" alt="Get it on Google Play" height="58" align="middle">
-</a>
+<div align="center">
+  <a href="https://apps.apple.com/kr/app/%EC%95%84%EC%A7%80%ED%8A%B8-azit/id6758881115" target="_blank">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="40" align="middle">
+  </a>
+  <a href="https://play.google.com/store/apps/details?id=com.azitcrew.app&hl=ko" target="_blank">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/ko_badge_web_generic.png" alt="Get it on Google Play" height="58" align="middle">
+  </a>
+</div>
+<br>
 <br>
 
 
 ## ✨ 핵심 기능
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/d9faf147-acce-4c12-b06c-963053ac7d39" alt="스크린샷1" width="19%">
+  <img src="https://github.com/user-attachments/assets/431a3f81-ac53-4280-ad90-e195c3749731" alt="스크린샷2" width="19%">
+  <img src="https://github.com/user-attachments/assets/50411a62-8091-4d78-a1b9-482da3dcb199" alt="스크린샷3" width="19%">
+  <img src="https://github.com/user-attachments/assets/707e9697-2091-4053-8d8b-071834341681" alt="스크린샷4" width="19%">
+  <img src="https://github.com/user-attachments/assets/9c06c0a7-0aa8-48ee-af4a-f2b12ddb8a20" alt="스크린샷5" width="19%">
+</div>
+<br>
 
 ### 1. 📍 실시간 위치 기반 출석 체크
 * **GPS 기반 인증**: 모임 장소 반경 100m 이내에서만 출석하기 버튼이 활성화되어 정확한 출석을 유도합니다.
