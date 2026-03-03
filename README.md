@@ -6,8 +6,6 @@
 > AZIT는 러닝 크루의 일정을 체계적으로 관리하고, 위치 기반 출석 체크 및 포인트 적립을 통해 크루원들의 참여도를 높이는 러닝 크루 전용 플랫폼입니다.
 <br>
 
-## 📱 Download AZIT
-
 <div align="center">
   <a href="https://apps.apple.com/kr/app/%EC%95%84%EC%A7%80%ED%8A%B8-azit/id6758881115" target="_blank">
     <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="40" align="middle">
@@ -62,6 +60,45 @@
 ## ⚙️ 시스템 아키텍처 특징
 
 * **도메인 주도 설계(DDD)**: 도메인 객체 내부에 핵심 비즈니스 로직과 상태 변경 메서드를 캡슐화하여 응집도를 높였습니다.
-* **헥사고날 아키텍처(Hexagonal)**: `in` / `out` 포트와 어댑터를 명확히 분리하여 영속성 계층(DB)의 변경이 비즈니스 로직(UseCase)에 영향을 주지 않도록 설계되었습니다.
+* **헥사고날 아키텍처(Hexagonal)**: `in` / `out` 포트와 어댑터를 명확히 분리하여 영속성 계층(DB)의 변경이 비즈니스 로직(UseCase)에 영향을 주지 않도록 설계했습니다.
 
 <br>
+
+## ☁️ 인프라 및 CI/CD
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/49952035-af6e-4f84-af0b-dbc8e45549ff" alt="AZIT Infrastructure Architecture" width="90%">
+</div>
+<br>
+
+
+### 🚀 CI/CD 및 배포 (Blue-Green)
+* **무중단 배포**: Nginx와 Docker Compose를 활용한 **Blue-Green 무중단 배포** 환경을 구축했습니다. 새로운 버전의 컨테이너를 띄운 후, Spring Boot Actuator로 헬스 체크를 통과했을 때만 Nginx 포트를 스위칭하여 서비스 중단 없이 안정적인 배포를 보장합니다.
+* **보안을 고려한 파이프라인**: GitHub Actions를 통한 자동 배포 시, Runner의 IP를 AWS EC2 Security Group에 임시로 허용(Port 22)하고 배포 완료 후 즉시 차단하여 외부의 보안 위협을 최소화했습니다.
+* **실시간 모니터링 및 알림**: 모니터링 툴로 **New Relic**을 도입하여 서버의 성능과 상태를 모니터링하며, 시스템 장애를 Discord 웹훅과 연동하여 즉각적으로 대응할 수 있는 체계를 갖췄습니다.
+
+<details>
+<summary><b>💡 무중단 배포 쉘 스크립트(deploy.sh) 핵심 로직</b></summary>
+<div markdown="1">
+
+```bash
+# 1. 신규 컨테이너 헬스 체크 (10회 반복)
+for retry_count in {1..10}
+do
+  RESPONSE=$(curl -s http://localhost:$TARGET_PORT/actuator/health)
+  UP_COUNT=$(echo $RESPONSE | grep 'UP' | wc -l)
+
+  if [ $UP_COUNT -ge 1 ]; then
+    echo "✅ 헬스 체크 성공! ($retry_count/10)"
+    break
+  fi
+  sleep 10
+done
+
+# 2. Nginx 포트 스위칭 및 설정 리로드
+echo "server 127.0.0.1:$TARGET_PORT;" | sudo tee /etc/nginx/conf.d/service-env.inc
+sudo nginx -s reload
+
+# 3. 구버전 컨테이너 종료
+sudo docker stop azit-$IDLE_COLOR
+
