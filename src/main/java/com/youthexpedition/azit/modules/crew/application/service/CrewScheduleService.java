@@ -407,6 +407,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
             throw new BusinessException(CrewErrorCode.NOT_PARTICIPATING_SCHEDULE);
         }
         schedule.checkIn(command.memberId(), now);
+        member.updateAttendanceCount();
 
         // 포인트 적립
         member.addPoints(CHECK_IN_POINTS);

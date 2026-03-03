@@ -122,6 +122,7 @@ jobs:
             PAYMENT_BANK_ACCOUNT_HOLDER=${{ secrets.PAYMENT_BANK_ACCOUNT_HOLDER }}
             NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
             NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
+            NEW_RELIC_LICENSE_KEY=${{ secrets.NEW_RELIC_LICENSE_KEY }}
             EOF
 
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/azit-server:${{ github.event.inputs.version }}
