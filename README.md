@@ -1,0 +1,55 @@
+# 🏃‍♂️ AZIT (아지트) - 러닝 크루를 위한 운영 및 제휴 서비스
+<img width="1920" height="1080" alt="1" src="https://github.com/user-attachments/assets/447349c4-98e3-447d-8d09-1e6d7b23c9ca" />
+
+> **"크루원과 함께하는 실시간 출석 인증부터 아지트 전용 스토어까지"**
+> AZIT는 러닝 크루의 일정을 체계적으로 관리하고, 위치 기반 출석 체크 및 포인트 적립을 통해 크루원들의 참여도를 높이는 러닝 크루 전용 플랫폼입니다.
+<br>
+
+## 📱 Download AZIT
+
+<a href="https://apps.apple.com/kr/app/%EC%95%84%EC%A7%80%ED%8A%B8-azit/id6758881115" target="_blank">
+  <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="40" align="middle">
+</a>
+<a href="https://play.google.com/store/apps/details?id=com.azitcrew.app&hl=ko" target="_blank">
+  <img src="https://play.google.com/intl/en_us/badges/static/images/badges/ko_badge_web_generic.png" alt="Get it on Google Play" height="58" align="middle">
+</a>
+<br>
+
+
+## ✨ 핵심 기능
+
+### 1. 📍 실시간 위치 기반 출석 체크
+* **GPS 기반 인증**: 모임 장소 반경 100m 이내에서만 출석하기 버튼이 활성화되어 정확한 출석을 유도합니다.
+* **스마트 타임 윈도우**: 모임 시간 1시간 전부터 1시간 후까지만 출석이 가능하도록 제한하여 운영의 신뢰성을 높였습니다.
+* **홈 위젯**: 앱 진입 시 가장 가까운 일정의 출석 가능 상태(D-Day, 남은 시간)를 직관적으로 확인할 수 있습니다.
+
+### 2. 📅 캘린더 기반 러닝 참여 및 생성
+* **월별 일정 조회**: 정기런과 번개런을 캘린더에 색상 점(Dot)으로 구분하여 한눈에 크루 일정을 파악할 수 있습니다.
+* **충돌 방지 로직**: 내가 이미 참여 중인 일정과 시간이 겹치는 새로운 일정에는 참여할 수 없도록 검증 로직이 적용되어 있습니다.
+
+### 3. 🎁 출석 보상 및 전용 스토어
+* **포인트 적립**: 출석을 완료할 때마다 자동으로 100 포인트가 즉시 적립됩니다.
+* **아지트 크루 전용 스토어**: 모은 포인트를 활용해 러닝 용품 등 아지트만의 특별한 상품을 합리적인 가격에 주문할 수 있습니다.
+
+### 4. 👥 크루 관리
+* 리더의 승인/거절, 멤버 방출 등의 권한 관리를 통해 쉽고 편리한 크루 관리가 가능합니다.
+
+<br>
+
+## 🛠 기술 스택
+
+### Backend
+* **Language & Framework**: Java, Spring Boot
+* **Architecture**: Hexagonal Architecture (Port & Adapter Pattern)
+* **Database & ORM**: Spring Data JPA, QueryDSL, MySQL, Redis
+* **Documentation**: Swagger (SpringDoc OpenAPI)
+* **Security**: Spring Security, JWT (Apple/Kakao OAuth)
+
+<br>
+
+## ⚙️ 시스템 아키텍처 특징
+
+* **도메인 주도 설계(DDD)**: 도메인 객체 내부에 핵심 비즈니스 로직과 상태 변경 메서드를 캡슐화하여 응집도를 높였습니다.
+* **헥사고날 아키텍처(Hexagonal)**: `in` / `out` 포트와 어댑터를 명확히 분리하여 영속성 계층(DB)의 변경이 비즈니스 로직(UseCase)에 영향을 주지 않도록 설계되었습니다.
+
+<br>
