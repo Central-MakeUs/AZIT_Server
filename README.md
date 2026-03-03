@@ -75,10 +75,9 @@
 ## ☁️ 인프라 및 CI/CD
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/49952035-af6e-4f84-af0b-dbc8e45549ff" alt="AZIT Infrastructure Architecture" width="90%">
+  <img src="https://github.com/user-attachments/assets/bdd89ee0-4e3a-4e27-a8dd-5133aed71d82" alt="AZIT Infrastructure Architecture" width="90%">
 </div>
 <br>
-
 
 ### 🚀 CI/CD 및 배포 (Blue-Green)
 * **무중단 배포**: Nginx와 Docker Compose를 활용한 **Blue-Green 무중단 배포** 환경을 구축했습니다. 새로운 버전의 컨테이너를 띄운 후, Spring Boot Actuator로 헬스 체크를 통과했을 때만 Nginx 포트를 스위칭하여 서비스 중단 없이 안정적인 배포를 보장합니다.
