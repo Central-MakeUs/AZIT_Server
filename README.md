@@ -55,6 +55,14 @@
 * **Documentation**: Swagger (SpringDoc OpenAPI)
 * **Security**: Spring Security, JWT (Apple/Kakao OAuth)
 
+### Infrastructure & DevOps
+* **Cloud**: AWS (EC2, RDS, S3, CloudFront, Route53)
+* **Container**: Docker, Docker Compose
+* **Web Server**: Nginx (Reverse Proxy, Blue-Green Switching)
+* **CI/CD**: GitHub Actions
+* **Monitoring**: New Relic, Discord (알림 연동)
+* **OS**: Ubuntu 22.04 LTS
+
 <br>
 
 ## ⚙️ 시스템 아키텍처 특징
@@ -74,7 +82,7 @@
 
 ### 🚀 CI/CD 및 배포 (Blue-Green)
 * **무중단 배포**: Nginx와 Docker Compose를 활용한 **Blue-Green 무중단 배포** 환경을 구축했습니다. 새로운 버전의 컨테이너를 띄운 후, Spring Boot Actuator로 헬스 체크를 통과했을 때만 Nginx 포트를 스위칭하여 서비스 중단 없이 안정적인 배포를 보장합니다.
-* **보안을 고려한 파이프라인**: GitHub Actions를 통한 자동 배포 시, Runner의 IP를 AWS EC2 Security Group에 임시로 허용(Port 22)하고 배포 완료 후 즉시 차단하여 외부의 보안 위협을 최소화했습니다.
+* **보안을 고려한 동적 파이프라인**: GitHub Actions를 통한 자동 배포 시, Runner의 IP를 AWS EC2 Security Group에 임시로 허용(Port 22)하고 배포 완료 후 즉시 차단하여 외부의 보안 위협을 최소화했습니다.
 * **실시간 모니터링 및 알림**: 모니터링 툴로 **New Relic**을 도입하여 서버의 성능과 상태를 모니터링하며, 시스템 장애를 Discord 웹훅과 연동하여 즉각적으로 대응할 수 있는 체계를 갖췄습니다.
 
 <details>
