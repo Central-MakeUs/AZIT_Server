@@ -179,4 +179,8 @@ public class Member {
 
         this.totalPoints += points;
     }
+
+    public void updateAttendanceCount() {
+        this.totalAttendanceCount++;
+    }
 }
