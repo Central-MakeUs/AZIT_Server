@@ -53,10 +53,8 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private final SaveMemberPort saveMemberPort;
     private final CrewScheduleResponseMapper crewScheduleResponseMapper;
 
-    private static final int CHECK_IN_COOL_DOWN_MINUTES = 30; // 출석 완료 후 최소 유지 시간
     private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1; // 출석 버튼 활성화 윈도우 (전후 1시간)
     private static final int COMPLETED_RETENTION_HOURS = 3;    // 지난 일정 완료 표시 유지 시간
-    private static final int MINIMUM_SCHEDULE_INTERVAL_MINUTES = 60; // 최소 일정 간격
     private static final long CHECK_IN_POINTS = 100L;
     private static final double CHECK_IN_AVAILABLE_DISTANCE_METERS = 100.0;
 
@@ -417,19 +415,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
-    @Transactional
-    public void cancelAllParticipationInCrew(Long crewId, Long memberId) {
-        // 해당 크루의 일정 중 사용자가 참여 중인 모든 일정 조회
-        List<CrewSchedule> joinedSchedules = loadCrewSchedulePort.findAllByCrewIdAndMemberId(crewId, memberId);
-
-        if (joinedSchedules.isEmpty()) return;
-        // 참여한 일정 데이터 삭제
-        joinedSchedules.forEach(schedule -> schedule.removeParticipant(memberId));
-
-        saveCrewSchedulePort.saveAll(joinedSchedules);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public MyAttendanceLogResponse getMyAttendanceLogs(MyAttendanceMonthlyQuery query) {
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberIdAndMonth(
@@ -455,6 +440,21 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                 query.memberId(), query.yearMonth());
 
         return crewScheduleResponseMapper.toMyAttendanceMonthlyListResponse(attendanceMap);
+    }
+
+    @Transactional
+    public void cleanupForExpelledMemberSchedules(Long crewId, Long memberId) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 해당 멤버가 생성한 미래 일정 전체 삭제 (시작 시간 기준)
+        List<CrewSchedule> schedulesToCancel = loadCrewSchedulePort.findSchedulesToCancel(crewId, memberId, now);
+        schedulesToCancel.forEach(CrewSchedule::cancel);
+        saveCrewSchedulePort.saveAll(schedulesToCancel);
+
+        // 참여 신청했지만 출석하지 않은 미래 일정 전체 삭제
+        List<CrewSchedule> schedulesToRemove = loadCrewSchedulePort.findSchedulesToRemoveParticipant(crewId, memberId, now);
+        schedulesToRemove.forEach(schedule -> schedule.removeParticipant(memberId));
+        saveCrewSchedulePort.saveAll(schedulesToRemove);
     }
 
 

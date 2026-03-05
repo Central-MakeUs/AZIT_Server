@@ -110,6 +110,11 @@ public class CrewSchedule {
         participants.remove(memberId);
     }
 
+    // 참여자 존재 여부 확인
+    public boolean hasNoParticipants() {
+        return participants.isEmpty();
+    }
+
     // ID 리스트만 필요할 때 사용
     public List<Long> getParticipantIds() {
         return List.copyOf(participants.keySet());
@@ -123,8 +128,8 @@ public class CrewSchedule {
     }
 
     // 출석 체크
-    public boolean checkIn(Long memberId, LocalDateTime checkInTime) {
-        return participants.computeIfPresent(memberId, (id, m) ->
+    public void checkIn(Long memberId, LocalDateTime checkInTime) {
+        participants.computeIfPresent(memberId, (id, m) ->
                 CrewScheduleMember.builder()
                         .id(m.getId())
                         .memberId(m.getMemberId())
@@ -132,6 +137,6 @@ public class CrewSchedule {
                         .checkedInAt(checkInTime)
                         .createdAt(m.getCreatedAt())
                         .build()
-        ) != null;
+        );
     }
 }

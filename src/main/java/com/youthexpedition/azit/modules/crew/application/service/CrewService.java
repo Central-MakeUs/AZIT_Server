@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.crew.application.service;
 import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
@@ -44,6 +45,7 @@ public class CrewService implements CrewUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
+    private final CrewScheduleUseCase crewScheduleUseCase;
     private final CrewMemberResponseMapper crewMemberResponseMapper;
     private final CrewResponseMapper crewResponseMapper;
     private final CrewImageProvider crewImageProvider;
@@ -222,7 +224,7 @@ public class CrewService implements CrewUseCase {
 
     @Override
     @Transactional
-    public void deleteCrewMember(Long crewId, Long leaderId, Long targetMemberId) {
+    public void expelCrewMember(Long crewId, Long leaderId, Long targetMemberId) {
         validateLeader(crewId, leaderId);
 
         // 리더 본인은 방출 불가
@@ -233,8 +235,11 @@ public class CrewService implements CrewUseCase {
         // 방출 대상이 현재 해당 크루의 정회원(JOINED)인지 확인
         CrewMember targetMember = validateMember(crewId, targetMemberId);
 
+        // 멤버 스케줄 삭제
+        crewScheduleUseCase.cleanupForExpelledMemberSchedules(crewId, targetMemberId);
+
         // 멤버 상태 EXITED 변경
-        targetMember.exit();
+        targetMember.expel();
         saveCrewMemberPort.save(targetMember);
 
         // 크루 인원 수 1명 감소
@@ -247,16 +252,12 @@ public class CrewService implements CrewUseCase {
         // 가입된 잔여 크루 확인 멤버 상태 변경
         long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(targetMemberId);
 
-        if (joinedCrewCount == 0) {
-            Member member = loadMemberPort.findById(targetMemberId)
-                    .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-            member.resetToOnboarding();
-            saveMemberPort.save(member);
-        }
-
         Member member = loadMemberPort.findById(targetMemberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (joinedCrewCount == 0) {
+            member.resetToOnboarding();
+        }
 
         // 멤버 상태 변경
         member.expel();

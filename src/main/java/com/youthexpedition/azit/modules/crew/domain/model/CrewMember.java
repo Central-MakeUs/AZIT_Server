@@ -63,6 +63,11 @@ public class CrewMember {
         this.status = CrewMemberStatus.EXITED;
     }
 
+    // 크루 방출
+    public void expel() {
+        this.status = CrewMemberStatus.EXITED;
+    }
+
     // 가입 재신청
     public void reJoin() {
         this.status = CrewMemberStatus.REQUESTED;
