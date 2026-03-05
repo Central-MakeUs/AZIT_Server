@@ -446,15 +446,26 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     public void cleanupForExpelledMemberSchedules(Long crewId, Long memberId) {
         LocalDateTime now = LocalDateTime.now();
 
-        // 해당 멤버가 생성한 미래 일정 전체 삭제 (시작 시간 기준)
+        // 해당 멤버가 생성한 미래 일정 조회 (시작 시간 기준)
         List<CrewSchedule> schedulesToCancel = loadCrewSchedulePort.findSchedulesToCancel(crewId, memberId, now);
-        schedulesToCancel.forEach(CrewSchedule::cancel);
-        saveCrewSchedulePort.saveAll(schedulesToCancel);
-
-        // 참여 신청했지만 출석하지 않은 미래 일정 전체 삭제
+        // 참여 신청했지만 출석하지 않은 미래 일정 조회 (참여자 기준)
         List<CrewSchedule> schedulesToRemove = loadCrewSchedulePort.findSchedulesToRemoveParticipant(crewId, memberId, now);
-        schedulesToRemove.forEach(schedule -> schedule.removeParticipant(memberId));
-        saveCrewSchedulePort.saveAll(schedulesToRemove);
+
+        Map<Long, CrewSchedule> scheduleMap = new HashMap<>();
+        schedulesToCancel.forEach(s -> scheduleMap.put(s.getId(), s));
+        schedulesToRemove.forEach(s -> scheduleMap.put(s.getId(), s));
+
+        scheduleMap.values().forEach(schedule -> {
+            // 참여 명단에서 제거
+            schedule.removeParticipant(memberId);
+
+            // 방출된 멤버가 생성자이거나 참여 명단에서 본인이 빠진 후 신청자가 0명이 된 경우 일정 취소
+            if (schedule.getCreatorId().equals(memberId) || schedule.hasNoParticipants()) {
+                schedule.cancel();
+            }
+        });
+
+        saveCrewSchedulePort.saveAll(new ArrayList<>(scheduleMap.values()));
     }
 
 
