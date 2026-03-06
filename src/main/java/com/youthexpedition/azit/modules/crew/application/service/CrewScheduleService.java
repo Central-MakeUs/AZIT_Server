@@ -196,6 +196,8 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         getJoinedMember(command.crewId(), command.memberId());
 
         schedule.removeParticipant(command.memberId());
+        if (schedule.hasNoParticipants()) schedule.cancel(); // 참여 취소 후 해당 일정에 참여자가 아무도 없으면 일정 취소
+
         saveCrewSchedulePort.save(schedule);
     }
 
@@ -229,9 +231,11 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.memberId());
 
-        List<Long> participantIds = schedule.getParticipantIds();
-        Map<Long, MemberProfileDto> profileMap = loadMemberPort.findAllByIds(participantIds);
-        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
+        Set<Long> participantIds = new HashSet<>(schedule.getParticipantIds());
+        participantIds.add(schedule.getCreatorId()); // 생성자 ID까지 조회 (생성자가 참여하고 있지 않은 경우)
+
+        Map<Long, MemberProfileDto> profileMap = loadMemberPort.findAllByIds(new ArrayList<>(participantIds));
+        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), new ArrayList<>(participantIds));
 
         // 데이터 정합성 검증
         if (profileMap.size() != participantIds.size() || crewMemberMap.size() != participantIds.size()) {
@@ -459,10 +463,8 @@ public class CrewScheduleService implements CrewScheduleUseCase {
             // 참여 명단에서 제거
             schedule.removeParticipant(memberId);
 
-            // 방출된 멤버가 생성자이거나 참여 명단에서 본인이 빠진 후 신청자가 0명이 된 경우 일정 취소
-            if (schedule.getCreatorId().equals(memberId) || schedule.hasNoParticipants()) {
-                schedule.cancel();
-            }
+            // 참여 명단에서 본인이 빠진 후 신청자가 0명이 된 경우 일정 취소
+            if (schedule.hasNoParticipants()) schedule.cancel();
         });
 
         saveCrewSchedulePort.saveAll(new ArrayList<>(scheduleMap.values()));

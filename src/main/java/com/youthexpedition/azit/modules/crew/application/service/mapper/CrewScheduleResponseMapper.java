@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberPr
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
@@ -40,7 +41,26 @@ public class CrewScheduleResponseMapper {
         // 전체 인원이 10명보다 많으면 더보기 true
         boolean hasMoreParticipants = allActiveParticipants.size() > PARTICIPANT_PREVIEW_LIMIT;
 
-        return CrewScheduleDetailResponse.of(schedule, currentMemberId, previewParticipants, hasMoreParticipants, allActiveParticipants.size());
+        Long creatorId = schedule.getCreatorId();
+        // 기본값 세팅 (마스킹 처리)
+        String creatorNickname = null;
+        String creatorProfileImageUrl = null;
+        CrewMemberRole creatorRole = null;
+
+        // 생성자가 EXITED 상태 아닐 때 생성자 정보 추가
+        if (profileMap.containsKey(creatorId) && crewMemberMap.containsKey(creatorId)) {
+            CrewMember creator = crewMemberMap.get(creatorId);
+
+            if (creator.getStatus() != CrewMemberStatus.EXITED) {
+                MemberProfileDto creatorProfile = profileMap.get(creatorId);
+                creatorNickname = creatorProfile.nickname();
+                creatorProfileImageUrl = imageUrlFormatUtil.buildFullImageUrl(creatorProfile.profileImageUrl());
+                creatorRole = creator.getRole();
+            }
+        }
+
+        return CrewScheduleDetailResponse.of(
+                schedule, currentMemberId, creatorNickname, creatorProfileImageUrl, creatorRole, previewParticipants, hasMoreParticipants, allActiveParticipants.size());
     }
 
     public SliceResponse<ParticipantResponse> toParticipantSliceResponse(
@@ -82,6 +102,17 @@ public class CrewScheduleResponseMapper {
                     Long id = participant.getMemberId();
                     MemberProfileDto profile = profileMap.get(id);
                     CrewMember crewMember = crewMemberMap.get(id);
+
+                    if (profile == null || crewMember == null || crewMember.getStatus() == CrewMemberStatus.EXITED) {
+                        return ParticipantResponse.of(
+                                null,
+                                null,
+                                null,
+                                null,
+                                id.equals(schedule.getCreatorId()),
+                                participant.getCreatedAt()
+                        );
+                    }
 
                     return ParticipantResponse.of(
                             id,
