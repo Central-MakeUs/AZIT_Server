@@ -49,14 +49,14 @@
 ## 🛠 기술 스택
 
 ### Backend
-* **Language & Framework**: Java, Spring Boot
+* **Language & Framework**: Java, Spring Boot, Spring Batch
 * **Architecture**: Hexagonal Architecture (Port & Adapter Pattern)
 * **Database & ORM**: Spring Data JPA, QueryDSL, MySQL, Redis
 * **Documentation**: Swagger (SpringDoc OpenAPI)
 * **Security**: Spring Security, JWT (Apple/Kakao OAuth)
 
 ### Infrastructure & DevOps
-* **Cloud**: AWS (EC2, RDS, S3, CloudFront, Route53)
+* **Cloud**: AWS (EC2, RDS, S3, CloudFront, Route53, ECS, Fargate, EventBridge)
 * **Container**: Docker, Docker Compose
 * **Web Server**: Nginx (Reverse Proxy, Blue-Green Switching)
 * **CI/CD**: GitHub Actions
@@ -69,6 +69,7 @@
 
 * **도메인 주도 설계(DDD)**: 도메인 객체 내부에 핵심 비즈니스 로직과 상태 변경 메서드를 캡슐화하여 응집도를 높였습니다.
 * **헥사고날 아키텍처(Hexagonal)**: `in` / `out` 포트와 어댑터를 명확히 분리하여 영속성 계층(DB)의 변경이 비즈니스 로직(UseCase)에 영향을 주지 않도록 설계했습니다.
+* **데이터 처리 최적화 (Spring Batch)**: 대량의 데이터 처리(탈퇴 회원 영구 삭제, 무통장 입금 기한 만료 주문 취소 처리 등)를 API 서버와 분리하여 서버 리소스 간섭을 방지하고, Chunk 지향 처리를 통해 메모리 효율성을 극대화했습니다.
 
 <br>
 
@@ -83,7 +84,12 @@
 ### 🚀 CI/CD 및 배포 (Blue-Green)
 * **무중단 배포**: Nginx와 Docker Compose를 활용한 **Blue-Green 무중단 배포** 환경을 구축했습니다. 새로운 버전의 컨테이너를 띄운 후, Spring Boot Actuator로 헬스 체크를 통과했을 때만 Nginx 포트를 스위칭하여 서비스 중단 없이 안정적인 배포를 보장합니다.
 * **보안을 고려한 동적 파이프라인**: GitHub Actions를 통한 자동 배포 시, Runner의 IP를 AWS EC2 Security Group에 임시로 허용(Port 22)하고 배포 완료 후 즉시 차단하여 외부의 보안 위협을 최소화했습니다.
-* **실시간 모니터링 및 알림**: 모니터링 툴로 **New Relic**을 도입하여 서버의 성능과 상태를 모니터링하며, 시스템 장애를 Discord 웹훅과 연동하여 즉각적으로 대응할 수 있는 체계를 갖췄습니다.
+* **실시간 모니터링 및 알림**: 모니터링 툴로 **New Relic**을 도입하여 슬로우 쿼리 등 서버의 성능과 상태를 모니터링하며, 시스템 장애를 Discord 웹훅과 연동하여 즉각적으로 대응할 수 있는 체계를 갖췄습니다.
+
+### ☁️ 서버리스 배치 시스템 (Batch Infrastructure)
+* **자원 격리**: 대용량 데이터 작업이 상시 가동 중인 API 서버(EC2)의 성능에 영향을 주지 않도록 컨테이너 환경을 완전히 분리했습니다.
+* **비용 최적화**: 24시간 서버를 띄우지 않고, 배치 작업이 필요한 시점에만 컨테이너를 실행하며 **Fargate Spot 인스턴스**를 활용해 비용을 절감했습니다.
+* **스케줄링**: **AWS EventBridge**를 통해 각 배치 작업의 실행 주기를 관리합니다.
 
 <details>
 <summary><b>💡 무중단 배포 쉘 스크립트(deploy.sh) 핵심 로직</b></summary>
