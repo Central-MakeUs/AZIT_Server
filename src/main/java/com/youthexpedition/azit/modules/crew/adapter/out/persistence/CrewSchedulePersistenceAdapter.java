@@ -95,15 +95,15 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
     }
 
     @Override
-    public List<CrewSchedule> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth) {
-        return crewScheduleRepository.findAllByMemberIdAndMonth(memberId, yearMonth).stream()
+    public List<CrewSchedule> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth, LocalDateTime now) {
+        return crewScheduleRepository.findAllByMemberIdAndMonth(memberId, yearMonth, now).stream()
                 .map(crewScheduleMapper::toDomain)
                 .toList();
     }
 
     @Override
-    public Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth) {
-        return crewScheduleRepository.findMyMonthlyAttendanceForCalendar(memberId, yearMonth);
+    public Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth, LocalDateTime now) {
+        return crewScheduleRepository.findMyMonthlyAttendanceForCalendar(memberId, yearMonth, now);
     }
 
     @Override

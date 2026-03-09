@@ -421,8 +421,10 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     @Override
     @Transactional(readOnly = true)
     public MyAttendanceLogResponse getMyAttendanceLogs(MyAttendanceMonthlyQuery query) {
+        LocalDateTime now = LocalDateTime.now();
+
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberIdAndMonth(
-                query.memberId(), query.yearMonth());
+                query.memberId(), query.yearMonth(), now);
 
         List<MyAttendanceLogResponse.DailyAttendanceLog> attendanceLogs = crewScheduleResponseMapper.toDailyAttendanceLogs(schedules, query.memberId());
 
@@ -440,8 +442,10 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     @Transactional(readOnly = true)
     @Override
     public List<MyAttendanceMonthlyListResponse> getMyAttendancesForCalendar(MyAttendanceMonthlyQuery query) {
+        LocalDateTime now = LocalDateTime.now();
+
         Map<LocalDate, Set<RunType>> attendanceMap = loadCrewSchedulePort.findMyMonthlyAttendanceForCalendar(
-                query.memberId(), query.yearMonth());
+                query.memberId(), query.yearMonth(), now);
 
         return crewScheduleResponseMapper.toMyAttendanceMonthlyListResponse(attendanceMap);
     }

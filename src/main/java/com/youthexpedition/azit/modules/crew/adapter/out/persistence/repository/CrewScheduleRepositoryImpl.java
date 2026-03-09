@@ -104,10 +104,9 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
     }
 
     @Override
-    public List<CrewScheduleEntity> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth) {
+    public List<CrewScheduleEntity> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth, LocalDateTime now) {
         LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime end = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
-        LocalDateTime now = LocalDateTime.now();
 
         return queryFactory.selectFrom(crewScheduleEntity)
                 .join(crewScheduleEntity.members, crewScheduleMemberEntity)
@@ -115,18 +114,17 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                         crewScheduleMemberEntity.memberId.eq(memberId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 삭제된 일정 제외
                         crewScheduleEntity.meetingAt.between(start, end),
-                        crewScheduleEntity.meetingAt.before(now) // 과거의 일정 또는 미리 출석한 일정
-                                .or(crewScheduleMemberEntity.checkedInAt.isNotNull())
+                        crewScheduleMemberEntity.isCheckedIn.isTrue()
+                                .or(crewScheduleEntity.meetingAt.lt(now.minusHours(1)))
                 )
                 .orderBy(crewScheduleEntity.meetingAt.desc()) // 최신순 정렬
                 .fetch();
     }
 
     @Override
-    public Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth) {
+    public Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth, LocalDateTime now) {
         LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime end = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
-        LocalDateTime now = LocalDateTime.now();
 
         List<Tuple> results = queryFactory
                 .select(crewScheduleEntity.meetingAt, crewScheduleEntity.runType)
@@ -136,8 +134,8 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                         crewScheduleMemberEntity.memberId.eq(memberId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
                         crewScheduleEntity.meetingAt.between(start, end),
-                        crewScheduleEntity.meetingAt.before(now)
-                                .or(crewScheduleMemberEntity.checkedInAt.isNotNull())
+                        crewScheduleMemberEntity.isCheckedIn.isTrue()
+                                .or(crewScheduleEntity.meetingAt.lt(now.minusHours(1)))
                 )
                 .fetch();
 
