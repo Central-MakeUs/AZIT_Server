@@ -24,6 +24,8 @@ import static com.youthexpedition.azit.modules.crew.adapter.out.persistence.enti
 public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
+    private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1;
+
     @Override
     public List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, YearMonth yearMonth, RunType runType) {
         return queryFactory.selectFrom(crewScheduleEntity)
@@ -115,7 +117,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 삭제된 일정 제외
                         crewScheduleEntity.meetingAt.between(start, end),
                         crewScheduleMemberEntity.isCheckedIn.isTrue()
-                                .or(crewScheduleEntity.meetingAt.lt(now.minusHours(1)))
+                                .or(crewScheduleEntity.meetingAt.lt(now.minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS)))
                 )
                 .orderBy(crewScheduleEntity.meetingAt.desc()) // 최신순 정렬
                 .fetch();
@@ -135,7 +137,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
                         crewScheduleEntity.meetingAt.between(start, end),
                         crewScheduleMemberEntity.isCheckedIn.isTrue()
-                                .or(crewScheduleEntity.meetingAt.lt(now.minusHours(1)))
+                                .or(crewScheduleEntity.meetingAt.lt(now.minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS)))
                 )
                 .fetch();
 
@@ -187,7 +189,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 .where(
                         crewScheduleEntity.crewId.eq(crewId),
                         crewScheduleMemberEntity.memberId.eq(memberId),
-                        crewScheduleEntity.meetingAt.gt(now.minusHours(1)), // 출석 가능한 일정
+                        crewScheduleEntity.meetingAt.gt(now.minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS)), // 출석 가능한 일정
                         crewScheduleMemberEntity.isCheckedIn.isFalse() // 출석하지 않은 일정
                 )
                 .fetch();
