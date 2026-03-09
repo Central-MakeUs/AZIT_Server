@@ -48,11 +48,11 @@ public class CrewScheduleResponseMapper {
         String creatorProfileImageUrl = null;
         CrewMemberRole creatorRole = CrewMemberRole.MEMBER;
 
-        // 생성자가 EXITED 상태 아닐 때 생성자 정보 추가
+        // 생성자가 EXITED/EXPELLED 상태 아닐 때 생성자 정보 추가
         if (profileMap.containsKey(creatorId) && crewMemberMap.containsKey(creatorId)) {
             CrewMember creator = crewMemberMap.get(creatorId);
 
-            if (creator.getStatus() != CrewMemberStatus.EXITED) {
+            if (creator.getStatus() != CrewMemberStatus.EXITED && creator.getStatus() != CrewMemberStatus.EXPELLED) {
                 responseCreatorId = schedule.getCreatorId();
                 MemberProfileDto creatorProfile = profileMap.get(creatorId);
                 creatorNickname = creatorProfile.nickname();
@@ -104,8 +104,8 @@ public class CrewScheduleResponseMapper {
                     MemberProfileDto profile = profileMap.get(id);
                     CrewMember crewMember = crewMemberMap.get(id);
 
-                    // 프로필이 없거나, 크루 멤버 정보가 없거나, 크루 방출 상태인 경우 마스킹 처리
-                    if (profile == null || crewMember == null || crewMember.getStatus() == CrewMemberStatus.EXITED) {
+                    // 프로필이 없거나, 크루 멤버 정보가 없거나, 크루 방출/탈퇴 상태인 경우 마스킹 처리
+                    if (profile == null || crewMember == null || crewMember.getStatus() == CrewMemberStatus.EXITED || crewMember.getStatus() == CrewMemberStatus.EXPELLED) {
                         return ParticipantResponse.of(
                                 id, // 페이징 위해 살려둠
                                 null,

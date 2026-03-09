@@ -123,9 +123,10 @@ public class MemberService implements MemberUseCase {
         }
 
         CrewMemberStatus targetStatus = switch (member.getStatus()) {
-            case KICKED_PENDING_CONFIRM -> CrewMemberStatus.EXITED;   // 방출 확인 대기 시 EXITED 조회
+            case KICKED_PENDING_CONFIRM -> CrewMemberStatus.EXPELLED;   // 방출 확인 대기 시 EXPELLED 조회
             case REJECTED_PENDING_CONFIRM -> CrewMemberStatus.REJECTED; // 가입 거절 확인 대기 시 REJECTED 조회
             case WAITING_FOR_APPROVE -> CrewMemberStatus.REQUESTED;    // 가입 승인 대기 시 REQUESTED 조회
+            case WITHDRAWN -> CrewMemberStatus.EXITED;
             default -> CrewMemberStatus.JOINED;                        // 그 외(ACTIVE 등) JOINED 조회
         };
 
