@@ -192,6 +192,10 @@ public class CrewScheduleService implements CrewScheduleUseCase {
             throw new BusinessException(CrewErrorCode.CREATOR_CANNOT_CANCEL_PARTICIPATION);
         }
 
+        if (schedule.isCheckedIn(command.memberId())) {
+            throw new BusinessException(CrewErrorCode.CANNOT_CANCEL_AFTER_CHECK_IN);
+        }
+
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.memberId());
 

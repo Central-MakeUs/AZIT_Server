@@ -35,6 +35,7 @@ public enum CrewErrorCode implements BaseErrorCode {
     NOT_CHECK_IN_TIME("NOT_CHECK_IN_TIME", "출석 가능 시간이 아닙니다.", HttpStatus.BAD_REQUEST),
     TOO_FAR_FROM_LOCATION("TOO_FAR_FROM_LOCATION", "집결지 100m 이내에서만 출석이 가능합니다.", HttpStatus.BAD_REQUEST),
     ALREADY_CHECKED_IN("ALREADY_CHECKED_IN", "이미 출석 완료된 일정입니다.", HttpStatus.BAD_REQUEST),
+    CANNOT_CANCEL_AFTER_CHECK_IN("CANNOT_CANCEL_AFTER_CHECK_IN", "이미 출석 완료된 일정은 취소가 불가능합니다.", HttpStatus.BAD_REQUEST),
     ;
 
     private final String code;

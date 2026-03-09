@@ -121,7 +121,8 @@ public interface CrewScheduleControllerDocs {
         
             **[참고 사항]** <br>
             * 일정 생성자는 본인의 일정 참여를 취소할 수 없습니다. (CREATOR_CANNOT_CANCEL_PARTICIPATION)
-            * 참여하지 않은 일정에 대해 취소 요청을 할 수 없습니다. (NOT_PARTICIPATING_SCHEDULE)
+            * 참여하지 않은 일정은 취소할 수 없습니다. (NOT_PARTICIPATING_SCHEDULE)
+            * 이미 출석한 일정은 취소할 수 없습니다. (CANNOT_CANCEL_AFTER_CHECK_IN)
             """
     )
     @ApiErrorCodeExamples({
