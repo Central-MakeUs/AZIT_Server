@@ -43,7 +43,6 @@ public class CrewScheduleResponseMapper {
 
         Long creatorId = schedule.getCreatorId();
         // 기본값 세팅 (마스킹 처리)
-        Long responseCreatorId = null;
         String creatorNickname = null;
         String creatorProfileImageUrl = null;
         CrewMemberRole creatorRole = CrewMemberRole.MEMBER;
@@ -53,7 +52,6 @@ public class CrewScheduleResponseMapper {
             CrewMember creator = crewMemberMap.get(creatorId);
 
             if (creator.getStatus() != CrewMemberStatus.EXITED && creator.getStatus() != CrewMemberStatus.EXPELLED) {
-                responseCreatorId = schedule.getCreatorId();
                 MemberProfileDto creatorProfile = profileMap.get(creatorId);
                 creatorNickname = creatorProfile.nickname();
                 creatorProfileImageUrl = imageUrlFormatUtil.buildFullImageUrl(creatorProfile.profileImageUrl());
@@ -62,7 +60,7 @@ public class CrewScheduleResponseMapper {
         }
 
         return CrewScheduleDetailResponse.of(
-                schedule, currentMemberId, responseCreatorId, creatorNickname, creatorProfileImageUrl, creatorRole, previewParticipants, hasMoreParticipants, allActiveParticipants.size());
+                schedule, currentMemberId, creatorId, creatorNickname, creatorProfileImageUrl, creatorRole, previewParticipants, hasMoreParticipants, allActiveParticipants.size());
     }
 
     public SliceResponse<ParticipantResponse> toParticipantSliceResponse(
