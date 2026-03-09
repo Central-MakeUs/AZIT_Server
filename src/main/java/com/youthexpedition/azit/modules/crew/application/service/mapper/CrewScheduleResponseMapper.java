@@ -43,15 +43,17 @@ public class CrewScheduleResponseMapper {
 
         Long creatorId = schedule.getCreatorId();
         // 기본값 세팅 (마스킹 처리)
+        Long responseCreatorId = null;
         String creatorNickname = null;
         String creatorProfileImageUrl = null;
-        CrewMemberRole creatorRole = null;
+        CrewMemberRole creatorRole = CrewMemberRole.MEMBER;
 
         // 생성자가 EXITED 상태 아닐 때 생성자 정보 추가
         if (profileMap.containsKey(creatorId) && crewMemberMap.containsKey(creatorId)) {
             CrewMember creator = crewMemberMap.get(creatorId);
 
             if (creator.getStatus() != CrewMemberStatus.EXITED) {
+                responseCreatorId = schedule.getCreatorId();
                 MemberProfileDto creatorProfile = profileMap.get(creatorId);
                 creatorNickname = creatorProfile.nickname();
                 creatorProfileImageUrl = imageUrlFormatUtil.buildFullImageUrl(creatorProfile.profileImageUrl());
@@ -60,7 +62,7 @@ public class CrewScheduleResponseMapper {
         }
 
         return CrewScheduleDetailResponse.of(
-                schedule, currentMemberId, creatorNickname, creatorProfileImageUrl, creatorRole, previewParticipants, hasMoreParticipants, allActiveParticipants.size());
+                schedule, currentMemberId, responseCreatorId, creatorNickname, creatorProfileImageUrl, creatorRole, previewParticipants, hasMoreParticipants, allActiveParticipants.size());
     }
 
     public SliceResponse<ParticipantResponse> toParticipantSliceResponse(
@@ -97,23 +99,24 @@ public class CrewScheduleResponseMapper {
 
         return schedule.getParticipants().values().stream()
                 // 데이터 정합성 검증 필터링
-                .filter(participant -> profileMap.containsKey(participant.getMemberId()) && crewMemberMap.containsKey(participant.getMemberId()))
                 .map(participant -> {
                     Long id = participant.getMemberId();
                     MemberProfileDto profile = profileMap.get(id);
                     CrewMember crewMember = crewMemberMap.get(id);
 
+                    // 프로필이 없거나, 크루 멤버 정보가 없거나, 크루 방출 상태인 경우 마스킹 처리
                     if (profile == null || crewMember == null || crewMember.getStatus() == CrewMemberStatus.EXITED) {
                         return ParticipantResponse.of(
+                                id, // 페이징 위해 살려둠
                                 null,
                                 null,
-                                null,
-                                null,
+                                (crewMember != null) ? crewMember.getRole() : CrewMemberRole.MEMBER,
                                 id.equals(schedule.getCreatorId()),
                                 participant.getCreatedAt()
                         );
                     }
 
+                    // 정상 데이터인 경우
                     return ParticipantResponse.of(
                             id,
                             profile.nickname(),

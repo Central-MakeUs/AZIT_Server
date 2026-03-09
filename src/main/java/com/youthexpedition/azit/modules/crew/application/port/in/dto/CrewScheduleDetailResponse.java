@@ -59,6 +59,7 @@ public record CrewScheduleDetailResponse(
         public static CrewScheduleDetailResponse of(
                 CrewSchedule schedule,
                 Long currentMemberId,
+                Long creatorId,
                 String creatorNickname,
                 String creatorProfileImageUrl,
                 CrewMemberRole creatorRole,
@@ -78,7 +79,7 @@ public record CrewScheduleDetailResponse(
                         schedule.getMaxParticipants(),
                         totalActiveParticipantCount,
                         schedule.getSupplies(),
-                        schedule.getCreatorId(),
+                        creatorId,
                         creatorNickname,
                         creatorProfileImageUrl,
                         creatorRole,

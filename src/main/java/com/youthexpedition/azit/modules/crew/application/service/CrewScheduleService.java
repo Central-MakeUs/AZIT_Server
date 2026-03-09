@@ -460,8 +460,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         schedulesToRemove.forEach(s -> scheduleMap.put(s.getId(), s));
 
         scheduleMap.values().forEach(schedule -> {
-            // 참여 명단에서 제거
-            schedule.removeParticipant(memberId);
+            // 아직 출석체크하지 않은 일정인 경우 참여 명단에서 제거
+            if (!schedule.isCheckedIn(memberId)) schedule.removeParticipant(memberId);
+
 
             // 참여 명단에서 본인이 빠진 후 신청자가 0명이 된 경우 일정 취소
             if (schedule.hasNoParticipants()) schedule.cancel();
