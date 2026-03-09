@@ -53,10 +53,8 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private final SaveMemberPort saveMemberPort;
     private final CrewScheduleResponseMapper crewScheduleResponseMapper;
 
-    private static final int CHECK_IN_COOL_DOWN_MINUTES = 30; // 출석 완료 후 최소 유지 시간
     private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1; // 출석 버튼 활성화 윈도우 (전후 1시간)
     private static final int COMPLETED_RETENTION_HOURS = 3;    // 지난 일정 완료 표시 유지 시간
-    private static final int MINIMUM_SCHEDULE_INTERVAL_MINUTES = 60; // 최소 일정 간격
     private static final long CHECK_IN_POINTS = 100L;
     private static final double CHECK_IN_AVAILABLE_DISTANCE_METERS = 100.0;
 
@@ -198,6 +196,8 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         getJoinedMember(command.crewId(), command.memberId());
 
         schedule.removeParticipant(command.memberId());
+        if (schedule.hasNoParticipants()) schedule.cancel(); // 참여 취소 후 해당 일정에 참여자가 아무도 없으면 일정 취소
+
         saveCrewSchedulePort.save(schedule);
     }
 
@@ -231,9 +231,11 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.memberId());
 
-        List<Long> participantIds = schedule.getParticipantIds();
-        Map<Long, MemberProfileDto> profileMap = loadMemberPort.findAllByIds(participantIds);
-        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), participantIds);
+        Set<Long> participantIds = new HashSet<>(schedule.getParticipantIds());
+        participantIds.add(schedule.getCreatorId()); // 생성자 ID까지 조회 (생성자가 참여하고 있지 않은 경우)
+
+        Map<Long, MemberProfileDto> profileMap = loadMemberPort.findAllByIds(new ArrayList<>(participantIds));
+        Map<Long, CrewMember> crewMemberMap = loadCrewMemberPort.findAllByCrewIdAndMemberIds(command.crewId(), new ArrayList<>(participantIds));
 
         // 데이터 정합성 검증
         if (profileMap.size() != participantIds.size() || crewMemberMap.size() != participantIds.size()) {
@@ -417,19 +419,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
-    @Transactional
-    public void cancelAllParticipationInCrew(Long crewId, Long memberId) {
-        // 해당 크루의 일정 중 사용자가 참여 중인 모든 일정 조회
-        List<CrewSchedule> joinedSchedules = loadCrewSchedulePort.findAllByCrewIdAndMemberId(crewId, memberId);
-
-        if (joinedSchedules.isEmpty()) return;
-        // 참여한 일정 데이터 삭제
-        joinedSchedules.forEach(schedule -> schedule.removeParticipant(memberId));
-
-        saveCrewSchedulePort.saveAll(joinedSchedules);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public MyAttendanceLogResponse getMyAttendanceLogs(MyAttendanceMonthlyQuery query) {
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberIdAndMonth(
@@ -455,6 +444,31 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                 query.memberId(), query.yearMonth());
 
         return crewScheduleResponseMapper.toMyAttendanceMonthlyListResponse(attendanceMap);
+    }
+
+    @Transactional
+    public void cleanupForExpelledMemberSchedules(Long crewId, Long memberId) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 해당 멤버가 생성한 미래 일정 조회 (시작 시간 기준)
+        List<CrewSchedule> schedulesToCancel = loadCrewSchedulePort.findSchedulesToCancel(crewId, memberId, now);
+        // 참여 신청했지만 출석하지 않은 미래 일정 조회 (참여자 기준)
+        List<CrewSchedule> schedulesToRemove = loadCrewSchedulePort.findSchedulesToRemoveParticipant(crewId, memberId, now);
+
+        Map<Long, CrewSchedule> scheduleMap = new HashMap<>();
+        schedulesToCancel.forEach(s -> scheduleMap.put(s.getId(), s));
+        schedulesToRemove.forEach(s -> scheduleMap.put(s.getId(), s));
+
+        scheduleMap.values().forEach(schedule -> {
+            // 아직 출석체크하지 않은 일정인 경우 참여 명단에서 제거
+            if (!schedule.isCheckedIn(memberId)) schedule.removeParticipant(memberId);
+
+
+            // 참여 명단에서 본인이 빠진 후 신청자가 0명이 된 경우 일정 취소
+            if (schedule.hasNoParticipants()) schedule.cancel();
+        });
+
+        saveCrewSchedulePort.saveAll(new ArrayList<>(scheduleMap.values()));
     }
 
 
