@@ -110,7 +110,7 @@ public class CrewService implements CrewUseCase {
                                 throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
                             }
 
-                            // 탈퇴나 거절 상태일 경우 재신청
+                            // 탈퇴, 방출, 거절 상태일 경우 재신청
                             existingMember.reJoin();
                             saveCrewMemberPort.save(existingMember);
                         },

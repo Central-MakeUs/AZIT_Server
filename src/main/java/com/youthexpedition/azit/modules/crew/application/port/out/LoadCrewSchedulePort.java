@@ -18,8 +18,8 @@ public interface LoadCrewSchedulePort {
     List<CrewSchedule> findAllByMemberId(Long memberId);
     List<CrewSchedule> findAllTodaySchedulesByMemberId(Long memberId, LocalDateTime now);
     Optional<CrewSchedule> findNextClosestScheduleByMemberId(Long memberId, LocalDateTime now);
-    List<CrewSchedule> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth);
-    Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth);
+    List<CrewSchedule> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth, LocalDateTime now);
+    Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth, LocalDateTime now);
     boolean existsConflictingSchedule(Long memberId, LocalDateTime newMeetingAt, Long excludeScheduleId);
     List<CrewSchedule> findSchedulesToCancel(Long crewId, Long memberId, LocalDateTime now);
     List<CrewSchedule> findSchedulesToRemoveParticipant(Long crewId, Long memberId, LocalDateTime now);
