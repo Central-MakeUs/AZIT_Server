@@ -67,7 +67,12 @@ public class MemberService implements MemberUseCase {
         // 가입한 크루 인원 수 차감 및 상태 변경
         processCrewWithdrawal(memberId);
 
+        // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
+        if (member.isWithdrawn()) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+        }
         member.withdraw();
+
         tokenPort.deleteByMemberId(memberId); // 리프레시 토큰 삭제
         tokenPort.addToBlacklist(accessToken, BLACKLIST_REASON_WITHDRAWN); // 블랙리스트에 액세스 토큰 추가
         saveMemberPort.save(member);
@@ -85,7 +90,12 @@ public class MemberService implements MemberUseCase {
         // 가입한 크루 인원 수 차감 및 상태 변경
         processCrewWithdrawal(member.getId());
 
+        // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
+        if (member.isWithdrawn()) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+        }
         member.withdraw();
+
         tokenPort.deleteByMemberId(member.getId()); // 리프레시 토큰 삭제
         saveMemberPort.save(member);
     }

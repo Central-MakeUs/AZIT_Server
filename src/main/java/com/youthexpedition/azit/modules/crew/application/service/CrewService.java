@@ -267,10 +267,14 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (joinedCrewCount == 0) {
+            // 탈퇴한 회원인지 확인
+            if (member.isWithdrawn()) {
+                throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+            }
+
             member.resetToOnboarding();
         }
 
-        // 멤버 상태 변경
         member.expel();
         saveMemberPort.save(member);
     }

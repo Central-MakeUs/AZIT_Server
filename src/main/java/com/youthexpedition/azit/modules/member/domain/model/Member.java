@@ -78,7 +78,7 @@ public class Member {
         this.isEmailSharingEnabled = isEnabled;
     }
 
-    // 리더가 크루 생성 완료했을 경우 상태 변경 (ACTIVE)
+    // 리더가 크루 생성 완료했을 경우 상태 변경
     public void completeOnboarding() {
         if (!this.status.isJoinable()) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
@@ -86,7 +86,7 @@ public class Member {
         this.status = MemberStatus.ACTIVE;
     }
 
-    // 크루원이 초대 코드 입력 후 승인 대기할 경우 상태 변경 (WAITING_FOR_APPROVE)
+    // 크루원이 초대 코드 입력 후 승인 대기할 경우 상태 변경
     public void applyForJoin() {
         if (!this.status.isJoinable()) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
@@ -94,7 +94,7 @@ public class Member {
         this.status = MemberStatus.WAITING_FOR_APPROVE;
     }
 
-    // 리더가 가입 신청을 승인했을 경우 상태 변경 (ACTIVE)
+    // 리더가 가입 신청을 승인했을 경우 상태 변경
     public void approveJoin() {
         if (this.status != MemberStatus.WAITING_FOR_APPROVE) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
@@ -102,7 +102,7 @@ public class Member {
         this.status = MemberStatus.APPROVED_PENDING_CONFIRM;
     }
 
-    // 리더가 가입 신청을 거절했을 경우 상태 변경 (PENDING_ONBOARDING)
+    // 리더가 가입 신청을 거절했을 경우 상태 변경
     public void rejectJoin() {
         if (this.status != MemberStatus.WAITING_FOR_APPROVE) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
@@ -110,12 +110,12 @@ public class Member {
         this.status = MemberStatus.REJECTED_PENDING_CONFIRM;
     }
 
-    // 리더가 방출했을 경우 상태 변경 (KICKED_PENDING_CONFIRM)
+    public boolean isWithdrawn() {
+        return this.status == MemberStatus.WITHDRAWN;
+    }
+
+    // 리더가 방출했을 경우 상태 변경
     public void expel() {
-        // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
-        if (this.status == MemberStatus.WITHDRAWN) {
-            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
-        }
         this.status = MemberStatus.KICKED_PENDING_CONFIRM;
     }
 
@@ -132,10 +132,6 @@ public class Member {
 
     // 탈퇴 상태로 변경
     public void withdraw() {
-        if (this.status == MemberStatus.WITHDRAWN) {
-            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN); // 이미 탈퇴한 경우 예외 처리
-        }
-
         this.status = MemberStatus.WITHDRAWN;
         this.appleRefreshToken = null;
     }
@@ -151,10 +147,6 @@ public class Member {
 
     // 가입된 모든 크루에서 탈퇴하거나 방출되었을 경우, 앱 사용 제한을 위해 다시 크루 가입 단계로 되돌림
     public void resetToOnboarding() {
-        // 탈퇴한 회원이 아닌 경우에만 상태 변경
-        if (this.status == MemberStatus.WITHDRAWN) {
-            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
-        }
         this.status = MemberStatus.PENDING_ONBOARDING;
     }
 
