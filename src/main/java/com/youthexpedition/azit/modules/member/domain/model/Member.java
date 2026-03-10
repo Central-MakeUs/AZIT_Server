@@ -165,18 +165,11 @@ public class Member {
 
     // 포인트 차감
     public void deductPoints(long points) {
-        if (!hasEnoughPoints(points)) {
-            throw new BusinessException(MemberErrorCode.INSUFFICIENT_POINTS);
-        }
         this.totalPoints -= points;
     }
 
     // 포인트 적립
     public void addPoints(long points) {
-        if (points < 0) {
-            throw new BusinessException(MemberErrorCode.INVALID_POINT_VALUE);
-        }
-
         this.totalPoints += points;
     }
 

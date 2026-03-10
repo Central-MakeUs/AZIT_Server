@@ -1,7 +1,5 @@
 package com.youthexpedition.azit.modules.member.domain.model;
 
-import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.member.domain.model.enums.DeliveryAddressErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

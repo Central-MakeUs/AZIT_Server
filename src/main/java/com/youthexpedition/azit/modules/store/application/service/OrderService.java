@@ -180,6 +180,10 @@ public class OrderService implements OrderUseCase {
 
         Order savedOrder = saveOrderPort.save(order);
 
+        // 포인트 검증
+        if (!member.hasEnoughPoints(command.usedPoints())) {
+            throw new BusinessException(MemberErrorCode.INSUFFICIENT_POINTS);
+        }
         // 포인트 차감
         member.deductPoints(command.usedPoints());
         saveMemberPort.save(member);
@@ -246,7 +250,7 @@ public class OrderService implements OrderUseCase {
             Member member = getMember(memberId);
             member.addPoints(order.getUsedPoints()); // 사용한 포인트만큼 복구
             saveMemberPort.save(member);
-        }
+        } else throw new BusinessException(MemberErrorCode.INVALID_POINT_VALUE);
 
         saveOrderPort.save(order);
     }
