@@ -160,6 +160,12 @@ public class CrewService implements CrewUseCase {
         // 가입 대기 중인 대상자 조회
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
+
+        // 가입 신청 상태인지 확인
+        if (!targetCrewMember.isJoinRequested()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_PROCESSED_JOIN_REQUEST);
+        }
+
         // 가입 승인
         targetCrewMember.approve();
         saveCrewMemberPort.save(targetCrewMember);
@@ -187,6 +193,11 @@ public class CrewService implements CrewUseCase {
 
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
+
+        // 가입 신청 상태인지 확인
+        if (!targetCrewMember.isJoinRequested()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_PROCESSED_JOIN_REQUEST);
+        }
 
         targetCrewMember.reject();
         saveCrewMemberPort.save(targetCrewMember);
