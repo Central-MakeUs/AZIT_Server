@@ -116,6 +116,11 @@ public class MemberService implements MemberUseCase {
     public void confirmMemberStatus(Long memberId) {
         Member member = getMember(memberId);
 
+        // 멤버 상태 확인
+        if (!member.canUpdateStatusAfterConfirm()) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
+
         // 가입되어 있는 나머지 크루가 있는지 확인
         boolean hasJoinedCrews = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId) > 0;
         member.confirmStatus(hasJoinedCrews);
