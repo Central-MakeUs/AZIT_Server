@@ -23,8 +23,6 @@ public class OrderItem {
 
     public static OrderItem create(
             Long productId, Long skuId, String brandName, String productName, String productImageUrl, String optionDescription, long basePrice, long salePrice, int quantity) {
-        validateQuantity(quantity);
-
         return OrderItem.builder()
                 .productId(productId)
                 .skuId(skuId)
@@ -38,10 +36,8 @@ public class OrderItem {
                 .build();
     }
 
-    private static void validateQuantity(int quantity) {
-        if (quantity <= 0) {
-            throw new BusinessException(StoreErrorCode.INVALID_QUANTITY);
-        }
+    public static boolean isValidQuantity(int quantity) {
+        return quantity > 0;
     }
 
     public long getTotalBasePrice() {

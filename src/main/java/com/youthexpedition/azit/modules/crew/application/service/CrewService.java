@@ -26,6 +26,7 @@ import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPo
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
@@ -74,6 +75,11 @@ public class CrewService implements CrewUseCase {
         // 온보딩 완료했으므로 ACTIVE로 멤버 상태 변경
         Member member = loadMemberPort.findById(command.leaderId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // 멤버 상태 확인
+        if (!member.isJoinable()) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
         member.completeOnboarding();
 
         saveMemberPort.save(member);
@@ -124,6 +130,10 @@ public class CrewService implements CrewUseCase {
         Member member = loadMemberPort.findById(command.memberId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        // 멤버 상태 확인
+        if (!member.isJoinable()) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
         // WAITING_FOR_APPROVE 으로 상태 변경
         member.applyForJoin();
         saveMemberPort.save(member);
@@ -160,6 +170,12 @@ public class CrewService implements CrewUseCase {
         // 가입 대기 중인 대상자 조회
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
+
+        // 가입 신청 상태인지 확인
+        if (!targetCrewMember.isJoinRequested()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_PROCESSED_JOIN_REQUEST);
+        }
+
         // 가입 승인
         targetCrewMember.approve();
         saveCrewMemberPort.save(targetCrewMember);
@@ -175,6 +191,10 @@ public class CrewService implements CrewUseCase {
         Member member = loadMemberPort.findById(command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        // 멤버 상태 확인
+        if (member.getStatus() != MemberStatus.WAITING_FOR_APPROVE) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
         member.approveJoin();
         saveMemberPort.save(member);
     }
@@ -188,6 +208,11 @@ public class CrewService implements CrewUseCase {
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
+        // 가입 신청 상태인지 확인
+        if (!targetCrewMember.isJoinRequested()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_PROCESSED_JOIN_REQUEST);
+        }
+
         targetCrewMember.reject();
         saveCrewMemberPort.save(targetCrewMember);
 
@@ -195,6 +220,9 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 해당 유저의 회원 상태를 REJECTED_PENDING_CONFIRM 으로 변경
+        if (member.getStatus() != MemberStatus.WAITING_FOR_APPROVE) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
         member.rejectJoin();
         saveMemberPort.save(member);
     }
@@ -256,10 +284,14 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (joinedCrewCount == 0) {
+            // 탈퇴한 회원인지 확인
+            if (member.isWithdrawn()) {
+                throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+            }
+
             member.resetToOnboarding();
         }
 
-        // 멤버 상태 변경
         member.expel();
         saveMemberPort.save(member);
     }

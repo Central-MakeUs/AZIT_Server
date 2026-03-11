@@ -1,7 +1,5 @@
 package com.youthexpedition.azit.modules.member.domain.model;
 
-import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.member.domain.model.enums.DeliveryAddressErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,8 +25,6 @@ public class DeliveryAddress {
 
     public static DeliveryAddress create(Long memberId, String recipientName, String phoneNumber,
                                          String zipcode, String baseAddress, String detailAddress, boolean isDefault) {
-        validateInfo(recipientName, phoneNumber, zipcode, baseAddress, detailAddress);
-
         return DeliveryAddress.builder()
                 .memberId(memberId)
                 .recipientName(recipientName)
@@ -42,8 +38,6 @@ public class DeliveryAddress {
 
     // 배송지 정보 수정
     public void update(String recipientName, String phoneNumber, String zipcode, String baseAddress, String detailAddress) {
-        validateInfo(recipientName, phoneNumber, zipcode, baseAddress, detailAddress);
-
         this.recipientName = recipientName;
         this.phoneNumber = phoneNumber;
         this.zipcode = zipcode;
@@ -63,20 +57,16 @@ public class DeliveryAddress {
     }
 
     // 주소 필수 항목 확인
-    private static void validateInfo(String recipientName, String phoneNumber, String zipcode, String baseAddress, String detailAddress) {
-        if (isNull(recipientName) || recipientName.isEmpty() ||
-                isNull(phoneNumber) || phoneNumber.isEmpty() ||
-                isNull(zipcode) || zipcode.isEmpty() ||
-                isNull(baseAddress) || baseAddress.isEmpty() ||
-                isNull(detailAddress) || detailAddress.isEmpty()) {
-            throw new BusinessException(DeliveryAddressErrorCode.INVALID_ADDRESS_INPUT);
-        }
+    public static boolean isValidInfo(String recipientName, String phoneNumber, String zipcode, String baseAddress, String detailAddress) {
+        return !isNull(recipientName) && !recipientName.isEmpty() &&
+                !isNull(phoneNumber) && !phoneNumber.isEmpty() &&
+                !isNull(zipcode) && !zipcode.isEmpty() &&
+                !isNull(baseAddress) && !baseAddress.isEmpty() &&
+                !isNull(detailAddress) && !detailAddress.isEmpty();
     }
 
     // 삭제 가능 여부 확인
-    public void validateDeletable() {
-        if (this.isDefault) {
-            throw new BusinessException(DeliveryAddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS);
-        }
+    public boolean isDeletable() {
+        return !this.isDefault;
     }
 }
