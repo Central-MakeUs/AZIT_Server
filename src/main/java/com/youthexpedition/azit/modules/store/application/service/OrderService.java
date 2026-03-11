@@ -250,7 +250,7 @@ public class OrderService implements OrderUseCase {
             Member member = getMember(memberId);
             member.addPoints(order.getUsedPoints()); // 사용한 포인트만큼 복구
             saveMemberPort.save(member);
-        } else throw new BusinessException(MemberErrorCode.INVALID_POINT_VALUE);
+        }
 
         saveOrderPort.save(order);
     }
