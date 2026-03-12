@@ -34,6 +34,8 @@ public class CrewSchedule {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private static final int MODIFICATION_LOCK_HOURS_BEFORE_MEETING = 1;
+
     public static CrewSchedule create(Long crewId, Long creatorId, String title, RunType runType,
                                       LocalDateTime meetingAt, Location location, String description,
                                       Integer distance, Integer pace, Integer maxParticipants, List<String> supplies
@@ -90,6 +92,12 @@ public class CrewSchedule {
     // 최대 인원 확인
     public boolean isFull() {
         return participants.size() >= maxParticipants;
+    }
+
+    // 일정 수정 및 삭제 가능한지 확인 (출석 시작 후 불가)
+    public boolean isModifiable(LocalDateTime currentTime) {
+        LocalDateTime attendanceStartTime = this.meetingAt.minusHours(MODIFICATION_LOCK_HOURS_BEFORE_MEETING);
+        return currentTime.isBefore(attendanceStartTime);
     }
 
     // 일정에 참여하고 있는지 확인
