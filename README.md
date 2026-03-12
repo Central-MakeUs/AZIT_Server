@@ -91,28 +91,3 @@
 * **무중단 배포**: Nginx와 Docker Compose를 활용한 **Blue-Green 무중단 배포** 환경을 구축했습니다. 새로운 버전의 컨테이너를 띄운 후, Spring Boot Actuator로 헬스 체크를 통과했을 때만 Nginx 포트를 스위칭하여 서비스 중단 없이 안정적인 배포를 보장합니다.
 * **보안을 고려한 동적 파이프라인**: GitHub Actions를 통한 자동 배포 시, Runner의 IP를 AWS EC2 Security Group에 임시로 허용(Port 22)하고 배포 완료 후 즉시 차단하여 외부의 보안 위협을 최소화했습니다.
 * **실시간 모니터링 및 알림**: 모니터링 툴로 **New Relic**을 도입하여 슬로우 쿼리 등 서버의 성능과 상태를 모니터링하며, 시스템 장애를 Discord 웹훅과 연동하여 즉각적으로 대응할 수 있는 체계를 갖췄습니다.
-
-<details>
-<summary><b>💡 무중단 배포 쉘 스크립트(deploy.sh) 핵심 로직</b></summary>
-<div markdown="1">
-
-```bash
-# 1. 신규 컨테이너 헬스 체크 (10회 반복)
-for retry_count in {1..10}
-do
-  RESPONSE=$(curl -s http://localhost:$TARGET_PORT/actuator/health)
-  UP_COUNT=$(echo $RESPONSE | grep 'UP' | wc -l)
-
-  if [ $UP_COUNT -ge 1 ]; then
-    echo "✅ 헬스 체크 성공! ($retry_count/10)"
-    break
-  fi
-  sleep 10
-done
-
-# 2. Nginx 포트 스위칭 및 설정 리로드
-echo "server 127.0.0.1:$TARGET_PORT;" | sudo tee /etc/nginx/conf.d/service-env.inc
-sudo nginx -s reload
-
-# 3. 구버전 컨테이너 종료
-sudo docker stop azit-$IDLE_COLOR
