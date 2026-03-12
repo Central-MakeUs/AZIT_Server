@@ -1,8 +1,9 @@
 FROM eclipse-temurin:21-jre-jammy
 
 # 뉴렐릭
+ARG NR_AGENT_VERSION=8.11.0
 RUN apt-get update && apt-get install -y curl && \
-    curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.jar && \
+    curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/${NR_AGENT_VERSION}/newrelic.jar && \
     rm -rf /var/lib/apt/lists/*
 
 # 빌드 시 생성된 jar 파일을 컨테이너 내부로 복사 (plain jar 제외)
