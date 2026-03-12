@@ -103,6 +103,11 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 본인이 생성한 일정인지 확인
         validateCreator(schedule, command.creatorId());
 
+        // 출석이 가능한 시간인 경우 수정 및 삭제 불가
+        if (!schedule.isModifiable(LocalDateTime.now())) {
+            throw new BusinessException(CrewErrorCode.SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME);
+        }
+
         // 크루 정회원인지 확인
         CrewMember creator = getJoinedMember(command.crewId(), command.creatorId());
 
@@ -143,6 +148,11 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         // 본인이 생성한 일정인지 확인
         validateCreator(schedule, command.creatorId());
+
+        // 출석이 가능한 시간인 경우 수정 및 삭제 불가
+        if (!schedule.isModifiable(LocalDateTime.now())) {
+            throw new BusinessException(CrewErrorCode.SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME);
+        }
 
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.creatorId());

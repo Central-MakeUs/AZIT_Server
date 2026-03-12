@@ -92,6 +92,12 @@ public class CrewSchedule {
         return participants.size() >= maxParticipants;
     }
 
+    // 일정 수정 및 삭제 가능한지 확인 (출석 시작 후 불가)
+    public boolean isModifiable(LocalDateTime currentTime) {
+        LocalDateTime attendanceStartTime = this.meetingAt.minusHours(1);
+        return currentTime.isBefore(attendanceStartTime);
+    }
+
     // 일정에 참여하고 있는지 확인
     public boolean isParticipating(Long memberId) {
         return participants.containsKey(memberId);

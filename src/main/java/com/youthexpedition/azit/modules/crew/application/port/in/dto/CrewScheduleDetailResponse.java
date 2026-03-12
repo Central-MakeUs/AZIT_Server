@@ -48,6 +48,8 @@ public record CrewScheduleDetailResponse(
         boolean isParticipating,
         @Schema(description = "출석 완료 여부")
         boolean isCheckedIn,
+        @Schema(description = "수정 및 삭제 가능 여부")
+        boolean isModifiable,
         @Schema(description = "참여 멤버 미리보기 리스트(최대 10명)")
         List<ParticipantResponse> participants,
         @Schema(description = "참여자 명단이 더 있는지 여부 (10명 초과 시 true)")
@@ -88,6 +90,7 @@ public record CrewScheduleDetailResponse(
                         schedule.getCreatorId().equals(currentMemberId), // 생성자 여부 판단
                         schedule.isParticipating(currentMemberId), // 참여 여부 판단
                         schedule.isCheckedIn(currentMemberId), // 출석 여부 판단
+                        schedule.isModifiable(LocalDateTime.now()), // 수정 및 삭제 여부 판단
                         participants,
                         hasMoreParticipants,
                         schedule.getCreatedAt(),
