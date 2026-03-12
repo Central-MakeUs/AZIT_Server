@@ -25,7 +25,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${TARGET_PROFILE}
       - TZ=Asia/Seoul
-      - "JAVA_OPTS=-Xms400m -Xmx400m -XX:+UseG1GC"
+      - "JAVA_OPTS=-Xms768m -Xmx768m -XX:+UseG1GC"
+      - NEW_RELIC_APP_NAME=azit-server-${TARGET_PROFILE}
+      - NEW_RELIC_LOG_FILE_NAME=STDOUT
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
@@ -44,6 +46,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${TARGET_PROFILE}
       - TZ=Asia/Seoul
+      - "JAVA_OPTS=-Xms768m -Xmx768m -XX:+UseG1GC"
+      - NEW_RELIC_APP_NAME=azit-server-${TARGET_PROFILE}
+      - NEW_RELIC_LOG_FILE_NAME=STDOUT
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
@@ -59,8 +64,11 @@ services:
       - redis
     env_file: .env
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_PROFILES_ACTIVE=${TARGET_PROFILE}
       - TZ=Asia/Seoul
+      - "JAVA_OPTS=-Xms768m -Xmx768m -XX:+UseG1GC"
+      - NEW_RELIC_APP_NAME=azit-server-${TARGET_PROFILE}
+      - NEW_RELIC_LOG_FILE_NAME=STDOUT
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
