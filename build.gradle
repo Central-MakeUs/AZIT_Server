@@ -1,7 +1,14 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
+    id "io.sentry.jvm.gradle" version '8.30.0'
 }
 
 group = 'com.youthexpedition'
@@ -79,6 +86,10 @@ dependencies {
     // 액추에이터
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // 모니터링
+//    implementation("io.sentry:sentry-opentelemetry-agent:8.34.1")
+    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.0.0'
+
 }
 
 dependencyManagement {
@@ -104,4 +115,11 @@ clean {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+sentry {
+    includeSourceContext = true
+    org = "azit-co"
+    projectName = "api-server"
+    authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
