@@ -62,7 +62,7 @@
 
         <root level="INFO">
             <appender-ref ref="ROLLING_FILE" />
-            <appender-ref ref="ERROR_FILE" />e
+            <appender-ref ref="ERROR_FILE" />
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="SENTRY" />
         </root>
