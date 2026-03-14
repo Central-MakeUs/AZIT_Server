@@ -29,6 +29,11 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
         // 주소가 이미 있는지 확인
         boolean hasExistingAddress = loadDeliveryAddressPort.existsByMemberId(command.memberId());
 
+        // 필수값 검증
+        if (!DeliveryAddress.isValidInfo(command.recipientName(), command.phoneNumber(), command.zipcode(), command.baseAddress(), command.detailAddress())) {
+            throw new BusinessException(DeliveryAddressErrorCode.INVALID_ADDRESS_INPUT);
+        }
+
         // 첫 주소 등록이거나 isDefault가 true면 기본 배송지로 설정
         boolean shouldBeDefault = !hasExistingAddress || command.isDefault();
 
@@ -45,6 +50,11 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
 
     @Override
     public void updateDeliveryAddress(UpdateAddressCommand command) {
+        // 필수값 검증
+        if (!DeliveryAddress.isValidInfo(command.recipientName(), command.phoneNumber(), command.zipcode(), command.baseAddress(), command.detailAddress())) {
+            throw new BusinessException(DeliveryAddressErrorCode.INVALID_ADDRESS_INPUT);
+        }
+
         DeliveryAddress deliveryAddress = getAddressValidated(command.addressId(), command.memberId());
         deliveryAddress.update(command.recipientName(), command.phoneNumber(), command.zipcode(), command.baseAddress(), command.detailAddress());
 
@@ -62,7 +72,9 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
         DeliveryAddress deliveryAddress = getAddressValidated(addressId, memberId);
 
         // 삭제 가능한지 확인 (기본 배송지는 삭제 불가)
-        deliveryAddress.validateDeletable();
+        if (!deliveryAddress.isDeletable()) {
+            throw new BusinessException(DeliveryAddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS);
+        }
 
         saveDeliveryAddressPort.delete(deliveryAddress);
     }

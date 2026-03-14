@@ -24,6 +24,8 @@ import static com.youthexpedition.azit.modules.crew.adapter.out.persistence.enti
 public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
+    private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1;
+
     @Override
     public List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, YearMonth yearMonth, RunType runType) {
         return queryFactory.selectFrom(crewScheduleEntity)
@@ -104,21 +106,9 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
     }
 
     @Override
-    public List<CrewScheduleEntity> findAllByCrewIdAndMemberId(Long crewId, Long memberId) {
-        return queryFactory.selectFrom(crewScheduleEntity)
-                .where(
-                        crewScheduleEntity.crewId.eq(crewId),
-                        crewScheduleEntity.members.any().memberId.eq(memberId),
-                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE)
-                )
-                .fetch();
-    }
-
-    @Override
-    public List<CrewScheduleEntity> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth) {
+    public List<CrewScheduleEntity> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth, LocalDateTime now) {
         LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime end = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
-        LocalDateTime now = LocalDateTime.now();
 
         return queryFactory.selectFrom(crewScheduleEntity)
                 .join(crewScheduleEntity.members, crewScheduleMemberEntity)
@@ -126,18 +116,17 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                         crewScheduleMemberEntity.memberId.eq(memberId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 삭제된 일정 제외
                         crewScheduleEntity.meetingAt.between(start, end),
-                        crewScheduleEntity.meetingAt.before(now) // 과거의 일정 또는 미리 출석한 일정
-                                .or(crewScheduleMemberEntity.checkedInAt.isNotNull())
+                        crewScheduleMemberEntity.isCheckedIn.isTrue()
+                                .or(crewScheduleEntity.meetingAt.lt(now.minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS)))
                 )
                 .orderBy(crewScheduleEntity.meetingAt.desc()) // 최신순 정렬
                 .fetch();
     }
 
     @Override
-    public Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth) {
+    public Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth, LocalDateTime now) {
         LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime end = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
-        LocalDateTime now = LocalDateTime.now();
 
         List<Tuple> results = queryFactory
                 .select(crewScheduleEntity.meetingAt, crewScheduleEntity.runType)
@@ -147,8 +136,8 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                         crewScheduleMemberEntity.memberId.eq(memberId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
                         crewScheduleEntity.meetingAt.between(start, end),
-                        crewScheduleEntity.meetingAt.before(now)
-                                .or(crewScheduleMemberEntity.checkedInAt.isNotNull())
+                        crewScheduleMemberEntity.isCheckedIn.isTrue()
+                                .or(crewScheduleEntity.meetingAt.lt(now.minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS)))
                 )
                 .fetch();
 
@@ -178,6 +167,32 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 .fetchFirst(); // 하나라도 찾으면 즉시 탐색 종료
 
         return fetchOne != null;
+    }
+
+    @Override
+    public List<CrewScheduleEntity> findSchedulesToCancelByCreator(Long crewId, Long memberId, LocalDateTime now) {
+        return queryFactory.selectFrom(crewScheduleEntity)
+                .where(
+                        crewScheduleEntity.crewId.eq(crewId),
+                        crewScheduleEntity.creatorId.eq(memberId),
+                        crewScheduleEntity.meetingAt.gt(now), // 시작 전
+                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
+                        crewScheduleEntity.members.any().isCheckedIn.isFalse() // 아직 아무도 출석하지 않은 일정만 취소
+                )
+                .fetch();
+    }
+
+    @Override
+    public List<CrewScheduleEntity> findSchedulesToRemoveParticipant(Long crewId, Long memberId, LocalDateTime now) {
+        return queryFactory.selectFrom(crewScheduleEntity)
+                .join(crewScheduleEntity.members, crewScheduleMemberEntity)
+                .where(
+                        crewScheduleEntity.crewId.eq(crewId),
+                        crewScheduleMemberEntity.memberId.eq(memberId),
+                        crewScheduleEntity.meetingAt.gt(now.minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS)), // 출석 가능한 일정
+                        crewScheduleMemberEntity.isCheckedIn.isFalse() // 출석하지 않은 일정
+                )
+                .fetch();
     }
 
     private BooleanExpression eqDate(LocalDate date) {

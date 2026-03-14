@@ -33,7 +33,7 @@ public interface CrewScheduleUseCase {
     List<CrewScheduleListResponse> getMySchedules(Long memberId);
     CheckInStatusResponse getCheckInStatus(Long memberId);
     void checkInSchedule(CheckInCommand command);
-    void cancelAllParticipationInCrew(Long crewId, Long memberId);
     MyAttendanceLogResponse getMyAttendanceLogs(MyAttendanceMonthlyQuery query);
     List<MyAttendanceMonthlyListResponse> getMyAttendancesForCalendar(MyAttendanceMonthlyQuery query);
+    void cleanupForExpelledMemberSchedules(Long crewId, Long memberId);
 }

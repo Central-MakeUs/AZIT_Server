@@ -39,7 +39,7 @@ public interface OrderControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "PRODUCT_NOT_FOUND", "SKU_NOT_FOUND", "MEMBER_NOT_FOUND",
+            "PRODUCT_NOT_FOUND", "SKU_NOT_FOUND", "MEMBER_NOT_FOUND", "INVALID_QUANTITY",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<OrderCheckoutResponse> getCheckoutInfoFromCart(
@@ -61,7 +61,7 @@ public interface OrderControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "PRODUCT_NOT_FOUND", "SKU_NOT_FOUND", "MEMBER_NOT_FOUND",
+            "PRODUCT_NOT_FOUND", "SKU_NOT_FOUND", "MEMBER_NOT_FOUND", "INVALID_QUANTITY",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<OrderCheckoutResponse> getCheckoutInfoDirect(

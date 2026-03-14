@@ -140,6 +140,11 @@ public class OrderService implements OrderUseCase {
 
         List<OrderItem> orderItems = items.stream()
                 .map(productInfo -> {
+                    // 수량이 0보다 큰지 확인
+                    if (!OrderItem.isValidQuantity(productInfo.quantity())) {
+                        throw new BusinessException(StoreErrorCode.INVALID_QUANTITY);
+                    }
+
                     // 재고 차감
                     saveProductPort.decreaseStock(productInfo.skuId(), productInfo.quantity());
 
@@ -175,6 +180,10 @@ public class OrderService implements OrderUseCase {
 
         Order savedOrder = saveOrderPort.save(order);
 
+        // 포인트 검증
+        if (!member.hasEnoughPoints(command.usedPoints())) {
+            throw new BusinessException(MemberErrorCode.INSUFFICIENT_POINTS);
+        }
         // 포인트 차감
         member.deductPoints(command.usedPoints());
         saveMemberPort.save(member);
@@ -315,6 +324,11 @@ public class OrderService implements OrderUseCase {
 
     private void validateStockAvailability(List<CheckoutItemDto> items) {
         for (CheckoutItemDto item : items) {
+            // 주문 수량이
+            if (!OrderItem.isValidQuantity(item.quantity())) {
+                throw new BusinessException(StoreErrorCode.INVALID_QUANTITY);
+            }
+
             // sku의 현재 재고보다 주문 요청 수량이 많은지 체크
             if (item.stockQuantity() < item.quantity()) {
                 throw new BusinessException(StoreErrorCode.OUT_OF_STOCK);

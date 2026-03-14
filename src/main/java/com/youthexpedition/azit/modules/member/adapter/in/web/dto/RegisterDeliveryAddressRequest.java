@@ -33,6 +33,6 @@ public record RegisterDeliveryAddressRequest(
         boolean isDefault
 ) {
     public RegisterAddressCommand toCommand(Long memberId) {
-        return new RegisterAddressCommand(memberId, recipientName, phoneNumber, zipcode, baseAddress, detailAddress, isDefault);
+        return RegisterAddressCommand.of(memberId, recipientName, phoneNumber, zipcode, baseAddress, detailAddress, isDefault);
     }
 }

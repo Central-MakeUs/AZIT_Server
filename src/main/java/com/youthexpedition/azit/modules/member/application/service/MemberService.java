@@ -67,7 +67,12 @@ public class MemberService implements MemberUseCase {
         // 가입한 크루 인원 수 차감 및 상태 변경
         processCrewWithdrawal(memberId);
 
+        // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
+        if (member.isWithdrawn()) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+        }
         member.withdraw();
+
         tokenPort.deleteByMemberId(memberId); // 리프레시 토큰 삭제
         tokenPort.addToBlacklist(accessToken, BLACKLIST_REASON_WITHDRAWN); // 블랙리스트에 액세스 토큰 추가
         saveMemberPort.save(member);
@@ -85,7 +90,12 @@ public class MemberService implements MemberUseCase {
         // 가입한 크루 인원 수 차감 및 상태 변경
         processCrewWithdrawal(member.getId());
 
+        // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
+        if (member.isWithdrawn()) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+        }
         member.withdraw();
+
         tokenPort.deleteByMemberId(member.getId()); // 리프레시 토큰 삭제
         saveMemberPort.save(member);
     }
@@ -106,6 +116,11 @@ public class MemberService implements MemberUseCase {
     public void confirmMemberStatus(Long memberId) {
         Member member = getMember(memberId);
 
+        // 멤버 상태 확인
+        if (!member.canUpdateStatusAfterConfirm()) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
+
         // 가입되어 있는 나머지 크루가 있는지 확인
         boolean hasJoinedCrews = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId) > 0;
         member.confirmStatus(hasJoinedCrews);
@@ -123,9 +138,10 @@ public class MemberService implements MemberUseCase {
         }
 
         CrewMemberStatus targetStatus = switch (member.getStatus()) {
-            case KICKED_PENDING_CONFIRM -> CrewMemberStatus.EXITED;   // 방출 확인 대기 시 EXITED 조회
+            case KICKED_PENDING_CONFIRM -> CrewMemberStatus.EXPELLED;   // 방출 확인 대기 시 EXPELLED 조회
             case REJECTED_PENDING_CONFIRM -> CrewMemberStatus.REJECTED; // 가입 거절 확인 대기 시 REJECTED 조회
             case WAITING_FOR_APPROVE -> CrewMemberStatus.REQUESTED;    // 가입 승인 대기 시 REQUESTED 조회
+            case WITHDRAWN -> CrewMemberStatus.EXITED;
             default -> CrewMemberStatus.JOINED;                        // 그 외(ACTIVE 등) JOINED 조회
         };
 

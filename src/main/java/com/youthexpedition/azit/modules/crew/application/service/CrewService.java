@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.crew.application.service;
 import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
@@ -25,6 +26,7 @@ import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPo
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
@@ -44,6 +46,7 @@ public class CrewService implements CrewUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
+    private final CrewScheduleUseCase crewScheduleUseCase;
     private final CrewMemberResponseMapper crewMemberResponseMapper;
     private final CrewResponseMapper crewResponseMapper;
     private final CrewImageProvider crewImageProvider;
@@ -72,6 +75,11 @@ public class CrewService implements CrewUseCase {
         // 온보딩 완료했으므로 ACTIVE로 멤버 상태 변경
         Member member = loadMemberPort.findById(command.leaderId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // 멤버 상태 확인
+        if (!member.isJoinable()) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
         member.completeOnboarding();
 
         saveMemberPort.save(member);
@@ -108,7 +116,7 @@ public class CrewService implements CrewUseCase {
                                 throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
                             }
 
-                            // 탈퇴나 거절 상태일 경우 재신청
+                            // 탈퇴, 방출, 거절 상태일 경우 재신청
                             existingMember.reJoin();
                             saveCrewMemberPort.save(existingMember);
                         },
@@ -122,6 +130,10 @@ public class CrewService implements CrewUseCase {
         Member member = loadMemberPort.findById(command.memberId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        // 멤버 상태 확인
+        if (!member.isJoinable()) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
         // WAITING_FOR_APPROVE 으로 상태 변경
         member.applyForJoin();
         saveMemberPort.save(member);
@@ -158,6 +170,12 @@ public class CrewService implements CrewUseCase {
         // 가입 대기 중인 대상자 조회
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
+
+        // 가입 신청 상태인지 확인
+        if (!targetCrewMember.isJoinRequested()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_PROCESSED_JOIN_REQUEST);
+        }
+
         // 가입 승인
         targetCrewMember.approve();
         saveCrewMemberPort.save(targetCrewMember);
@@ -173,6 +191,10 @@ public class CrewService implements CrewUseCase {
         Member member = loadMemberPort.findById(command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        // 멤버 상태 확인
+        if (member.getStatus() != MemberStatus.WAITING_FOR_APPROVE) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
         member.approveJoin();
         saveMemberPort.save(member);
     }
@@ -186,6 +208,11 @@ public class CrewService implements CrewUseCase {
         CrewMember targetCrewMember = loadCrewMemberPort.findByCrewIdAndMemberId(command.crewId(), command.targetMemberId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
 
+        // 가입 신청 상태인지 확인
+        if (!targetCrewMember.isJoinRequested()) {
+            throw new BusinessException(CrewErrorCode.ALREADY_PROCESSED_JOIN_REQUEST);
+        }
+
         targetCrewMember.reject();
         saveCrewMemberPort.save(targetCrewMember);
 
@@ -193,6 +220,9 @@ public class CrewService implements CrewUseCase {
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 해당 유저의 회원 상태를 REJECTED_PENDING_CONFIRM 으로 변경
+        if (member.getStatus() != MemberStatus.WAITING_FOR_APPROVE) {
+            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
+        }
         member.rejectJoin();
         saveMemberPort.save(member);
     }
@@ -222,7 +252,7 @@ public class CrewService implements CrewUseCase {
 
     @Override
     @Transactional
-    public void deleteCrewMember(Long crewId, Long leaderId, Long targetMemberId) {
+    public void expelCrewMember(Long crewId, Long leaderId, Long targetMemberId) {
         validateLeader(crewId, leaderId);
 
         // 리더 본인은 방출 불가
@@ -233,8 +263,11 @@ public class CrewService implements CrewUseCase {
         // 방출 대상이 현재 해당 크루의 정회원(JOINED)인지 확인
         CrewMember targetMember = validateMember(crewId, targetMemberId);
 
+        // 멤버 스케줄 삭제
+        crewScheduleUseCase.cleanupForExpelledMemberSchedules(crewId, targetMemberId);
+
         // 멤버 상태 EXITED 변경
-        targetMember.exit();
+        targetMember.expel();
         saveCrewMemberPort.save(targetMember);
 
         // 크루 인원 수 1명 감소
@@ -247,18 +280,18 @@ public class CrewService implements CrewUseCase {
         // 가입된 잔여 크루 확인 멤버 상태 변경
         long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(targetMemberId);
 
-        if (joinedCrewCount == 0) {
-            Member member = loadMemberPort.findById(targetMemberId)
-                    .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-            member.resetToOnboarding();
-            saveMemberPort.save(member);
-        }
-
         Member member = loadMemberPort.findById(targetMemberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        // 멤버 상태 변경
+        if (joinedCrewCount == 0) {
+            // 탈퇴한 회원인지 확인
+            if (member.isWithdrawn()) {
+                throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+            }
+
+            member.resetToOnboarding();
+        }
+
         member.expel();
         saveMemberPort.save(member);
     }

@@ -67,11 +67,12 @@ public interface CrewScheduleControllerDocs {
             * 일정 제목: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
             * 세부 장소: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
             * 준비물(선택): 최대 5개까지 등록 가능하며, 각 항목은 15자 이내여야 합니다. (INVALID_INPUT_VALUE)
-            * 모임 시간: 현재 시간보다 과거의 시간으로 수정할 수 없습니다. (INVALID_SCHEDULE_TIME) <br><br>
+            * 모임 시간: 현재 시간보다 과거의 시간으로 수정할 수 없습니다. (INVALID_SCHEDULE_TIME)
+            * 출석을 시작한 일정은 수정이 불가능합니다. (SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME) <br><br>
             """
     )
     @ApiErrorCodeExamples({
-            "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER", "ONLY_LEADER_CAN_CREATE_REGULAR_RUN", "INVALID_SCHEDULE_TIME",
+            "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER", "ONLY_LEADER_CAN_CREATE_REGULAR_RUN", "INVALID_SCHEDULE_TIME", "SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> updateSchedule(
@@ -86,10 +87,11 @@ public interface CrewScheduleControllerDocs {
             * 해당 일정을 생성한 본인만 취소할 수 있습니다. (FORBIDDEN_ERROR)
             * 해당 크루의 정회원(JOINED 상태)이어야 합니다. (NOT_A_CREW_MEMBER)
             * 이미 취소된 일정은 다시 취소할 수 없습니다. (ALREADY_CANCELLED_SCHEDULE)
+            * 출석을 시작한 일정은 삭제가 불가능합니다. (SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME)
             """
     )
     @ApiErrorCodeExamples({
-            "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER", "ALREADY_CANCELLED_SCHEDULE",
+            "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER", "ALREADY_CANCELLED_SCHEDULE", "SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> cancelSchedule(@PathVariable Long crewId, @PathVariable Long scheduleId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
@@ -121,7 +123,8 @@ public interface CrewScheduleControllerDocs {
         
             **[참고 사항]** <br>
             * 일정 생성자는 본인의 일정 참여를 취소할 수 없습니다. (CREATOR_CANNOT_CANCEL_PARTICIPATION)
-            * 참여하지 않은 일정에 대해 취소 요청을 할 수 없습니다. (NOT_PARTICIPATING_SCHEDULE)
+            * 참여하지 않은 일정은 취소할 수 없습니다. (NOT_PARTICIPATING_SCHEDULE)
+            * 이미 출석한 일정은 취소할 수 없습니다. (CANNOT_CANCEL_AFTER_CHECK_IN)
             """
     )
     @ApiErrorCodeExamples({

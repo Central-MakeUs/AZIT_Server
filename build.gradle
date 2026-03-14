@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
+    id "io.sentry.jvm.gradle" version '6.1.0'
 }
 
 group = 'com.youthexpedition'
@@ -79,6 +80,10 @@ dependencies {
     // 액추에이터
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // 센트리
+    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.34.1'
+    implementation 'io.sentry:sentry-logback:8.34.1'
+
 }
 
 dependencyManagement {
@@ -104,4 +109,24 @@ clean {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+def sentryToken = System.getenv("SENTRY_AUTH_TOKEN")
+sentry {
+    includeSourceContext = true
+    org = "azit-co"
+    projectName = "api-server"
+    authToken = sentryToken ?: ""
+}
+
+// 토큰이 없을 경우 (로컬) 건너뜀
+tasks.matching { it.name.toLowerCase().contains("sentry") }.configureEach {
+    onlyIf { sentryToken != null && !sentryToken.trim().isEmpty() }
+}
+
+// QueryDSL과 Sentry 플러그인 빌드 순서 설정
+tasks.matching {
+    it.name == 'generateSentryBundleIdJava' || it.name == 'sentryCollectSourcesJava'
+}.configureEach {
+    dependsOn('compileJava')
 }

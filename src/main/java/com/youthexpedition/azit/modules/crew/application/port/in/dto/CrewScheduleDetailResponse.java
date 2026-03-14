@@ -2,6 +2,7 @@ package com.youthexpedition.azit.modules.crew.application.port.in.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.ScheduleStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,10 +34,22 @@ public record CrewScheduleDetailResponse(
         Integer currentParticipants,
         @Schema(description = "준비물 리스트")
         List<String> supplies,
+        @Schema(description = "생성자 ID")
+        Long creatorId,
+        @Schema(description = "생성자 닉네임")
+        String creatorNickname,
+        @Schema(description = "생성자 프로필 이미지")
+        String creatorProfileImageUrl,
+        @Schema(description = "생성자 크루 내 역할")
+        CrewMemberRole creatorRole,
         @Schema(description = "내가 생성한 일정인지 여부")
         boolean isMine,
         @Schema(description = "내가 참여 중인 일정인지 여부")
         boolean isParticipating,
+        @Schema(description = "출석 완료 여부")
+        boolean isCheckedIn,
+        @Schema(description = "수정 및 삭제 가능 여부")
+        boolean isModifiable,
         @Schema(description = "참여 멤버 미리보기 리스트(최대 10명)")
         List<ParticipantResponse> participants,
         @Schema(description = "참여자 명단이 더 있는지 여부 (10명 초과 시 true)")
@@ -50,6 +63,10 @@ public record CrewScheduleDetailResponse(
         public static CrewScheduleDetailResponse of(
                 CrewSchedule schedule,
                 Long currentMemberId,
+                Long creatorId,
+                String creatorNickname,
+                String creatorProfileImageUrl,
+                CrewMemberRole creatorRole,
                 List<ParticipantResponse> participants,
                 boolean hasMoreParticipants,
                 int totalActiveParticipantCount
@@ -66,8 +83,14 @@ public record CrewScheduleDetailResponse(
                         schedule.getMaxParticipants(),
                         totalActiveParticipantCount,
                         schedule.getSupplies(),
+                        creatorId,
+                        creatorNickname,
+                        creatorProfileImageUrl,
+                        creatorRole,
                         schedule.getCreatorId().equals(currentMemberId), // 생성자 여부 판단
                         schedule.isParticipating(currentMemberId), // 참여 여부 판단
+                        schedule.isCheckedIn(currentMemberId), // 출석 여부 판단
+                        schedule.isModifiable(LocalDateTime.now()), // 수정 및 삭제 여부 판단
                         participants,
                         hasMoreParticipants,
                         schedule.getCreatedAt(),
