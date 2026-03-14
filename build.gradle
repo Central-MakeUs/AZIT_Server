@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
-    id "io.sentry.jvm.gradle" version '8.34.1'
+    id "io.sentry.jvm.gradle" version '6.1.0'
 }
 
 group = 'com.youthexpedition'
@@ -79,6 +79,9 @@ dependencies {
 
     // 액추에이터
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // 센트리
+    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.34.1'
 
 }
 
