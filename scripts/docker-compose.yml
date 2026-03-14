@@ -31,6 +31,8 @@ services:
       - SENTRY_ENVIRONMENT=${TARGET_PROFILE}
       - SENTRY_DSN=${SENTRY_DSN}
       - SENTRY_AUTO_INIT=false
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
@@ -55,6 +57,8 @@ services:
       - SENTRY_ENVIRONMENT=${TARGET_PROFILE}
       - SENTRY_DSN=${SENTRY_DSN}
       - SENTRY_AUTO_INIT=false
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
@@ -78,6 +82,8 @@ services:
       - SENTRY_ENVIRONMENT=${TARGET_PROFILE}
       - SENTRY_DSN=${SENTRY_DSN}
       - SENTRY_AUTO_INIT=false
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs

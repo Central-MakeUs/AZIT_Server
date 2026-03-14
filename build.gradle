@@ -82,6 +82,7 @@ dependencies {
 
     // 센트리
     implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.34.1'
+    implementation 'io.sentry:sentry-logback:8.34.1'
 
 }
 
