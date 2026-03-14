@@ -24,20 +24,20 @@ sudo docker compose up -d azit-$TARGET_COLOR
 #  신규 컨테이너 헬스 체크
 echo "🏥 헬스 체크를 시작합니다 (http://localhost:$TARGET_PORT/actuator/health)..."
 
-for retry_count in {1..10}
+for retry_count in {1..30}
 do
   RESPONSE=$(curl -s http://localhost:$TARGET_PORT/actuator/health)
   UP_COUNT=$(echo $RESPONSE | grep 'UP' | wc -l)
 
   if [ $UP_COUNT -ge 1 ]; then
-    echo "✅ 헬스 체크 성공! ($retry_count/10)"
+    echo "✅ 헬스 체크 성공! ($retry_count/30)"
     break
   else
-    echo "⏳ 대기 중... ($retry_count/10)"
+    echo "⏳ 대기 중... ($retry_count/30)"
     sleep 5
   fi
 
-  if [ $retry_count -eq 10 ]; then
+  if [ $retry_count -eq 30 ]; then
     echo "❌ 헬스 체크에 실패하여 배포를 중단합니다."
     sudo docker stop azit-$TARGET_COLOR
     exit 1
