@@ -2,6 +2,14 @@
 <configuration>
     <property name="LOG_PATH" value="./logs" />
     <property name="LOG_FILE_NAME" value="azit-server" />
+
+    <appender name="SENTRY" class="io.sentry.logback.SentryAppender">
+        <options>
+            <minimumEventLevel>ERROR</minimumEventLevel>
+            <minimumBreadcrumbLevel>WARN</minimumBreadcrumbLevel>
+        </options>
+    </appender>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%blue(%t)] %green(%logger{45}) : %msg%n</pattern>
@@ -23,6 +31,7 @@
 
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
+            <appender-ref ref="SENTRY" />
         </root>
     </springProfile>
 
@@ -55,6 +64,7 @@
             <appender-ref ref="ROLLING_FILE" />
             <appender-ref ref="ERROR_FILE" />
             <appender-ref ref="CONSOLE" />
+            <appender-ref ref="SENTRY" />
         </root>
     </springProfile>
 

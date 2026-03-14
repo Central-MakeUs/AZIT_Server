@@ -28,6 +28,9 @@ services:
       - "JAVA_OPTS=-Xms768m -Xmx768m -XX:+UseG1GC"
       - NEW_RELIC_APP_NAME=azit-server-${TARGET_PROFILE}
       - NEW_RELIC_LOG_FILE_NAME=STDOUT
+      - SENTRY_ENVIRONMENT=${TARGET_PROFILE}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_AUTO_INIT=false
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
@@ -49,6 +52,9 @@ services:
       - "JAVA_OPTS=-Xms768m -Xmx768m -XX:+UseG1GC"
       - NEW_RELIC_APP_NAME=azit-server-${TARGET_PROFILE}
       - NEW_RELIC_LOG_FILE_NAME=STDOUT
+      - SENTRY_ENVIRONMENT=${TARGET_PROFILE}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_AUTO_INIT=false
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
@@ -69,6 +75,9 @@ services:
       - "JAVA_OPTS=-Xms768m -Xmx768m -XX:+UseG1GC"
       - NEW_RELIC_APP_NAME=azit-server-${TARGET_PROFILE}
       - NEW_RELIC_LOG_FILE_NAME=STDOUT
+      - SENTRY_ENVIRONMENT=${TARGET_PROFILE}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_AUTO_INIT=false
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs

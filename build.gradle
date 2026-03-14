@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
+    id "io.sentry.jvm.gradle" version '8.34.1'
 }
 
 group = 'com.youthexpedition'
@@ -104,4 +105,11 @@ clean {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+sentry {
+    includeSourceContext = true
+    org = "azit-co"
+    projectName = "api-server"
+    authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
