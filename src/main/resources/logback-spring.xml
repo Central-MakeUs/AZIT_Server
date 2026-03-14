@@ -3,12 +3,7 @@
     <property name="LOG_PATH" value="./logs" />
     <property name="LOG_FILE_NAME" value="azit-server" />
 
-    <appender name="SENTRY" class="io.sentry.logback.SentryAppender">
-        <options>
-            <minimumEventLevel>ERROR</minimumEventLevel>
-            <minimumBreadcrumbLevel>WARN</minimumBreadcrumbLevel>
-        </options>
-    </appender>
+    <appender name="SENTRY" class="io.sentry.logback.SentryAppender" />
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
