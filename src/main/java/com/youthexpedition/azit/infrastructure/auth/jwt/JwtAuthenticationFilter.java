@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             request.setAttribute("exception", e.getErrorCode());
         } catch (Exception e) {
         // NPE 등 기타 예외 발생 시 로그를 남기고 유효하지 않은 토큰으로 처리
-        log.error("Authentication failed: {}", e.getMessage(), e);
+        log.warn("Authentication failed: {}", e.getMessage());
         request.setAttribute("exception", AuthErrorCode.INVALID_TOKEN);
     }
 
