@@ -84,6 +84,9 @@ dependencies {
     implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.34.1'
     implementation 'io.sentry:sentry-logback:8.34.1'
 
+    // 쿼리 로깅
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.1'
+
 }
 
 dependencyManagement {
