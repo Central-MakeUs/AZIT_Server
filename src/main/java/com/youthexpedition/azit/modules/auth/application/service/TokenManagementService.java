@@ -31,7 +31,6 @@ public class TokenManagementService implements TokenUseCase {
 
     @Override
     public AuthResult reissue(String refreshToken) {
-        log.info("[reissue] Reissue initiated for refreshToken: {}", refreshToken);
 
         // 검증 및 memberId 추출
         tokenProviderPort.validateToken(refreshToken);
