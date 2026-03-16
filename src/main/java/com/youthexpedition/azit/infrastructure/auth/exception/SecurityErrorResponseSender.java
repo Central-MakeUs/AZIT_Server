@@ -19,7 +19,7 @@ public class SecurityErrorResponseSender {
     private final ObjectMapper objectMapper = new ObjectMapper(); // 공용으로 사용
 
     public void send(HttpServletRequest request, HttpServletResponse response, BaseErrorCode errorCode) throws IOException {
-        log.error("[Security Error] URI: {} {}, ErrorCode: {}, Message: {}",
+        log.warn("[Security Error] URI: {} {}, ErrorCode: {}, Message: {}",
                 request.getMethod(), request.getRequestURI(), errorCode.getCode(), errorCode.getMessage());
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

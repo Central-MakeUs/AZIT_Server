@@ -22,8 +22,14 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<CommonErrorResponse> handleBusinessException(BusinessException e) {
-        log.error("BusinessException: {}", e.getErrorCode().getMessage());
         BaseErrorCode errorCode = e.getErrorCode();
+
+        // 서버 관련 에러일 때만 error 로깅
+        if (errorCode.getStatus().is5xxServerError()) {
+            log.error("BusinessException (Server Error): {}", errorCode.getMessage(), e);
+        } else {
+            log.warn("BusinessException (Client Error): {}", errorCode.getMessage());
+        }
 
         return ResponseEntity
                 .status(errorCode.getStatus())
@@ -35,7 +41,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<CommonErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        log.error("MethodArgumentNotValidException: {}", e.getMessage());
+        log.warn("MethodArgumentNotValidException: {}", e.getMessage());
 
         // 에러 결과에서 첫 번째 FieldError의 메시지 가져오기
         String errorMessage = Objects.requireNonNull(e.getBindingResult()
@@ -55,7 +61,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     protected ResponseEntity<CommonErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
-        log.error("MethodArgumentTypeMismatchException: {}", e.getMessage());
+        log.warn("MethodArgumentTypeMismatchException: {}", e.getMessage());
 
         return ResponseEntity
                 .status(CommonErrorCode.TYPE_MISMATCH_ERROR.getStatus())
@@ -67,7 +73,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     protected ResponseEntity<CommonErrorResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        log.error("HttpRequestMethodNotSupportedException: {}", e.getMessage());
+        log.warn("HttpRequestMethodNotSupportedException: {}", e.getMessage());
 
         return ResponseEntity
                 .status(CommonErrorCode.METHOD_NOT_ALLOWED.getStatus())
