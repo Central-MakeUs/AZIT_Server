@@ -179,8 +179,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (schedule.isFull()) {
             throw new BusinessException(CrewErrorCode.EXCEEDED_MAX_PARTICIPANTS);
         }
-        // 이미 출석 마감된 일정인지 확인
-
+        if (!schedule.isParticipationModifiable(LocalDateTime.now())) {
+            throw new BusinessException(CrewErrorCode.PARTICIPATION_AND_CANCEL_CLOSED);
+        }
 
         // 기존 일정과의 시간 간격 검증
         validateScheduleInterval(command.memberId(), schedule.getMeetingAt());
@@ -197,18 +198,16 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (!schedule.isParticipating(command.memberId())) {
             throw new BusinessException(CrewErrorCode.NOT_PARTICIPATING_SCHEDULE);
         }
-
         // 본인이 일정 생성자인지 확인
         if (schedule.getCreatorId().equals(command.memberId())) {
             throw new BusinessException(CrewErrorCode.CREATOR_CANNOT_CANCEL_PARTICIPATION);
         }
-
         if (schedule.isCheckedIn(command.memberId())) {
             throw new BusinessException(CrewErrorCode.CANNOT_CANCEL_AFTER_CHECK_IN);
         }
-
-        // 이미 출석 마감된 일정인지 확인
-
+        if (!schedule.isParticipationModifiable(LocalDateTime.now())) {
+            throw new BusinessException(CrewErrorCode.PARTICIPATION_AND_CANCEL_CLOSED);
+        }
 
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.memberId());
