@@ -28,6 +28,7 @@ import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -37,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class CrewService implements CrewUseCase {
@@ -99,6 +101,8 @@ public class CrewService implements CrewUseCase {
                 return invitationCode;
             }
         }
+
+        log.error("[CREW] 크루 초대코드 생성 최대 재시도 횟수({})를 초과했습니다.", MAX_RETRIES);
         throw new BusinessException(CrewErrorCode.INVITATION_CODE_GENERATION_FAILED);
     }
 
@@ -184,6 +188,8 @@ public class CrewService implements CrewUseCase {
         // TODO: 원자성 체크 필요
         Crew crew = loadCrewPort.findById(command.crewId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        log.info("[CREW] crewId: {} 에서 memberId: {} 가 가입되어 크루 인원 수가 증가합니다.", crew.getId(), command.targetMemberId());
         crew.increaseMemberCount(); // 인원 수 +1
         saveCrewPort.save(crew);
 
@@ -274,6 +280,8 @@ public class CrewService implements CrewUseCase {
         // TODO: 동시성 이슈 고려 필요
         Crew crew = loadCrewPort.findById(crewId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        log.info("[CREW] crewId: {} 에서 memberId: {} 가 방출되어 크루 인원 수가 감소합니다.", crewId, targetMemberId);
         crew.decreaseMemberCount();
         saveCrewPort.save(crew);
 
@@ -289,6 +297,7 @@ public class CrewService implements CrewUseCase {
                 throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
             }
 
+            log.info("[CREW] memberId: {}, 가입된 크루가 없으므로 온보딩 상태로 변경합니다.", member.getId());
             member.resetToOnboarding();
         }
 
@@ -301,6 +310,7 @@ public class CrewService implements CrewUseCase {
         CrewMember crewMember = validateMember(crewId, memberId);
 
         if (crewMember.getRole() != CrewMemberRole.LEADER) {
+            log.warn("memberId: {}, crewId: {}, 해당 사용자가 리더 전용 로직을 호출했으나 권한 부족으로 거절되었습니다.", memberId, crewId);
             throw new BusinessException(CrewErrorCode.NOT_CREW_LEADER);
         }
     }

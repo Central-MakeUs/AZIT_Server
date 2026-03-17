@@ -107,10 +107,11 @@ public interface CrewScheduleControllerDocs {
             * 이미 신청한 일정에 중복 신청은 불가합니다. (ALREADY_PARTICIPATED)
             * 모집 인원이 마감된(정원 초과) 일정에는 신청할 수 없습니다. (EXCEEDED_MAX_PARTICIPANTS)
             * 이미 신청한 일정과 현재 신청하는 일정 간의 시간 차가 60분 미만일 경우 신청이 불가합니다. (SCHEDULE_INTERVAL_TOO_CLOSE)
+            * 출석 가능한 시간이 지난 일정은 참여 신청 및 취소가 불가능합니다.(PARTICIPATION_AND_CANCEL_CLOSED)
             """
     )
     @ApiErrorCodeExamples({
-            "NOT_A_CREW_MEMBER", "ALREADY_CANCELLED_SCHEDULE", "ALREADY_PARTICIPATED", "EXCEEDED_MAX_PARTICIPANTS", "SCHEDULE_NOT_FOUND", "SCHEDULE_INTERVAL_TOO_CLOSE",
+            "NOT_A_CREW_MEMBER", "ALREADY_CANCELLED_SCHEDULE", "ALREADY_PARTICIPATED", "EXCEEDED_MAX_PARTICIPANTS", "SCHEDULE_NOT_FOUND", "SCHEDULE_INTERVAL_TOO_CLOSE", "PARTICIPATION_AND_CANCEL_CLOSED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> participateSchedule(
@@ -125,10 +126,11 @@ public interface CrewScheduleControllerDocs {
             * 일정 생성자는 본인의 일정 참여를 취소할 수 없습니다. (CREATOR_CANNOT_CANCEL_PARTICIPATION)
             * 참여하지 않은 일정은 취소할 수 없습니다. (NOT_PARTICIPATING_SCHEDULE)
             * 이미 출석한 일정은 취소할 수 없습니다. (CANNOT_CANCEL_AFTER_CHECK_IN)
+            * 출석 가능한 시간이 지난 일정은 참여 신청 및 취소가 불가능합니다.(PARTICIPATION_AND_CANCEL_CLOSED)
             """
     )
     @ApiErrorCodeExamples({
-            "NOT_PARTICIPATING_SCHEDULE", "CREATOR_CANNOT_CANCEL_PARTICIPATION", "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER",
+            "NOT_PARTICIPATING_SCHEDULE", "CREATOR_CANNOT_CANCEL_PARTICIPATION", "SCHEDULE_NOT_FOUND", "NOT_A_CREW_MEMBER", "PARTICIPATION_AND_CANCEL_CLOSED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> cancelParticipation(
