@@ -23,11 +23,13 @@ import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -171,6 +173,8 @@ public class MemberService implements MemberUseCase {
 
         // 인원수 일괄 차감
         if (!joinedCrewIds.isEmpty()) {
+            log.info("[MEMBER] memberId: {}, crewIds : {} 탈퇴하여 인원수가 차감됩니다.", memberId, joinedCrewIds);
+
             List<Crew> joinedCrews = loadCrewPort.findAllByIds(joinedCrewIds);
             joinedCrews.forEach(Crew::decreaseMemberCount);
             saveCrewPort.saveAll(joinedCrews);
@@ -196,11 +200,12 @@ public class MemberService implements MemberUseCase {
                 .map(CrewMember::getCrewId)
                 .toList();
 
-        List<Crew> crews= loadCrewPort.findAllByIds(crewIds);
+        List<Crew> crews = loadCrewPort.findAllByIds(crewIds);
 
         // 크루 인원수가 1명보다 많으면 탈퇴 불가
         for (Crew crew : crews) {
             if (crew.getMemberCount() > 1) {
+                log.warn("[MEMBER] memberId: {}, 리더로서 가입되어 있는 크루(crewIds: {})에 멤버들이 남아 있어 탈퇴가 불가능합니다.", memberId, crewIds);
                 throw new BusinessException(CrewErrorCode.CANNOT_WITHDRAW_AS_LEADER);
             }
         }

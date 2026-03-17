@@ -79,7 +79,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
     private String parseNickname(String userJson) {
         // user 정보가 없는 경우 (재로그인 시)
         if (userJson == null || userJson.isBlank()) {
-            log.info("user 정보 없음, 재로그인한 유저");
+            log.debug("apple 계정으로 재로그인한 유저입니다(유저 정보 없음).");
             return APPLE_USER_NAME;
         }
 
@@ -124,9 +124,9 @@ public class AppleAuthAdapter implements SocialAuthPort {
         try {
             // 애플 서버에 연동 해제 요청
             appleFeignClient.revoke(clientId, clientSecret, refreshToken, TOKEN_TYPE_HINT);
-            log.info("애플 연동 해제 성공");
+            log.info("애플 연동 해제에 성공했습니다.");
         } catch (Exception e) {
-            log.error("애플 연동 해제 실패: {}", e.getMessage());
+            log.error("애플 연동 해제에 실패했습니다: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.APPLE_REVOKE_FAILED);
         }
     }
@@ -157,7 +157,7 @@ public class AppleAuthAdapter implements SocialAuthPort {
             return objectMapper.readValue(eventsJson, AppleNotificationPayload.Event.class);
 
         } catch (Exception e) {
-            log.error("애플 알림 내용 파싱 실패: {}", e.getMessage());
+            log.error("애플 알림 내용 파싱에 실패했습니다: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.INVALID_APPLE_ID_TOKEN);
         }
     }

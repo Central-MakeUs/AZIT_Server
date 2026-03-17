@@ -117,7 +117,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         Location location = Location.builder()
-
                 .placeName(command.placeName())
                 .address(command.address())
                 .meetingSpot(command.meetingSpot())
@@ -180,6 +179,8 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (schedule.isFull()) {
             throw new BusinessException(CrewErrorCode.EXCEEDED_MAX_PARTICIPANTS);
         }
+        // 이미 출석 마감된 일정인지 확인
+
 
         // 기존 일정과의 시간 간격 검증
         validateScheduleInterval(command.memberId(), schedule.getMeetingAt());
@@ -205,6 +206,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (schedule.isCheckedIn(command.memberId())) {
             throw new BusinessException(CrewErrorCode.CANNOT_CANCEL_AFTER_CHECK_IN);
         }
+
+        // 이미 출석 마감된 일정인지 확인
+
 
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.memberId());
@@ -253,7 +257,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         // 데이터 정합성 검증
         if (profileMap.size() != participantIds.size() || crewMemberMap.size() != participantIds.size()) {
-            log.warn("Data inconsistency detected for schedule {}: participants={}, profiles={}, crewMembers={}",
+            log.warn("[CREW_SCHEDULE] scheduleId: {} 의 데이터 정합성이 맞지 않습니다. 기대 참여자 수: {}, 조회된 프로필 수: {}, 조회된 크루 멤버 수: {}",
                     schedule.getId(), participantIds.size(), profileMap.size(), crewMemberMap.size());
         }
 
@@ -407,7 +411,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         // 거리 검증 (100m 이내)
         double distance = LocationDistanceUtil.calculateDistance(
                 schedule.getLocation().getLatitude(), schedule.getLocation().getLongitude(), command.latitude(), command.longitude());
-        log.debug("distance: {}", distance);
 
         if (distance > CHECK_IN_AVAILABLE_DISTANCE_METERS) {
             throw new BusinessException(CrewErrorCode.TOO_FAR_FROM_LOCATION);
@@ -500,12 +503,16 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private CrewMember getJoinedMember(Long crewId, Long memberId) {
         return loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)
                 .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
+                .orElseThrow(() -> {
+                    log.warn("[CREW_SCHEDULE] memberId: {} 가 가입하지 않은 crewId: {} 에 접근을 시도했습니다.", memberId, crewId);
+                    return new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER);
+                });
     }
 
     // 해당 일정의 생성자인지 확인
     private void validateCreator(CrewSchedule schedule, Long memberId) {
         if (!schedule.getCreatorId().equals(memberId)) {
+            log.warn("[CREW_SCHEDULE] memberId: {} 가 본인이 생성하지 않은 scheduleId: {} 에 대해 조작을 시도했습니다.", memberId, schedule.getId());
             throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
         }
     }

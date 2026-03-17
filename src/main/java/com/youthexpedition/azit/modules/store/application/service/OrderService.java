@@ -30,6 +30,7 @@ import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
 import com.youthexpedition.azit.modules.store.domain.model.policy.OrderPricePolicy;
 import com.youthexpedition.azit.modules.store.domain.model.policy.PointPolicy;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -39,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class OrderService implements OrderUseCase {
@@ -66,7 +68,7 @@ public class OrderService implements OrderUseCase {
         List<CheckoutItemDto> items = loadCartPort.findCartDetailsByIds(cartItemIds);
 
         // 재고 확인
-        validateStockAvailability(items);
+        validateStockAvailability(items, memberId);
 
         return createCheckoutResponse(member, address, items);
     }
@@ -84,7 +86,7 @@ public class OrderService implements OrderUseCase {
                 .orElseThrow(() -> new BusinessException(StoreErrorCode.SKU_NOT_FOUND));
 
         // 재고 확인
-        validateStockAvailability(List.of(item));
+        validateStockAvailability(List.of(item), memberId);
 
         return createCheckoutResponse(member, address, List.of(item));
     }
@@ -105,6 +107,7 @@ public class OrderService implements OrderUseCase {
             paymentMethod = PaymentMethod.valueOf(command.paymentMethod());
         } catch (IllegalArgumentException e) {
             // 유효하지 않은 문자열일 경우 예외처리
+            log.warn("[ORDER] memberId: {}, paymentMethod: {} 유효하지 않은 결제 수단입니다.", member.getId(), command.paymentMethod());
             throw new BusinessException(StoreErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
         }
 
@@ -112,7 +115,6 @@ public class OrderService implements OrderUseCase {
         if (paymentMethod == PaymentMethod.BANK_TRANSFER && (command.depositorName() == null || command.depositorName().isBlank())) {
                 throw new BusinessException(StoreErrorCode.INVALID_ORDER_REQUEST);
             }
-
 
         // 결제 타입별로 상품 아이템 조회
         List<CheckoutItemDto> items = switch (OrderType.from(command)) {
@@ -133,7 +135,7 @@ public class OrderService implements OrderUseCase {
         long totalShippingFee = OrderPricePolicy.calculateTotalShippingFee(items);
 
         // 결제 수단 확인 및 처리
-        handlePayment(paymentMethod);
+        handlePayment(paymentMethod, member.getId());
 
         // 주문 번호 중복 방어
         String orderNumber = generateUniqueOrderNumber();
@@ -248,6 +250,8 @@ public class OrderService implements OrderUseCase {
         // 포인트 환불
         if (order.getUsedPoints() > 0) {
             Member member = getMember(memberId);
+
+            log.info("[ORDER] memberId: {}, usePoints: {} 포인트를 환불합니다.", memberId, order.getUsedPoints());
             member.addPoints(order.getUsedPoints()); // 사용한 포인트만큼 복구
             saveMemberPort.save(member);
         }
@@ -291,20 +295,24 @@ public class OrderService implements OrderUseCase {
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        log.info("[ORDER] memberId: {}, usePoints: {} 포인트를 사용합니다.", memberId, usePoints);
         PointPolicy.validate(member, usePoints);
 
         return member;
     }
 
     // 결제 수단별 처리
-    private void handlePayment(PaymentMethod paymentMethod) {
+    private void handlePayment(PaymentMethod paymentMethod, Long memberId) {
         if (paymentMethod == PaymentMethod.BANK_TRANSFER) {
             // 무통장 입금은 별도 API 연동 없이 주문 승인 대기 상태로 진행
             return;
         }
 
         // 지원하지 않는 결제수단 체크
-        if (!paymentMethod.isEnabled()) throw new BusinessException(StoreErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
+        if (!paymentMethod.isEnabled()) {
+            log.warn("[ORDER] memberId: {}, paymentMethod: {} 지원하지 않는 결제 수단입니다.", memberId, paymentMethod);
+            throw new BusinessException(StoreErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
+        }
     }
 
     private String generateUniqueOrderNumber() {
@@ -319,18 +327,21 @@ public class OrderService implements OrderUseCase {
             }
         }
         // 최대 재시도 후에도 실패 시 예외 발생
+        log.error("[ORDER] 주문 번호 생성 최대 재시도 횟수({})를 초과했습니다.", MAX_RETRIES);
         throw new BusinessException(StoreErrorCode.ORDER_NUMBER_GENERATION_FAILED);
     }
 
-    private void validateStockAvailability(List<CheckoutItemDto> items) {
+    private void validateStockAvailability(List<CheckoutItemDto> items, Long memberId) {
         for (CheckoutItemDto item : items) {
-            // 주문 수량이
+            // 주문 수량이 유효한지 체크
             if (!OrderItem.isValidQuantity(item.quantity())) {
+                log.warn("[ORDER] memberId: {}, productId: {}, skuId: {}, 요청 수량: {} 유효하지 않은 수량입니다.", memberId, item.productId(), item.skuId(), item.quantity());
                 throw new BusinessException(StoreErrorCode.INVALID_QUANTITY);
             }
 
             // sku의 현재 재고보다 주문 요청 수량이 많은지 체크
             if (item.stockQuantity() < item.quantity()) {
+                log.warn("[ORDER] memberId: {}, productId: {}, skuId: {}, 요청 수량: {} 재고가 부족합니다.", memberId, item.productId(), item.skuId(), item.quantity());
                 throw new BusinessException(StoreErrorCode.OUT_OF_STOCK);
             }
         }
