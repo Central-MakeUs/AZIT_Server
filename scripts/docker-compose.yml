@@ -38,6 +38,7 @@ services:
       - SENTRY_AUTO_INIT=false
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
+      - OTEL_TRACES_EXPORTER=none
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
@@ -69,6 +70,7 @@ services:
       - SENTRY_AUTO_INIT=false
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
+      - OTEL_TRACES_EXPORTER=none
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
@@ -99,6 +101,7 @@ services:
       - SENTRY_AUTO_INIT=false
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
+      - OTEL_TRACES_EXPORTER=none
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
