@@ -10,6 +10,11 @@ services:
       --maxmemory 256mb
       --maxmemory-policy allkeys-lru
       --requirepass ${REDIS_PASSWORD}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - azit-network
 
@@ -36,6 +41,11 @@ services:
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - azit-network
 
@@ -62,6 +72,11 @@ services:
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - azit-network
 
@@ -87,6 +102,11 @@ services:
     volumes:
       - /home/ubuntu/app/keys:/app/keys
       - /home/ubuntu/app/logs:/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - azit-network
 
