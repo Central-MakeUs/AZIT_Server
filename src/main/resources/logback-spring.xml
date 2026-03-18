@@ -13,7 +13,6 @@
 
     <springProfile name="local">
         <logger name="com.youthexpedition.azit" level="DEBUG" />
-        <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" />
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
         </root>
@@ -21,8 +20,6 @@
 
     <springProfile name="dev">
         <logger name="com.youthexpedition.azit" level="DEBUG" />
-        <logger name="org.hibernate.SQL" level="DEBUG" />
-        <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" />
 
         <root level="INFO">
             <appender-ref ref="CONSOLE" />

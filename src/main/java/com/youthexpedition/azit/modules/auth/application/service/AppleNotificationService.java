@@ -21,15 +21,15 @@ public class AppleNotificationService implements AppleNotificationUseCase {
     @Override
     public void handleNotification(String payload) {
         var event = appleAuthAdapter.parseNotification(payload);
-        log.debug("수신한 payload: {}", event);
+        log.debug("수신한 payload 내용: {}", event);
         AppleNotificationType type = AppleNotificationType.of(event.type());
 
         if (type == null) {
-            log.warn("알 수 없는 Apple 알림 타입: {}", event.type());
+            log.warn("알 수 없는 Apple 알림 타입입니다: {}", event.type());
             return;
         }
 
-        log.info("Apple 알림 수신 - Type: {}, sub: {}", type, event.sub());
+        log.info("Apple 알림을 수신했습니다. Type: {}, sub: {}", type, event.sub());
 
         switch (type) {
             case CONSENT_REVOKED:

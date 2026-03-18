@@ -65,11 +65,11 @@ public class KakaoAuthAdapter implements SocialAuthPort {
                     .profileImageUrl(profileImageUrl)
                     .build();
         } catch (FeignException.BadRequest e) {
-            log.error("카카오 인가 코드 검증 실패: {}", e.contentUTF8());
+            log.error("카카오 인가 코드 검증에 실패했습니다: {}", e.contentUTF8());
             throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_CODE);
         } catch (FeignException e) {
             // 기타 통신 오류
-            log.error("카카오 API 호출 중 오류 발생: {}", e.getMessage());
+            log.error("카카오 API 호출 중 오류가 발생했습니다: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.SOCIAL_AUTHENTICATION_FAILED);
         }
     }
@@ -84,9 +84,9 @@ public class KakaoAuthAdapter implements SocialAuthPort {
 
         try {
             kakaoApiFeignClient.unlink(AUTHORIZATION_HEADER + adminKey, TARGET_ID_TYPE, Long.parseLong(socialProviderId));
-            log.info("카카오 연동 해제 성공");
+            log.info("카카오 연동 해제에 성공했습니다.");
         } catch (Exception e) {
-            log.error("카카오 연동 해제 실패: {}", e.getMessage());
+            log.error("카카오 연동 해제에 실패했습니다: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.KAKAO_REVOKE_FAILED);
         }
     }

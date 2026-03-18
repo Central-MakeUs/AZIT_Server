@@ -16,10 +16,12 @@ import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.provider.ProfileImageProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class SocialLoginService implements SocialLoginUseCase {
@@ -81,6 +83,7 @@ public class SocialLoginService implements SocialLoginUseCase {
 
         // 탈퇴한 회원인 경우 재활성화
         if (member.getStatus() == MemberStatus.WITHDRAWN) {
+            log.info("[SOCIAL_LOGIN] 탈퇴했던 회원 memberId: {}, socialProviderId: {} 가 재로그인하여 계정이 재활성화 되었습니다.", member.getId(), profile.socialProviderId());
             member.reactivate();
         }
 

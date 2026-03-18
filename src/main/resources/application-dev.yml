@@ -87,5 +87,11 @@ sentry:
     minimum-event-level: error        # ERROR 레벨 이상의 로그만 이슈로 전송
     minimum-breadcrumb-level: warn
 
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+      multiline: true
+
 server:
   port: 8080

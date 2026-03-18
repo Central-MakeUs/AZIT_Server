@@ -43,6 +43,8 @@ public class TokenManagementService implements TokenUseCase {
 
         if (!savedRT.equals(refreshToken)) {
             tokenPort.deleteByMemberId(memberId);
+
+            log.warn("[TOKEN_MANAGEMENT] memberId: {} 의 비정상적인 토큰 접근(탈취 의심)이 감지되어 모든 세션을 강제 종료합니다.", memberId);
             throw new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED);
         }
 
@@ -74,6 +76,8 @@ public class TokenManagementService implements TokenUseCase {
 
     @Override
     public void logout(Long memberId, String accessToken) {
+        log.info("[TOKEN_MANAGEMENT] memberId: {} 가 로그아웃하여 리프레시 토큰을 삭제합니다.", memberId);
+
         tokenPort.deleteByMemberId(memberId);
         tokenPort.addToBlacklist(accessToken, BLACKLIST_REASON_LOGOUT); // 블랙리스트에 추가
     }

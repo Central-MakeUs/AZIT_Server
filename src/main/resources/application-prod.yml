@@ -84,6 +84,11 @@ sentry:
     minimum-event-level: error        # ERROR 레벨 이상의 로그만 이슈로 전송
     minimum-breadcrumb-level: warn
 
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
+
 # 서버 포트 (도커 컨테이너 내부 포트)
 server:
   port: 8080
