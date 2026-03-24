@@ -22,11 +22,7 @@ public class ImageUrlFormatUtil {
 
         // 외부 이미지인지 확인
         if (imagePath.startsWith("http")) {
-            // http://로 시작하는 경우에만 https://로 치환
-            if (imagePath.startsWith("http://")) {
-                return imagePath.replaceFirst("http://", "https://");
-            }
-            return imagePath;
+            return imagePath.replaceFirst("http://", "https://");
         }
 
         return cloudFrontDomain + imagePath;
