@@ -81,8 +81,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // 센트리
-    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.34.1'
-    implementation 'io.sentry:sentry-logback:8.34.1'
+    implementation platform('io.sentry:sentry-bom:8.34.1')
+    implementation 'io.sentry:sentry-spring-boot-starter-jakarta'
+    implementation 'io.sentry:sentry-logback'
 
     // 쿼리 로깅
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.1'
