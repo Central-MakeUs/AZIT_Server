@@ -56,7 +56,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1; // 출석 버튼 활성화 윈도우 (전후 1시간)
     private static final int COMPLETED_RETENTION_HOURS = 3;    // 지난 일정 완료 표시 유지 시간
     private static final long CHECK_IN_POINTS = 100L;
-    private static final double CHECK_IN_AVAILABLE_DISTANCE_METERS = 100.0;
+    private static final double CHECK_IN_AVAILABLE_DISTANCE_METERS = 1000.0;
 
     @Override
     public void createSchedule(CreateScheduleCommand command) {
@@ -407,7 +407,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
             throw new BusinessException(CrewErrorCode.NOT_CHECK_IN_TIME);
         }
 
-        // 거리 검증 (100m 이내)
+        // 거리 검증 (1000m 이내)
         double distance = LocationDistanceUtil.calculateDistance(
                 schedule.getLocation().getLatitude(), schedule.getLocation().getLongitude(), command.latitude(), command.longitude());
 
