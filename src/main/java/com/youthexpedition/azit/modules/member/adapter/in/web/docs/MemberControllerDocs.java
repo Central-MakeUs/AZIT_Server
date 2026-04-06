@@ -213,7 +213,7 @@ public interface MemberControllerDocs {
 
             **[제약 사항]** <br>
             * 닉네임은 최대 10자까지 입력 가능합니다. (INVALID_NICKNAME) <br>
-            * 특수문자는 사용할 수 없으며, 한글/영문/숫자만 허용됩니다. (INVALID_NICKNAME)
+            * 특수문자는 사용할 수 없으며, 한글/영문/숫자만 허용됩니다.
             """
     )
     @ApiErrorCodeExamples({
