@@ -5,6 +5,7 @@ import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateNicknameCommand;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -250,6 +251,48 @@ class MemberServiceTest {
             );
 
             assertEquals(MemberErrorCode.INVALID_MEMBER_STATUS, exception.getErrorCode());
+            verify(loadMemberPort, times(1)).findById(memberId);
+            verify(saveMemberPort, never()).save(any(Member.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("닉네임 변경")
+    class UpdateNickname {
+
+        private final Long memberId = 1L;
+
+        @Test
+        @DisplayName("성공")
+        void updateNickname_success() {
+            // given
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, "imageUrl");
+            UpdateNicknameCommand command = UpdateNicknameCommand.of("newNickname");
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateNickname(memberId, command);
+
+            // then
+            assertEquals("newNickname", member.getNickname());
+            verify(loadMemberPort, times(1)).findById(memberId);
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("실패 - 회원을 찾을 수 없음")
+        void updateNickname_fail_memberNotFound() {
+            // given
+            UpdateNicknameCommand command = UpdateNicknameCommand.of("newNickname");
+            doReturn(Optional.empty()).when(loadMemberPort).findById(memberId);
+
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class, () ->
+                    memberService.updateNickname(memberId, command)
+            );
+
+            assertEquals(MemberErrorCode.MEMBER_NOT_FOUND.getCode(), exception.getErrorCode().getCode());
             verify(loadMemberPort, times(1)).findById(memberId);
             verify(saveMemberPort, never()).save(any(Member.class));
         }

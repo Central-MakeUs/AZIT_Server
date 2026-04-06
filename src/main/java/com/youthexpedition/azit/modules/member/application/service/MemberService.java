@@ -15,6 +15,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateNicknameCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
@@ -209,5 +210,12 @@ public class MemberService implements MemberUseCase {
                 throw new BusinessException(CrewErrorCode.CANNOT_WITHDRAW_AS_LEADER);
             }
         }
+    }
+
+    @Override
+    public void updateNickname(Long memberId, UpdateNicknameCommand command) {
+        Member member = getMember(memberId);
+        member.updateNickname(command.nickname());
+        saveMemberPort.save(member);
     }
 }

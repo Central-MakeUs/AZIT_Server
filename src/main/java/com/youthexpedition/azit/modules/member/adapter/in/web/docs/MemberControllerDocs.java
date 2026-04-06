@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CheckInRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateNicknameRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
@@ -204,5 +205,21 @@ public interface MemberControllerDocs {
             @Parameter(hidden = true) @CurrentMemberId Long memberId
 
     );
+
+    @Operation(
+            summary = "닉네임 수정",
+            description = """
+            로그인한 사용자의 닉네임을 수정합니다. <br><br>
+
+            **[제약 사항]** <br>
+            * 닉네임은 최대 10자까지 입력 가능합니다. (INVALID_NICKNAME) <br>
+            * 특수문자는 사용할 수 없으며, 한글/영문/숫자만 허용됩니다.
+            """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND", "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> updateNickname(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateNicknameRequest request);
+
 
 }

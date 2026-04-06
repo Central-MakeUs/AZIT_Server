@@ -11,6 +11,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStat
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateNicknameRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
@@ -97,5 +98,12 @@ public class MemberController implements MemberControllerDocs {
         List<MyAttendanceMonthlyListResponse> response = crewScheduleUseCase.getMyAttendancesForCalendar(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @PatchMapping("/me/nickname")
+    public CommonResponse<Void> updateNickname(@CurrentMemberId Long memberId, @Valid @RequestBody UpdateNicknameRequest request) {
+        memberUseCase.updateNickname(memberId, request.toCommand());
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 }

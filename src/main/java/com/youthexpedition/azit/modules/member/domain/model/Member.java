@@ -163,6 +163,11 @@ public class Member {
         this.totalPoints += points;
     }
 
+    // 닉네임 수정
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     public void updateAttendanceCount() {
         this.totalAttendanceCount++;
     }
