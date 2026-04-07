@@ -27,4 +27,26 @@ public class ImageUrlFormatUtil {
 
         return cloudFrontDomain + imagePath;
     }
+
+    /**
+     * 이미지 경로에서 S3 Key 추출
+     * CloudFront URL: https://azitcrew.com/profile/123/2026-04-07_550e8400.jpg → profile/123/2026-04-07_550e8400.jpg
+     * 상대 경로:      /profile/123/2026-04-07_550e8400.jpg                     → profile/123/2026-04-07_550e8400.jpg
+     */
+    public String extractS3Key(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+        // trailing slash 정규화 (설정값 끝에 '/' 포함 여부와 무관하게 동작)
+        String normalizedDomain = cloudFrontDomain.endsWith("/")
+                ? cloudFrontDomain.substring(0, cloudFrontDomain.length() - 1)
+                : cloudFrontDomain;
+        if (imageUrl.startsWith(normalizedDomain + "/")) {
+            return imageUrl.substring(normalizedDomain.length() + 1);
+        }
+        if (imageUrl.startsWith("/")) {
+            return imageUrl.substring(1);
+        }
+        return null;
+    }
 }

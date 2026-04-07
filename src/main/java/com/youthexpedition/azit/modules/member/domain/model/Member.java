@@ -168,6 +168,11 @@ public class Member {
         this.nickname = nickname;
     }
 
+    // 프로필 이미지 수정
+    public void updateProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
     public void updateAttendanceCount() {
         this.totalAttendanceCount++;
     }

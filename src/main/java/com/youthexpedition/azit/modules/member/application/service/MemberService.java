@@ -14,8 +14,13 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
+import com.youthexpedition.azit.modules.image.application.port.out.ImageStoragePort;
+import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
+import com.youthexpedition.azit.modules.image.domain.model.enums.ImageUploadType;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateNicknameCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateProfileImageCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
@@ -44,8 +49,11 @@ public class MemberService implements MemberUseCase {
     private final SocialAuthPort socialAuthPort;
     private final TokenPort tokenPort;
     private final MemberResponseMapper memberResponseMapper;
+    private final ImageStoragePort imageStoragePort;
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
 
     private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
+    private static final String DEFAULT_S3_PREFIX = "default/";
 
     @Override
     public void agreeToTerms(Long memberId, AgreeToTermsCommand command) {
@@ -212,10 +220,48 @@ public class MemberService implements MemberUseCase {
         }
     }
 
+    private void validateImageOwnership(String tempS3Key, Long memberId) {
+        Long imageOwnerMemberId = ImageUploadType.extractMemberIdFromTempKey(tempS3Key);
+        if (imageOwnerMemberId == null) {
+            throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+        }
+        if (!imageOwnerMemberId.equals(memberId)) {
+            throw new BusinessException(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH);
+        }
+    }
+
     @Override
     public void updateNickname(Long memberId, UpdateNicknameCommand command) {
         Member member = getMember(memberId);
         member.updateNickname(command.nickname());
+        saveMemberPort.save(member);
+    }
+
+    @Override
+    public void updateProfileImage(Long memberId, UpdateProfileImageCommand command) {
+        // temp 경로 파일 존재 여부 검증
+        String tempS3Key = imageUrlFormatUtil.extractS3Key(command.imageUrl());
+        if (tempS3Key == null || !tempS3Key.startsWith(ImageUploadType.TEMP_PREFIX) || !imageStoragePort.exists(tempS3Key)) {
+            throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+        }
+
+        // 본인이 업로드한 이미지인지 검증
+        validateImageOwnership(tempS3Key, memberId);
+
+        Member member = getMember(memberId);
+
+        // 기존 업로드 이미지 삭제 (기본 이미지, 외부 URL 제외)
+        String oldS3Key = imageUrlFormatUtil.extractS3Key(member.getProfileImageUrl());
+        if (oldS3Key != null && !oldS3Key.startsWith(DEFAULT_S3_PREFIX)) {
+            imageStoragePort.delete(oldS3Key);
+        }
+
+        // temp → 실제 경로로 이동
+        String finalS3Key = tempS3Key.substring(ImageUploadType.TEMP_PREFIX.length());
+        imageStoragePort.move(tempS3Key, finalS3Key);
+
+        // 상대 경로 저장
+        member.updateProfileImageUrl("/" + finalS3Key);
         saveMemberPort.save(member);
     }
 }
