@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.image.application.port.in.command.Genera
 import com.youthexpedition.azit.modules.image.application.port.in.dto.PresignedUrlResponse;
 import com.youthexpedition.azit.modules.image.application.port.out.ImageStoragePort;
 import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
+import com.youthexpedition.azit.modules.image.domain.model.enums.ImageUploadType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,7 @@ public class ImageService implements ImageUseCase {
 
     private String buildS3Key(GeneratePresignedUrlCommand command, String extension) {
         String fileName = LocalDate.now() + "_" + UUID.randomUUID();
-        return "temp/" + command.type().buildPath(command.memberId()) + "/" + fileName + "." + extension;
+        return ImageUploadType.TEMP_PREFIX + command.type().buildPath(command.memberId()) + "/" + fileName + "." + extension;
     }
 
     private String extractExtension(String fileName) {

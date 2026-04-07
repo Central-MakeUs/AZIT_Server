@@ -17,6 +17,7 @@ import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase
 import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.image.application.port.out.ImageStoragePort;
 import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
+import com.youthexpedition.azit.modules.image.domain.model.enums.ImageUploadType;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateNicknameCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateProfileImageCommand;
@@ -52,6 +53,7 @@ public class MemberService implements MemberUseCase {
     private final ImageUrlFormatUtil imageUrlFormatUtil;
 
     private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
+    private static final String DEFAULT_S3_PREFIX = "default/";
 
     @Override
     public void agreeToTerms(Long memberId, AgreeToTermsCommand command) {
@@ -219,15 +221,12 @@ public class MemberService implements MemberUseCase {
     }
 
     private void validateImageOwnership(String tempS3Key, Long memberId) {
-        // tempS3Key 구조: temp/{directory}/{memberId}/{fileName}
-        try {
-            String[] parts = tempS3Key.split("/");
-            Long imageOwnerMemberId = Long.parseLong(parts[2]);
-            if (!imageOwnerMemberId.equals(memberId)) {
-                throw new BusinessException(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH);
-            }
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+        Long imageOwnerMemberId = ImageUploadType.extractMemberIdFromTempKey(tempS3Key);
+        if (imageOwnerMemberId == null) {
             throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+        }
+        if (!imageOwnerMemberId.equals(memberId)) {
+            throw new BusinessException(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH);
         }
     }
 
@@ -242,7 +241,7 @@ public class MemberService implements MemberUseCase {
     public void updateProfileImage(Long memberId, UpdateProfileImageCommand command) {
         // temp 경로 파일 존재 여부 검증
         String tempS3Key = imageUrlFormatUtil.extractS3Key(command.imageUrl());
-        if (tempS3Key == null || !tempS3Key.startsWith("temp/") || !imageStoragePort.exists(tempS3Key)) {
+        if (tempS3Key == null || !tempS3Key.startsWith(ImageUploadType.TEMP_PREFIX) || !imageStoragePort.exists(tempS3Key)) {
             throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
         }
 
@@ -253,12 +252,12 @@ public class MemberService implements MemberUseCase {
 
         // 기존 업로드 이미지 삭제 (기본 이미지, 외부 URL 제외)
         String oldS3Key = imageUrlFormatUtil.extractS3Key(member.getProfileImageUrl());
-        if (oldS3Key != null && !oldS3Key.startsWith("default/")) {
+        if (oldS3Key != null && !oldS3Key.startsWith(DEFAULT_S3_PREFIX)) {
             imageStoragePort.delete(oldS3Key);
         }
 
         // temp → 실제 경로로 이동
-        String finalS3Key = tempS3Key.substring("temp/".length());
+        String finalS3Key = tempS3Key.substring(ImageUploadType.TEMP_PREFIX.length());
         imageStoragePort.move(tempS3Key, finalS3Key);
 
         // 상대 경로 저장
