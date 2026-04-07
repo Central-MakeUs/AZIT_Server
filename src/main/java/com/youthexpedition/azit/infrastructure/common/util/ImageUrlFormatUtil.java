@@ -27,4 +27,22 @@ public class ImageUrlFormatUtil {
 
         return cloudFrontDomain + imagePath;
     }
+
+    /**
+     * 이미지 경로에서 S3 Key 추출
+     * CloudFront URL: https://azitcrew.com/profile/123/2026-04-07_550e8400.jpg → profile/123/2026-04-07_550e8400.jpg
+     * 상대 경로: /profile/123/2026-04-07_550e8400.jpg → profile/123/2026-04-07_550e8400.jpg
+     */
+    public String extractS3Key(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+        if (imageUrl.startsWith(cloudFrontDomain)) {
+            return imageUrl.substring(cloudFrontDomain.length() + 1); // +1: 선행 '/' 제거
+        }
+        if (imageUrl.startsWith("/")) {
+            return imageUrl.substring(1); // 선행 '/' 제거
+        }
+        return null;
+    }
 }
