@@ -28,8 +28,9 @@ public interface ImageControllerDocs {
                     * MEMBER_PROFILE : 프로필 이미지 <br><br>
 
                     **[제약 사항]** <br>
-                    * 허용 확장자: jpg, jpeg, png, webp <br>
-                    * Presigned URL 유효 시간: 5분
+                    * 허용 확장자: jpg, jpeg, png, webp (그 외: UNSUPPORTED_FILE_EXTENSION) <br>
+                    * Presigned URL 유효 시간: 5분 <br>
+                    * 확장자 파싱이 불가능한 올바르지 않은 파일명일 경우 INVALID_FILE_NAME 에러가 발생합니다.
                     """
     )
     @ApiErrorCodeExamples({
