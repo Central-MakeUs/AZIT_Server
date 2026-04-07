@@ -12,6 +12,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewSchedul
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateNicknameRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateProfileImageRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
@@ -103,6 +104,13 @@ public class MemberController implements MemberControllerDocs {
     @PatchMapping("/me/nickname")
     public CommonResponse<Void> updateNickname(@CurrentMemberId Long memberId, @Valid @RequestBody UpdateNicknameRequest request) {
         memberUseCase.updateNickname(memberId, request.toCommand());
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @PatchMapping("/me/profile-image")
+    public CommonResponse<Void> updateProfileImage(@CurrentMemberId Long memberId, @Valid @RequestBody UpdateProfileImageRequest request) {
+        memberUseCase.updateProfileImage(memberId, request.toCommand());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }

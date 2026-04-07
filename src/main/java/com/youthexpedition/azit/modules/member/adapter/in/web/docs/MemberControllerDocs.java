@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStat
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateNicknameRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateProfileImageRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
@@ -212,7 +213,7 @@ public interface MemberControllerDocs {
             로그인한 사용자의 닉네임을 수정합니다. <br><br>
 
             **[제약 사항]** <br>
-            * 닉네임은 최대 10자까지 입력 가능합니다. (INVALID_NICKNAME) <br>
+            * 닉네임은 최대 10자까지 입력 가능합니다. <br>
             * 특수문자는 사용할 수 없으며, 한글/영문/숫자만 허용됩니다.
             """
     )
@@ -221,5 +222,22 @@ public interface MemberControllerDocs {
     })
     CommonResponse<Void> updateNickname(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateNicknameRequest request);
 
+    @Operation(
+            summary = "프로필 이미지 수정",
+            description = """
+                    로그인한 사용자의 프로필 이미지를 수정합니다. <br><br>
 
+                    **[사전 조건]** <br>
+                    * POST /api/v1/images/presigned-url API로 Presigned URL을 발급받은 뒤, S3에 이미지를 **실제로 업로드한 후** 호출해야 합니다. <br><br>
+
+                    **[제약 사항]** <br>
+                    * 업로드되지 않은 이미지 URL을 전달하면 IMAGE_NOT_UPLOADED 오류가 반환됩니다. <br>
+                    * 본인이 업로드한 이미지 URL만 사용할 수 있습니다. (IMAGE_OWNERSHIP_MISMATCH)
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND", "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> updateProfileImage(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateProfileImageRequest request);
 }
