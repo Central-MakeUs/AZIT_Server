@@ -40,13 +40,21 @@ public class KakaoAuthAdapter implements SocialAuthPort {
     @Override
     public SocialProfile getSocialProfile(SocialLoginCommand command) {
         try {
-            // 카카오 토큰 요청
-            KakaoTokenResponse tokenResponse = kakaoAuthFeignClient.getToken(
-                    "authorization_code", clientId, redirectUri, command.authorizationCode(), clientSecret
-            );
+            String kakaoAccessToken;
+
+            if (command.accessToken() != null) {
+                // 네이티브 SDK 플로우
+                kakaoAccessToken = command.accessToken();
+            } else {
+                // 웹 OAuth 플로우, 카카오 토큰 요청
+                KakaoTokenResponse tokenResponse = kakaoAuthFeignClient.getToken(
+                        "authorization_code", clientId, redirectUri, command.authorizationCode(), clientSecret
+                );
+                kakaoAccessToken = tokenResponse.accessToken();
+            }
 
             // 카카오 사용자 정보 요청
-            KakaoUserInfoResponse userInfo = kakaoApiFeignClient.getUserInfo("Bearer " + tokenResponse.accessToken());
+            KakaoUserInfoResponse userInfo = kakaoApiFeignClient.getUserInfo("Bearer " + kakaoAccessToken);
 
             var account = userInfo.kakaoAccount();
             var profile = account.profile();
@@ -64,6 +72,9 @@ public class KakaoAuthAdapter implements SocialAuthPort {
                     .isEmailSharingEnabled(isEmailSharingEnabled)
                     .profileImageUrl(profileImageUrl)
                     .build();
+        } catch (FeignException.Unauthorized e) {
+            log.error("카카오 액세스 토큰이 유효하지 않거나 만료되었습니다: {}", e.contentUTF8());
+            throw new BusinessException(AuthErrorCode.INVALID_KAKAO_ACCESS_TOKEN);
         } catch (FeignException.BadRequest e) {
             log.error("카카오 인가 코드 검증에 실패했습니다: {}", e.contentUTF8());
             throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_CODE);
