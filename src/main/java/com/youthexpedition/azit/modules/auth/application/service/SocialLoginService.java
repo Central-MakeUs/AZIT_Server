@@ -1,11 +1,13 @@
 package com.youthexpedition.azit.modules.auth.application.service;
 
 import com.youthexpedition.azit.infrastructure.auth.jwt.JwtProvider;
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.in.SocialLoginUseCase;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialLoginCommand;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthResult;
+import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.auth.domain.model.AuthToken;
 import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
@@ -35,6 +37,11 @@ public class SocialLoginService implements SocialLoginUseCase {
 
     @Override
     public AuthResult login(SocialLoginCommand command) {
+        if ((command.authorizationCode() == null || command.authorizationCode().isBlank()) &&
+                (command.accessToken() == null || command.accessToken().isBlank())) {
+            throw new BusinessException(AuthErrorCode.MISSING_SOCIAL_CREDENTIAL);
+        }
+
         SocialProfile profile = socialAuthPort.getSocialProfile(command);
 
         // 기존 회원 확인 및 신규 회원 가입
