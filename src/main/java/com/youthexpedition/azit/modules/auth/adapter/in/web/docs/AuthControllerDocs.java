@@ -34,7 +34,7 @@ public interface AuthControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "INVALID_SOCIAL_CODE", "SOCIAL_AUTHENTICATION_FAILED", "INVALID_KAKAO_ACCESS_TOKEN"
+            "INVALID_SOCIAL_CODE", "SOCIAL_AUTHENTICATION_FAILED", "INVALID_KAKAO_ACCESS_TOKEN", "MISSING_SOCIAL_CREDENTIAL"
     })
     CommonResponse<SocialLoginResponse> socialLogin(
             @PathVariable SocialProvider provider, @Valid @RequestBody SocialLoginRequest request, HttpServletResponse response);
