@@ -14,38 +14,38 @@ public class PointHistory {
 
     private final Long id;
     private final Long memberId;
-    private final int points;
+    private final Long points;
     private final PointHistoryType type;
     private final Long referenceId;
     private final LocalDateTime createdAt;
 
-    public static PointHistory ofAttendance(Long memberId, Long scheduleId, LocalDateTime checkedInAt) {
+    public static PointHistory ofAttendance(Long memberId, Long scheduleId, long points, LocalDateTime checkedInAt) {
         return PointHistory.builder()
                 .memberId(memberId)
-                .points(100)
+                .points(points)
                 .type(PointHistoryType.ATTENDANCE)
                 .referenceId(scheduleId)
                 .createdAt(checkedInAt)
                 .build();
     }
 
-    public static PointHistory ofStoreUse(Long memberId, Long orderId, long usedPoints) {
+    public static PointHistory ofStoreUse(Long memberId, Long orderId, long usedPoints, LocalDateTime createdAt) {
         return PointHistory.builder()
                 .memberId(memberId)
-                .points((int) -usedPoints)
+                .points(-usedPoints)
                 .type(PointHistoryType.STORE_USE)
                 .referenceId(orderId)
-                .createdAt(LocalDateTime.now())
+                .createdAt(createdAt)
                 .build();
     }
 
-    public static PointHistory ofStoreUseRefund(Long memberId, Long orderId, long refundPoints) {
+    public static PointHistory ofStoreUseRefund(Long memberId, Long orderId, long refundPoints, LocalDateTime createdAt) {
         return PointHistory.builder()
                 .memberId(memberId)
-                .points((int) refundPoints)
+                .points(refundPoints)
                 .type(PointHistoryType.STORE_USE_REFUND)
                 .referenceId(orderId)
-                .createdAt(LocalDateTime.now())
+                .createdAt(createdAt)
                 .build();
     }
 }

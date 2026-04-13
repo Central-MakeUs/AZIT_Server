@@ -437,7 +437,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         saveMemberPort.save(member);
 
         // 포인트 이력 저장
-        savePointHistoryPort.save(PointHistory.ofAttendance(command.memberId(), command.scheduleId(), now));
+        savePointHistoryPort.save(PointHistory.ofAttendance(command.memberId(), command.scheduleId(), CHECK_IN_POINTS, now));
     }
 
     @Override

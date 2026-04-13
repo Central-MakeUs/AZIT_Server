@@ -39,6 +39,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -195,7 +196,7 @@ public class OrderService implements OrderUseCase {
 
         // 포인트 사용 이력 저장
         if (command.usedPoints() > 0) {
-            savePointHistoryPort.save(PointHistory.ofStoreUse(command.memberId(), savedOrder.getId(), command.usedPoints()));
+            savePointHistoryPort.save(PointHistory.ofStoreUse(command.memberId(), savedOrder.getId(), command.usedPoints(), LocalDateTime.now()));
         }
 
         // cartItems Id가 있을 경우 장바구니 비우기
@@ -264,7 +265,7 @@ public class OrderService implements OrderUseCase {
             saveMemberPort.save(member);
 
             // 포인트 환불 이력 저장
-            savePointHistoryPort.save(PointHistory.ofStoreUseRefund(memberId, order.getId(), order.getUsedPoints()));
+            savePointHistoryPort.save(PointHistory.ofStoreUseRefund(memberId, order.getId(), order.getUsedPoints(), LocalDateTime.now()));
         }
 
         saveOrderPort.save(order);

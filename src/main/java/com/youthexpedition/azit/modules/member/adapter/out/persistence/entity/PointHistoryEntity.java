@@ -28,7 +28,7 @@ public class PointHistoryEntity {
     private Long memberId;
 
     @Column(name = "points", nullable = false)
-    private int points;
+    private Long points;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 30)

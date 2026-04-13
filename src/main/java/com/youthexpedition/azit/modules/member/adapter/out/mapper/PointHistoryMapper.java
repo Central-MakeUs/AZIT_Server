@@ -4,8 +4,6 @@ import com.youthexpedition.azit.modules.member.adapter.out.persistence.entity.Po
 import com.youthexpedition.azit.modules.member.domain.model.PointHistory;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-
 @Component
 public class PointHistoryMapper {
 
@@ -15,7 +13,7 @@ public class PointHistoryMapper {
                 .points(domain.getPoints())
                 .type(domain.getType())
                 .referenceId(domain.getReferenceId())
-                .createdAt(domain.getCreatedAt() != null ? domain.getCreatedAt() : LocalDateTime.now())
+                .createdAt(domain.getCreatedAt())
                 .build();
     }
 
