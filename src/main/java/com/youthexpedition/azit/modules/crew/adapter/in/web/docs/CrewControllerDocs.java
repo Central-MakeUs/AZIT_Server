@@ -177,7 +177,7 @@ public interface CrewControllerDocs {
                     """
     )
     @ApiErrorCodeExamples({
-            "CREW_NOT_FOUND", "NOT_CREW_LEADER", "INVITATION_CODE_GENERATION_FAILED",
+            "CREW_NOT_FOUND", "NOT_CREW_LEADER", "INVITATION_CODE_GENERATION_FAILED", "NOT_A_CREW_MEMBER",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<InvitationCodeResponse> regenerateInvitationCode(
