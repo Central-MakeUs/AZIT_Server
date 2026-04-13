@@ -5,6 +5,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateC
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.InvitationCodeResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
@@ -424,6 +425,103 @@ class CrewServiceTest {
             // when & then
             assertThatThrownBy(() -> crewService.getJoinRequests(crewId, nonMemberId))
                     .isInstanceOf(BusinessException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("초대 코드 재발급 테스트")
+    class RegenerateInvitationCodeTest {
+
+        @Test
+        @DisplayName("성공: 크루 리더가 초대 코드를 재발급하면 새로운 코드가 반환되고 크루에 저장된다.")
+        void regenerateInvitationCode_Success() {
+            // given
+            Long crewId = 100L;
+            Long leaderId = 1L;
+            String oldCode = "OLDCOD";
+
+            CrewMember leader = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(leaderId)
+                    .role(CrewMemberRole.LEADER)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)).willReturn(Optional.of(leader));
+
+            Crew crew = Crew.builder()
+                    .id(crewId)
+                    .invitationCode(oldCode)
+                    .build();
+            given(loadCrewPort.findById(crewId)).willReturn(Optional.of(crew));
+
+            // 새 코드는 항상 유일하다고 가정
+            given(loadCrewPort.existsByInvitationCode(anyString())).willReturn(false);
+
+            // when
+            InvitationCodeResponse response = crewService.regenerateInvitationCode(crewId, leaderId);
+
+            // then
+            assertThat(response.invitationCode()).isNotBlank();
+            assertThat(response.invitationCode()).isNotEqualTo(oldCode);
+            verify(saveCrewPort, times(1)).save(crew);
+        }
+
+        @Test
+        @DisplayName("실패 (권한 없음): 리더가 아닌 일반 멤버가 재발급을 시도하면 NOT_CREW_LEADER 예외가 발생한다.")
+        void regenerateInvitationCode_Fail_NotLeader() {
+            // given
+            Long crewId = 100L;
+            Long memberId = 2L;
+
+            CrewMember member = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .role(CrewMemberRole.MEMBER)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(member));
+
+            // when & then
+            assertThatThrownBy(() -> crewService.regenerateInvitationCode(crewId, memberId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(CrewErrorCode.NOT_CREW_LEADER.getMessage());
+        }
+
+        @Test
+        @DisplayName("실패 (크루 멤버 아님): 해당 크루에 속하지 않은 사용자가 재발급을 시도하면 NOT_A_CREW_MEMBER 예외가 발생한다.")
+        void regenerateInvitationCode_Fail_NotMember() {
+            // given
+            Long crewId = 100L;
+            Long nonMemberId = 999L;
+
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, nonMemberId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> crewService.regenerateInvitationCode(crewId, nonMemberId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(CrewErrorCode.NOT_A_CREW_MEMBER.getMessage());
+        }
+
+        @Test
+        @DisplayName("실패 (크루 없음): 유효하지 않은 crewId로 재발급을 시도하면 CREW_NOT_FOUND 예외가 발생한다.")
+        void regenerateInvitationCode_Fail_CrewNotFound() {
+            // given
+            Long crewId = 999L;
+            Long leaderId = 1L;
+
+            CrewMember leader = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(leaderId)
+                    .role(CrewMemberRole.LEADER)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, leaderId)).willReturn(Optional.of(leader));
+            given(loadCrewPort.findById(crewId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> crewService.regenerateInvitationCode(crewId, leaderId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(CrewErrorCode.CREW_NOT_FOUND.getMessage());
         }
     }
 
