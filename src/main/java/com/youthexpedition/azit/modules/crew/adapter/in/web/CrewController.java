@@ -87,4 +87,10 @@ public class CrewController implements CrewControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
+    @PostMapping("/{crewId}/invitation-code")
+    public CommonResponse<InvitationCodeResponse> regenerateInvitationCode(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        InvitationCodeResponse response = crewUseCase.regenerateInvitationCode(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
 }

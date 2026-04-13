@@ -305,6 +305,25 @@ public class CrewService implements CrewUseCase {
         saveMemberPort.save(member);
     }
 
+    @Override
+    @Retryable(
+            retryFor = {DataIntegrityViolationException.class},
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100)
+    )
+    public InvitationCodeResponse regenerateInvitationCode(Long crewId, Long memberId) {
+        validateLeader(crewId, memberId);
+
+        Crew crew = loadCrewPort.findById(crewId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        String newCode = generateUniqueInvitationCode();
+        crew.updateInvitationCode(newCode);
+        saveCrewPort.save(crew);
+
+        return InvitationCodeResponse.of(newCode);
+    }
+
     // 리더 여부 체크
     private void validateLeader(Long crewId, Long memberId) {
         CrewMember crewMember = validateMember(crewId, memberId);
