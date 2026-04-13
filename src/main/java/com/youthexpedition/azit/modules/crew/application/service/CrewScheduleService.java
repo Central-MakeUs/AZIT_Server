@@ -27,6 +27,8 @@ import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttenda
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SavePointHistoryPort;
+import com.youthexpedition.azit.modules.member.domain.model.PointHistory;
 import com.youthexpedition.azit.modules.member.application.port.query.MyAttendanceMonthlyQuery;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
@@ -51,6 +53,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private final SaveCrewSchedulePort saveCrewSchedulePort;
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
+    private final SavePointHistoryPort savePointHistoryPort;
     private final CrewScheduleResponseMapper crewScheduleResponseMapper;
 
     private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1; // 출석 버튼 활성화 윈도우 (전후 1시간)
@@ -432,6 +435,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         saveCrewSchedulePort.save(schedule);
         saveMemberPort.save(member);
+
+        // 포인트 이력 저장
+        savePointHistoryPort.save(PointHistory.ofAttendance(command.memberId(), command.scheduleId(), now));
     }
 
     @Override

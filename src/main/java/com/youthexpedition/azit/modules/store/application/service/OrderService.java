@@ -9,6 +9,8 @@ import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryA
 import com.youthexpedition.azit.modules.member.application.port.out.LoadDeliveryAddressPort;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SavePointHistoryPort;
+import com.youthexpedition.azit.modules.member.domain.model.PointHistory;
 import com.youthexpedition.azit.modules.member.application.service.mapper.DeliveryAddressResponseMapper;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
@@ -53,6 +55,7 @@ public class OrderService implements OrderUseCase {
     private final SaveCartPort saveCartPort;
     private final LoadOrderPort loadOrderPort;
     private final SaveOrderPort saveOrderPort;
+    private final SavePointHistoryPort savePointHistoryPort;
     private final OrderResponseMapper orderResponseMapper;
     private final DeliveryAddressResponseMapper deliveryAddressResponseMapper;
 
@@ -190,6 +193,11 @@ public class OrderService implements OrderUseCase {
         member.deductPoints(command.usedPoints());
         saveMemberPort.save(member);
 
+        // 포인트 사용 이력 저장
+        if (command.usedPoints() > 0) {
+            savePointHistoryPort.save(PointHistory.ofStoreUse(command.memberId(), savedOrder.getId(), command.usedPoints()));
+        }
+
         // cartItems Id가 있을 경우 장바구니 비우기
         if (command.cartItemIds() != null && !command.cartItemIds().isEmpty()) {
             saveCartPort.deleteAllByMemberIdAndIds(command.memberId(), command.cartItemIds());
@@ -254,6 +262,9 @@ public class OrderService implements OrderUseCase {
             log.info("[ORDER] memberId: {}, usePoints: {} 포인트를 환불합니다.", memberId, order.getUsedPoints());
             member.addPoints(order.getUsedPoints()); // 사용한 포인트만큼 복구
             saveMemberPort.save(member);
+
+            // 포인트 환불 이력 저장
+            savePointHistoryPort.save(PointHistory.ofStoreUseRefund(memberId, order.getId(), order.getUsedPoints()));
         }
 
         saveOrderPort.save(order);
