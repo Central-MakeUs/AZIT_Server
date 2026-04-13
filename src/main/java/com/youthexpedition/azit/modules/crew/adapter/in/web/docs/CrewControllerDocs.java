@@ -165,4 +165,21 @@ public interface CrewControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN"
     })
     CommonResponse<Void> deleteCrewMember(@PathVariable Long crewId, @PathVariable Long targetMemberId, @Parameter(hidden = true) @CurrentMemberId Long leaderId);
+
+    @Operation(
+            summary = "초대 코드 재발급",
+            description = """
+                    크루 리더가 기존 초대 코드를 폐기하고 새로운 초대 코드를 발급합니다. <br><br>
+
+                    **[제약 사항]** <br>
+                    * 해당 크루의 리더(LEADER)만 해당 API를 호출할 수 있습니다. (NOT_CREW_LEADER) <br>
+                    * 재발급 즉시 기존 코드는 무효화됩니다.
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_CREW_LEADER", "INVITATION_CODE_GENERATION_FAILED",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<InvitationCodeResponse> regenerateInvitationCode(
+            @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

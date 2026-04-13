@@ -65,4 +65,8 @@ public class Crew {
         }
     }
 
+    // 초대 코드 재발급
+    public void updateInvitationCode(String invitationCode) {
+        this.invitationCode = invitationCode;
+    }
 }
