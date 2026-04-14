@@ -35,6 +35,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -111,6 +112,8 @@ public class CrewService implements CrewUseCase {
         Crew crew = loadCrewPort.findByInvitationCode(command.invitationCode())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
+        LocalDateTime now = LocalDateTime.now();
+
         // 이미 가입된 멤버인지 확인
         loadCrewMemberPort.findByCrewIdAndMemberId(crew.getId(), command.memberId())
                 .ifPresentOrElse(
@@ -120,7 +123,12 @@ public class CrewService implements CrewUseCase {
                                 throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
                             }
 
-                            // 탈퇴, 방출, 거절 상태일 경우 재신청
+                            // 방출 후 24시간 이내 재가입 차단
+                            if (existingMember.getStatus() == CrewMemberStatus.EXPELLED && existingMember.isRejoinCooldownActive(now)) {
+                                throw new BusinessException(CrewErrorCode.EXPELLED_REJOINING_COOLDOWN);
+                            }
+
+                            // 탈퇴, 방출(쿨다운 지남), 거절 상태일 경우 재신청
                             existingMember.reJoin();
                             saveCrewMemberPort.save(existingMember);
                         },
@@ -272,8 +280,8 @@ public class CrewService implements CrewUseCase {
         // 멤버 스케줄 삭제
         crewScheduleUseCase.cleanupForExpelledMemberSchedules(crewId, targetMemberId);
 
-        // 멤버 상태 EXITED 변경
-        targetMember.expel();
+        // 멤버 상태 EXPELLED 변경
+        targetMember.expel(LocalDateTime.now());
         saveCrewMemberPort.save(targetMember);
 
         // 크루 인원 수 1명 감소

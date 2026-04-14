@@ -17,6 +17,7 @@ public class CrewMember {
     private final Long memberId;
     private CrewMemberRole role;
     private CrewMemberStatus status;
+    private LocalDateTime expelledAt;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -61,8 +62,15 @@ public class CrewMember {
     }
 
     // 크루 방출
-    public void expel() {
+    public void expel(LocalDateTime expelledAt) {
         this.status = CrewMemberStatus.EXPELLED;
+        this.expelledAt = expelledAt;
+    }
+
+    // 방출 후 재가입 쿨다운 여부 확인 (24시간)
+    public boolean isRejoinCooldownActive(LocalDateTime now) {
+        if (this.expelledAt == null) return false;
+        return this.expelledAt.plusHours(24).isAfter(now);
     }
 
     // 가입 재신청

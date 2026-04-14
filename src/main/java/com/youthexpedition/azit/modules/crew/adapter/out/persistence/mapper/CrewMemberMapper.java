@@ -17,6 +17,7 @@ public class CrewMemberMapper {
                 .memberId(entity.getMemberId())
                 .role(entity.getRole())
                 .status(entity.getStatus())
+                .expelledAt(entity.getExpelledAt())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -29,6 +30,7 @@ public class CrewMemberMapper {
                 .memberId(domain.getMemberId())
                 .role(domain.getRole())
                 .status(domain.getStatus())
+                .expelledAt(domain.getExpelledAt())
                 .build();
     }
 }
