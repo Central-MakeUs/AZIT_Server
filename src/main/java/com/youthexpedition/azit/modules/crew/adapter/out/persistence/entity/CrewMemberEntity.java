@@ -37,4 +37,7 @@ public class CrewMemberEntity extends BaseTimeEntity {
 
     @Column(name = "expelled_at")
     private LocalDateTime expelledAt;
+
+    @Column(name = "exited_at")
+    private LocalDateTime exitedAt;
 }
