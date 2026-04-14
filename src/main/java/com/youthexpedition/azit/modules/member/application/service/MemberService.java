@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -190,11 +191,12 @@ public class MemberService implements MemberUseCase {
         }
 
         // 가입한 모든 크루 상태를 EXITED로 변경 및 저장
-        crewMembers.forEach(CrewMember::exit);
+        LocalDateTime now = LocalDateTime.now();
+        crewMembers.forEach(cm -> cm.exit(now));
         saveCrewMemberPort.saveAll(crewMembers);
     }
 
-    // 본인이 리더인 크루에 다른 멤버가 남아있는지 확인
+    // 본인이 리더인 크루가 있으면 앱 탈퇴 불가
     private void validateWithdrawal(Long memberId) {
         // 사용자가 JOINED 상태이면서 리더인 크루 조회
         List<CrewMember> crewMembersAsLeader = loadCrewMemberPort.findAllByMemberId(memberId).stream()
@@ -204,20 +206,12 @@ public class MemberService implements MemberUseCase {
 
         if (crewMembersAsLeader.isEmpty()) return;
 
-        // 리더로 속한 모든 크루 ID 가져오기
         List<Long> crewIds = crewMembersAsLeader.stream()
                 .map(CrewMember::getCrewId)
                 .toList();
 
-        List<Crew> crews = loadCrewPort.findAllByIds(crewIds);
-
-        // 크루 인원수가 1명보다 많으면 탈퇴 불가
-        for (Crew crew : crews) {
-            if (crew.getMemberCount() > 1) {
-                log.warn("[MEMBER] memberId: {}, 리더로서 가입되어 있는 크루(crewIds: {})에 멤버들이 남아 있어 탈퇴가 불가능합니다.", memberId, crewIds);
-                throw new BusinessException(CrewErrorCode.CANNOT_WITHDRAW_AS_LEADER);
-            }
-        }
+        log.warn("[MEMBER] memberId: {}, 리더로서 가입되어 있는 크루(crewIds: {})가 있어 앱 탈퇴가 불가능합니다.", memberId, crewIds);
+        throw new BusinessException(CrewErrorCode.CANNOT_APP_WITHDRAW_AS_LEADER);
     }
 
     private void validateImageOwnership(String tempS3Key, Long memberId) {
