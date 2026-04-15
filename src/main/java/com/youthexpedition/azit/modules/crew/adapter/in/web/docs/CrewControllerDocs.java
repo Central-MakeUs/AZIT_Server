@@ -150,12 +150,12 @@ public interface CrewControllerDocs {
     CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId, CursorPageQuery query);
 
     @Operation(
-            summary = "크루 나가기",
+            summary = "크루 탈퇴",
             description = """
             로그인한 사용자가 특정 크루에서 자진 탈퇴합니다. <br><br>
 
             **[제약 사항]** <br>
-            * 크루 리더(LEADER)는 크루 나가기가 불가합니다. 리더 권한 위임 또는 크루 해산이 필요합니다. (CANNOT_WITHDRAW_AS_LEADER) <br>
+            * 크루 리더(LEADER)는 크루 탈퇴가 불가합니다. 리더 권한 위임 또는 크루 해산이 필요합니다. (CANNOT_WITHDRAW_AS_LEADER) <br>
             * 탈퇴 후 24시간 이내에는 동일 크루 재가입 요청이 차단됩니다. (EXIT_REJOINING_COOLDOWN) <br>
             * 가입 완료(JOINED) 상태인 경우에만 탈퇴가 가능합니다. (NOT_A_CREW_MEMBER)
             """
