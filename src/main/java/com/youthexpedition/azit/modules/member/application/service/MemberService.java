@@ -267,7 +267,7 @@ public class MemberService implements MemberUseCase {
                 .toList();
 
         log.warn("[MEMBER] memberId: {}, 리더로서 가입되어 있는 크루(crewIds: {})가 있어 앱 탈퇴가 불가능합니다.", memberId, crewIds);
-        throw new BusinessException(CrewErrorCode.CANNOT_APP_WITHDRAW_AS_LEADER);
+        throw new BusinessException(CrewErrorCode.CANNOT_SERVICE_WITHDRAW_AS_LEADER);
     }
 
     private void validateImageOwnership(String tempS3Key, Long memberId) {
