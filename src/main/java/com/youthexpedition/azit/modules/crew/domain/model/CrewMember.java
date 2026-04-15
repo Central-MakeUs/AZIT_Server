@@ -22,6 +22,8 @@ public class CrewMember {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private static final long REJOINING_COOLDOWN_HOURS = 24;
+
     // 리더 등록
     public static CrewMember createAsLeader(Long crewId, Long memberId) {
         return CrewMember.builder()
@@ -66,7 +68,7 @@ public class CrewMember {
     // 자진 탈퇴 후 재가입 쿨다운 여부 확인 (24시간)
     public boolean isExitCooldownActive(LocalDateTime now) {
         if (this.exitedAt == null) return false;
-        return this.exitedAt.plusHours(24).isAfter(now);
+        return this.exitedAt.plusHours(REJOINING_COOLDOWN_HOURS).isAfter(now);
     }
 
     // 크루 방출
@@ -78,7 +80,7 @@ public class CrewMember {
     // 방출 후 재가입 쿨다운 여부 확인 (24시간)
     public boolean isRejoinCooldownActive(LocalDateTime now) {
         if (this.expelledAt == null) return false;
-        return this.expelledAt.plusHours(24).isAfter(now);
+        return this.expelledAt.plusHours(REJOINING_COOLDOWN_HOURS).isAfter(now);
     }
 
     // 가입 재신청
