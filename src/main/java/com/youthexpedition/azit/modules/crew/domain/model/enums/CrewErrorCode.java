@@ -21,7 +21,7 @@ public enum CrewErrorCode implements BaseErrorCode {
     CREW_MEMBER_NOT_FOUND("CREW_MEMBER_NOT_FOUND", "가입한 크루가 없습니다.", HttpStatus.NOT_FOUND),
     CANNOT_KICK_SELF("CANNOT_KICK_SELF", "스스로를 방출할 수 없습니다.", HttpStatus.BAD_REQUEST),
     CANNOT_WITHDRAW_AS_LEADER("CANNOT_WITHDRAW_AS_LEADER", "크루 리더는 크루 탈퇴가 불가합니다. 리더 권한을 위임하거나 크루를 해산해 주세요.", HttpStatus.BAD_REQUEST),
-    CANNOT_APP_WITHDRAW_AS_LEADER("CANNOT_SERVICE_WITHDRAW_AS_LEADER", "리더로 활동 중인 크루가 있습니다. 권한을 위임하거나 크루를 해산한 후 서비스를 탈퇴할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    CANNOT_SERVICE_WITHDRAW_AS_LEADER("CANNOT_SERVICE_WITHDRAW_AS_LEADER", "리더로 활동 중인 크루가 있습니다. 권한을 위임하거나 크루를 해산한 후 서비스를 탈퇴할 수 있습니다.", HttpStatus.BAD_REQUEST),
     EXPELLED_REJOINING_COOLDOWN("EXPELLED_REJOINING_COOLDOWN", "방출 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
     EXIT_REJOINING_COOLDOWN("EXIT_REJOINING_COOLDOWN", "탈퇴 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
 
