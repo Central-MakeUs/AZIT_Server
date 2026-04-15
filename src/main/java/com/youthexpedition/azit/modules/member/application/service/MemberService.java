@@ -21,6 +21,7 @@ import com.youthexpedition.azit.modules.image.domain.model.enums.ImageUploadType
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateNicknameCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateProfileImageCommand;
+import com.youthexpedition.azit.modules.member.domain.model.provider.ProfileImageProvider;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
@@ -52,6 +53,7 @@ public class MemberService implements MemberUseCase {
     private final MemberResponseMapper memberResponseMapper;
     private final ImageStoragePort imageStoragePort;
     private final ImageUrlFormatUtil imageUrlFormatUtil;
+    private final ProfileImageProvider profileImageProvider;
 
     private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
     private static final String DEFAULT_S3_PREFIX = "default/";
@@ -196,34 +198,6 @@ public class MemberService implements MemberUseCase {
         saveCrewMemberPort.saveAll(crewMembers);
     }
 
-    // 본인이 리더인 크루가 있으면 앱 탈퇴 불가
-    private void validateWithdrawal(Long memberId) {
-        // 사용자가 JOINED 상태이면서 리더인 크루 조회
-        List<CrewMember> crewMembersAsLeader = loadCrewMemberPort.findAllByMemberId(memberId).stream()
-                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
-                .filter(cm -> cm.getRole() == CrewMemberRole.LEADER)
-                .toList();
-
-        if (crewMembersAsLeader.isEmpty()) return;
-
-        List<Long> crewIds = crewMembersAsLeader.stream()
-                .map(CrewMember::getCrewId)
-                .toList();
-
-        log.warn("[MEMBER] memberId: {}, 리더로서 가입되어 있는 크루(crewIds: {})가 있어 앱 탈퇴가 불가능합니다.", memberId, crewIds);
-        throw new BusinessException(CrewErrorCode.CANNOT_APP_WITHDRAW_AS_LEADER);
-    }
-
-    private void validateImageOwnership(String tempS3Key, Long memberId) {
-        Long imageOwnerMemberId = ImageUploadType.extractMemberIdFromTempKey(tempS3Key);
-        if (imageOwnerMemberId == null) {
-            throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
-        }
-        if (!imageOwnerMemberId.equals(memberId)) {
-            throw new BusinessException(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH);
-        }
-    }
-
     @Override
     public void updateNickname(Long memberId, UpdateNicknameCommand command) {
         Member member = getMember(memberId);
@@ -257,5 +231,52 @@ public class MemberService implements MemberUseCase {
         // 상대 경로 저장
         member.updateProfileImageUrl("/" + finalS3Key);
         saveMemberPort.save(member);
+    }
+
+    @Override
+    public void resetProfileImageToDefault(Long memberId) {
+        Member member = getMember(memberId);
+
+        // 기존 이미지가 커스텀 업로드 이미지인 경우에만 S3에서 삭제
+        String oldS3Key = imageUrlFormatUtil.extractS3Key(member.getProfileImageUrl());
+        if (oldS3Key != null && !oldS3Key.startsWith(DEFAULT_S3_PREFIX)) {
+            imageStoragePort.delete(oldS3Key);
+        }
+
+        String defaultImageUrl = profileImageProvider.getRandomDefaultImage();
+        if (defaultImageUrl == null) {
+            throw new BusinessException(MemberErrorCode.DEFAULT_IMAGE_NOT_FOUND);
+        }
+
+        member.updateProfileImageUrl(defaultImageUrl);
+        saveMemberPort.save(member);
+    }
+
+    // 본인이 리더인 크루가 있으면 앱 탈퇴 불가
+    private void validateWithdrawal(Long memberId) {
+        // 사용자가 JOINED 상태이면서 리더인 크루 조회
+        List<CrewMember> crewMembersAsLeader = loadCrewMemberPort.findAllByMemberId(memberId).stream()
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
+                .filter(cm -> cm.getRole() == CrewMemberRole.LEADER)
+                .toList();
+
+        if (crewMembersAsLeader.isEmpty()) return;
+
+        List<Long> crewIds = crewMembersAsLeader.stream()
+                .map(CrewMember::getCrewId)
+                .toList();
+
+        log.warn("[MEMBER] memberId: {}, 리더로서 가입되어 있는 크루(crewIds: {})가 있어 앱 탈퇴가 불가능합니다.", memberId, crewIds);
+        throw new BusinessException(CrewErrorCode.CANNOT_APP_WITHDRAW_AS_LEADER);
+    }
+
+    private void validateImageOwnership(String tempS3Key, Long memberId) {
+        Long imageOwnerMemberId = ImageUploadType.extractMemberIdFromTempKey(tempS3Key);
+        if (imageOwnerMemberId == null) {
+            throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+        }
+        if (!imageOwnerMemberId.equals(memberId)) {
+            throw new BusinessException(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH);
+        }
     }
 }

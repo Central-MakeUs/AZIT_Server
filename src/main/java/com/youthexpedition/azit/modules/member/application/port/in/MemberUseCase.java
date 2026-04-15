@@ -15,4 +15,5 @@ public interface MemberUseCase {
     MyInfoResponse getMyInfo(Long memberId);
     void updateNickname(Long memberId, UpdateNicknameCommand command);
     void updateProfileImage(Long memberId, UpdateProfileImageCommand command);
+    void resetProfileImageToDefault(Long memberId);
 }

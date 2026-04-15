@@ -240,4 +240,21 @@ public interface MemberControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> updateProfileImage(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateProfileImageRequest request);
+
+    @Operation(
+            summary = "프로필 이미지 기본 이미지로 변경",
+            description = """
+                    로그인한 사용자의 프로필 이미지를 기본 이미지로 초기화합니다. <br><br>
+
+                    **[참고 사항]** <br>
+                    * 기존에 업로드한 커스텀 이미지가 있는 경우 S3에서 삭제합니다. <br>
+                    * 기본 이미지 중 랜덤으로 1개를 선택하여 적용합니다. <br>
+                    * 이미 기본 이미지를 사용 중인 경우 S3 삭제 없이 다른 기본 이미지로 변경합니다.
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND", "DEFAULT_IMAGE_NOT_FOUND",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> resetProfileImageToDefault(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }
