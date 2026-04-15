@@ -323,12 +323,7 @@ public class CrewService implements CrewUseCase {
     public void exitCrew(Long crewId, Long memberId) {
         LocalDateTime now = LocalDateTime.now();
 
-        CrewMember crewMember = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER));
-
-        if (crewMember.getStatus() != CrewMemberStatus.JOINED) {
-            throw new BusinessException(CrewErrorCode.NOT_A_CREW_MEMBER);
-        }
+        CrewMember crewMember = validateMember(crewId, memberId);
 
         // 리더는 크루 나가기 불가
         if (crewMember.getRole() == CrewMemberRole.LEADER) {
