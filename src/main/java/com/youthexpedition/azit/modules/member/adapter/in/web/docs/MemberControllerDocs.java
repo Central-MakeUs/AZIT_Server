@@ -50,11 +50,11 @@ public interface MemberControllerDocs {
             서비스 이용을 중단하고 회원의 소셜 연동 해제 및 탈퇴 처리를 진행합니다. <br><br>
             
             **[참고 사항]** <br>
-            * 리더로 소속된 크루에 다른 멤버가 존재할 경우 탈퇴가 불가능합니다. (CANNOT_WITHDRAW_AS_LEADER)
+            * 리더로 소속된 크루가 있을 경우 서비스 탈퇴가 불가합니다. 리더 권한 위임 또는 크루 해산이 필요합니다. (CANNOT_SERVICE_WITHDRAW_AS_LEADER)
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_ALREADY_WITHDRAWN", "APPLE_REVOKE_FAILED",  "KAKAO_REVOKE_FAILED", "CANNOT_WITHDRAW_AS_LEADER",
+            "MEMBER_ALREADY_WITHDRAWN", "APPLE_REVOKE_FAILED",  "KAKAO_REVOKE_FAILED", "CANNOT_SERVICE_WITHDRAW_AS_LEADER",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> withdraw(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Parameter(hidden = true) @CurrentAccessToken String accessToken);
@@ -240,4 +240,21 @@ public interface MemberControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> updateProfileImage(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateProfileImageRequest request);
+
+    @Operation(
+            summary = "프로필 이미지 기본 이미지로 변경",
+            description = """
+                    로그인한 사용자의 프로필 이미지를 기본 이미지로 초기화합니다. <br><br>
+
+                    **[참고 사항]** <br>
+                    * 기존에 업로드한 커스텀 이미지가 있는 경우 S3에서 삭제합니다. <br>
+                    * 기본 이미지 중 랜덤으로 1개를 선택하여 적용합니다. <br>
+                    * 이미 기본 이미지를 사용 중인 경우 S3 삭제 없이 다른 기본 이미지로 변경합니다.
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND", "DEFAULT_IMAGE_NOT_FOUND",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> resetProfileImageToDefault(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

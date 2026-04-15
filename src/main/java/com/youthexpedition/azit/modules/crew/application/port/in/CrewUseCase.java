@@ -18,5 +18,6 @@ public interface CrewUseCase {
     List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long memberId);
     CrewMemberListResponse getCrewMembers(Long crewId, Long memberId, CursorPageQuery query);
     void expelCrewMember(Long crewId, Long leaderId, Long targetMemberId);
+    void exitCrew(Long crewId, Long memberId);
     InvitationCodeResponse regenerateInvitationCode(Long crewId, Long memberId);
 }

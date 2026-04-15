@@ -114,4 +114,11 @@ public class MemberController implements MemberControllerDocs {
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
+
+    @PatchMapping("/me/profile-image/default")
+    public CommonResponse<Void> resetProfileImageToDefault(@CurrentMemberId Long memberId) {
+        memberUseCase.resetProfileImageToDefault(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
 }

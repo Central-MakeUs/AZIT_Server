@@ -35,6 +35,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -111,6 +112,8 @@ public class CrewService implements CrewUseCase {
         Crew crew = loadCrewPort.findByInvitationCode(command.invitationCode())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
+        LocalDateTime now = LocalDateTime.now();
+
         // 이미 가입된 멤버인지 확인
         loadCrewMemberPort.findByCrewIdAndMemberId(crew.getId(), command.memberId())
                 .ifPresentOrElse(
@@ -120,7 +123,17 @@ public class CrewService implements CrewUseCase {
                                 throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
                             }
 
-                            // 탈퇴, 방출, 거절 상태일 경우 재신청
+                            // 방출 후 24시간 이내 재가입 차단
+                            if (existingMember.getStatus() == CrewMemberStatus.EXPELLED && existingMember.isRejoinCooldownActive(now)) {
+                                throw new BusinessException(CrewErrorCode.EXPELLED_REJOINING_COOLDOWN);
+                            }
+
+                            // 자진 탈퇴 후 24시간 이내 재가입 차단
+                            if (existingMember.getStatus() == CrewMemberStatus.EXITED && existingMember.isExitCooldownActive(now)) {
+                                throw new BusinessException(CrewErrorCode.EXIT_REJOINING_COOLDOWN);
+                            }
+
+                            // 탈퇴, 방출(쿨다운 지남), 거절 상태일 경우 재신청
                             existingMember.reJoin();
                             saveCrewMemberPort.save(existingMember);
                         },
@@ -272,8 +285,8 @@ public class CrewService implements CrewUseCase {
         // 멤버 스케줄 삭제
         crewScheduleUseCase.cleanupForExpelledMemberSchedules(crewId, targetMemberId);
 
-        // 멤버 상태 EXITED 변경
-        targetMember.expel();
+        // 멤버 상태 EXPELLED 변경
+        targetMember.expel(LocalDateTime.now());
         saveCrewMemberPort.save(targetMember);
 
         // 크루 인원 수 1명 감소
@@ -303,6 +316,46 @@ public class CrewService implements CrewUseCase {
 
         member.expel();
         saveMemberPort.save(member);
+    }
+
+    @Override
+    @Transactional
+    public void exitCrew(Long crewId, Long memberId) {
+        LocalDateTime now = LocalDateTime.now();
+
+        CrewMember crewMember = validateMember(crewId, memberId);
+
+        // 리더는 크루 나가기 불가
+        if (crewMember.getRole() == CrewMemberRole.LEADER) {
+            throw new BusinessException(CrewErrorCode.CANNOT_WITHDRAW_AS_LEADER);
+        }
+
+        // 미래 일정 정리 (생성한 일정 취소, 참여 명단 제거)
+        crewScheduleUseCase.cleanupForExpelledMemberSchedules(crewId, memberId);
+
+        // 크루 멤버 상태 EXITED 변경
+        crewMember.exit(now);
+        saveCrewMemberPort.save(crewMember);
+
+        // 크루 인원 수 1명 감소
+        Crew crew = loadCrewPort.findById(crewId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        log.info("[CREW] crewId: {} 에서 memberId: {} 가 자진 탈퇴하여 크루 인원 수가 감소합니다.", crewId, memberId);
+        crew.decreaseMemberCount();
+        saveCrewPort.save(crew);
+
+        // 가입된 잔여 크루 확인 후 멤버 상태 변경
+        Member member = loadMemberPort.findById(memberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId);
+
+        if (joinedCrewCount == 0) {
+            log.info("[CREW] memberId: {}, 가입된 크루가 없으므로 온보딩 상태로 변경합니다.", memberId);
+            member.resetToOnboarding();
+            saveMemberPort.save(member);
+        }
     }
 
     @Override

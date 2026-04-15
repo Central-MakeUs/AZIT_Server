@@ -8,7 +8,6 @@ import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberPr
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
-import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
@@ -42,20 +41,18 @@ public class CrewScheduleResponseMapper {
         boolean hasMoreParticipants = allActiveParticipants.size() > PARTICIPANT_PREVIEW_LIMIT;
 
         Long creatorId = schedule.getCreatorId();
-        // 기본값 세팅 (마스킹 처리)
+        // 앱 탈퇴 등으로 계정이 완전히 삭제된 경우 null 처리 (프론트에서 비식별화)
         String creatorNickname = null;
         String creatorProfileImageUrl = null;
         CrewMemberRole creatorRole = CrewMemberRole.MEMBER;
 
-        // 생성자가 EXITED/EXPELLED 상태 아닐 때 생성자 정보 추가
-        if (profileMap.containsKey(creatorId) && crewMemberMap.containsKey(creatorId)) {
-            CrewMember creator = crewMemberMap.get(creatorId);
-
-            if (creator.getStatus() != CrewMemberStatus.EXITED && creator.getStatus() != CrewMemberStatus.EXPELLED) {
-                MemberProfileDto creatorProfile = profileMap.get(creatorId);
-                creatorNickname = creatorProfile.nickname();
-                creatorProfileImageUrl = imageUrlFormatUtil.buildFullImageUrl(creatorProfile.profileImageUrl());
-                creatorRole = creator.getRole();
+        // 크루 탈퇴/방출 여부와 무관하게 계정이 존재하면 프로필 그대로 노출
+        if (profileMap.containsKey(creatorId)) {
+            MemberProfileDto creatorProfile = profileMap.get(creatorId);
+            creatorNickname = creatorProfile.nickname();
+            creatorProfileImageUrl = imageUrlFormatUtil.buildFullImageUrl(creatorProfile.profileImageUrl());
+            if (crewMemberMap.containsKey(creatorId)) {
+                creatorRole = crewMemberMap.get(creatorId).getRole();
             }
         }
 
@@ -102,8 +99,9 @@ public class CrewScheduleResponseMapper {
                     MemberProfileDto profile = profileMap.get(id);
                     CrewMember crewMember = crewMemberMap.get(id);
 
-                    // 프로필이 없거나, 크루 멤버 정보가 없거나, 크루 방출/탈퇴 상태인 경우 마스킹 처리
-                    if (profile == null || crewMember == null || crewMember.getStatus() == CrewMemberStatus.EXITED || crewMember.getStatus() == CrewMemberStatus.EXPELLED) {
+                    // 앱 탈퇴 등으로 계정이 완전히 삭제된 경우 비식별화 처리
+                    // 크루 탈퇴/방출 상태(EXITED/EXPELLED)여도 계정이 존재하면 프로필 그대로 노출
+                    if (profile == null || crewMember == null) {
                         return ParticipantResponse.of(
                                 id, // 페이징 위해 살려둠
                                 null,

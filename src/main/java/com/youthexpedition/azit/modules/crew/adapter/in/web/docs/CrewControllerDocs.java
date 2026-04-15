@@ -49,10 +49,11 @@ public interface CrewControllerDocs {
             **[제약 사항]** <br>
             * 본인이 리더인 크루이거나 이미 멤버로 등록된 크루에는 재신청이 불가합니다. (ALREADY_JOINED_CREW)
             * 유효하지 않은 초대 코드를 입력할 경우 가입이 불가합니다. (CREW_NOT_FOUND)
+            * 방출된 크루가 존재할 시 24시간 내에는 재가입 신청이 불가합니다. (EXPELLED_REJOINING_COOLDOWN)
             """
     )
     @ApiErrorCodeExamples({
-            "CREW_NOT_FOUND", "ALREADY_JOINED_CREW",
+            "CREW_NOT_FOUND", "ALREADY_JOINED_CREW", "EXPELLED_REJOINING_COOLDOWN",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> joinCrew(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody JoinCrewRequest request);
@@ -147,6 +148,23 @@ public interface CrewControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId, CursorPageQuery query);
+
+    @Operation(
+            summary = "크루 탈퇴",
+            description = """
+            로그인한 사용자가 특정 크루에서 자진 탈퇴합니다. <br><br>
+
+            **[제약 사항]** <br>
+            * 크루 리더(LEADER)는 크루 탈퇴가 불가합니다. 리더 권한 위임 또는 크루 해산이 필요합니다. (CANNOT_WITHDRAW_AS_LEADER) <br>
+            * 탈퇴 후 24시간 이내에는 동일 크루 재가입 요청이 차단됩니다. (EXIT_REJOINING_COOLDOWN) <br>
+            * 가입 완료(JOINED) 상태인 경우에만 탈퇴가 가능합니다. (NOT_A_CREW_MEMBER)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "CANNOT_WITHDRAW_AS_LEADER", "NOT_A_CREW_MEMBER", "CREW_NOT_FOUND", "EXIT_REJOINING_COOLDOWN",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> exitCrew(@PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
             summary = "크루 멤버 방출",

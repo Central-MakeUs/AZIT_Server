@@ -73,7 +73,7 @@ public class SecurityConfig {
 
                         // 사용자 인증 시 상태 상관없이 허용
                         .requestMatchers(
-                                "/api/v1/auth/logout", "/api/v1/members/**"
+                                "/api/v1/auth/logout", "/api/v1/members/**", "/api/v1/images/**"
                         ).authenticated()
                         // 나머지 API: 정회원(ACTIVE) 상태만 접근 가능
                         .anyRequest().hasAuthority("STATUS_ACTIVE")

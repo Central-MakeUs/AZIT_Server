@@ -14,7 +14,8 @@ public enum MemberErrorCode implements BaseErrorCode {
     MEMBER_ALREADY_WITHDRAWN("MEMBER_ALREADY_WITHDRAWN", "이미 탈퇴한 회원입니다.", HttpStatus.BAD_REQUEST),
     INVALID_MEMBER_STATUS("INVALID_MEMBER_STATUS", "유효하지 않은 회원 상태입니다.", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_POINTS("INSUFFICIENT_POINTS", "포인트가 부족합니다.", HttpStatus.BAD_REQUEST),
-    INVALID_POINT_VALUE("INVALID_POINT_VALUE", "유효하지 않은 포인트 요청입니다.", HttpStatus.BAD_REQUEST);
+    INVALID_POINT_VALUE("INVALID_POINT_VALUE", "유효하지 않은 포인트 요청입니다.", HttpStatus.BAD_REQUEST),
+    DEFAULT_IMAGE_NOT_FOUND("DEFAULT_IMAGE_NOT_FOUND", "기본 이미지를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
