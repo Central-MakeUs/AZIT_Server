@@ -42,6 +42,9 @@ public class TokenManagementService implements TokenUseCase {
         String savedRT = tokenPort.findByMemberId(memberId)
                 .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED));
 
+        Member member = loadMemberPort.findById(memberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
         if (!savedRT.equals(refreshToken)) {
             // 10초 내 재요청(race condition)인지 확인
             boolean isGracePeriod = tokenPort.findPrevToken(memberId)
@@ -56,8 +59,6 @@ public class TokenManagementService implements TokenUseCase {
 
             // Race condition: 이미 교체된 savedRT(RT2)를 그대로 사용하고 AT만 새로 발급
             log.info("[TOKEN_MANAGEMENT] memberId: {} 에서 race condition 이 발생했습니다.", memberId);
-            Member member = loadMemberPort.findById(memberId)
-                    .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
             String newAccessToken = tokenProviderPort.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
             AuthToken token = AuthToken.builder()
@@ -71,9 +72,6 @@ public class TokenManagementService implements TokenUseCase {
         }
 
         // 정상 경로: 신규 토큰 발급 및 Redis 업데이트
-        Member member = loadMemberPort.findById(memberId)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
         String newAccessToken = tokenProviderPort.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
         String newRefreshToken = tokenProviderPort.generateRefreshToken(member.getId());
 
