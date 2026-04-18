@@ -12,36 +12,23 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class TokenManagementService implements TokenUseCase {
     private final LoadMemberPort loadMemberPort;
     private final TokenPort tokenPort;
     private final TokenProviderPort tokenProviderPort;
     private final LoadCrewMemberPort loadCrewMemberPort;
-    private final Counter raceConditionCounter;
 
     private static final String BLACKLIST_REASON_LOGOUT = "logout";
     private static final long PREV_TOKEN_TTL_SECONDS = 10;
-
-    public TokenManagementService(LoadMemberPort loadMemberPort, TokenPort tokenPort,
-                                  TokenProviderPort tokenProviderPort, LoadCrewMemberPort loadCrewMemberPort,
-                                  MeterRegistry meterRegistry) {
-        this.loadMemberPort = loadMemberPort;
-        this.tokenPort = tokenPort;
-        this.tokenProviderPort = tokenProviderPort;
-        this.loadCrewMemberPort = loadCrewMemberPort;
-        this.raceConditionCounter = Counter.builder("auth.token.race_condition")
-                .description("RTR 재발급 중 race condition 발생 횟수")
-                .register(meterRegistry);
-    }
 
     @Override
     public AuthResult reissue(String refreshToken) {
@@ -69,7 +56,6 @@ public class TokenManagementService implements TokenUseCase {
 
             // Race condition: 이미 교체된 savedRT(RT2)를 그대로 사용하고 AT만 새로 발급
             log.info("[TOKEN_MANAGEMENT] memberId: {} 에서 race condition 이 발생했습니다.", memberId);
-            raceConditionCounter.increment();
             Member member = loadMemberPort.findById(memberId)
                     .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
