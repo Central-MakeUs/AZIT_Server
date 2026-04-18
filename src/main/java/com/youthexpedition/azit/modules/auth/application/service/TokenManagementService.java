@@ -28,6 +28,7 @@ public class TokenManagementService implements TokenUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
 
     private static final String BLACKLIST_REASON_LOGOUT = "logout";
+    private static final long PREV_TOKEN_TTL_SECONDS = 10;
 
     @Override
     public AuthResult reissue(String refreshToken) {
@@ -41,29 +42,41 @@ public class TokenManagementService implements TokenUseCase {
         String savedRT = tokenPort.findByMemberId(memberId)
                 .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED));
 
-        if (!savedRT.equals(refreshToken)) {
-            tokenPort.deleteByMemberId(memberId);
-
-            log.warn("[TOKEN_MANAGEMENT] memberId: {} 의 비정상적인 토큰 접근(탈취 의심)이 감지되어 모든 세션을 강제 종료합니다.", memberId);
-            throw new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED);
-        }
-
-        // 신규 토큰 발급 및 Redis 업데이트
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        if (!savedRT.equals(refreshToken)) {
+            // 10초 내 재요청(race condition)인지 확인
+            boolean isGracePeriod = tokenPort.findPrevToken(memberId)
+                    .map(prev -> prev.equals(refreshToken))
+                    .orElse(false);
+
+            if (!isGracePeriod) {
+                tokenPort.deleteByMemberId(memberId);
+                log.warn("[TOKEN_MANAGEMENT] memberId: {} 의 비정상적인 토큰 접근(탈취 의심)이 감지되어 모든 세션을 강제 종료합니다.", memberId);
+                throw new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED);
+            }
+
+            // Race condition: 이미 교체된 savedRT(RT2)를 그대로 사용하고 AT만 새로 발급
+            log.info("[TOKEN_MANAGEMENT] memberId: {} 에서 race condition 이 발생했습니다.", memberId);
+
+            String newAccessToken = tokenProviderPort.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
+            AuthToken token = AuthToken.builder()
+                    .accessToken(newAccessToken)
+                    .refreshToken(savedRT)
+                    .accessTokenExpiresIn(tokenProviderPort.getAccessTokenExpirationSeconds())
+                    .build();
+
+            Long crewId = resolveCrewId(member);
+            return new AuthResult(token, member.getStatus(), crewId);
+        }
+
+        // 정상 경로: 신규 토큰 발급 및 Redis 업데이트
         String newAccessToken = tokenProviderPort.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
         String newRefreshToken = tokenProviderPort.generateRefreshToken(member.getId());
 
+        tokenPort.savePrevToken(memberId, refreshToken, PREV_TOKEN_TTL_SECONDS); // 직전 RT 보관 (10초)
         tokenPort.save(member.getId(), newRefreshToken, tokenProviderPort.getRefreshTokenExpirationSeconds());
-
-        Long crewId = null;
-        // 크루 ID 필요한지 체크 후 가장 최근에 가입한 크루 조회
-        if (member.getStatus().isCrewInfoRequired()) {
-            crewId = loadCrewMemberPort.findRecentJoinedCrewMember(member.getId())
-                    .map(CrewMember::getCrewId)
-                    .orElse(null);
-        }
 
         AuthToken token = AuthToken.builder()
                 .accessToken(newAccessToken)
@@ -71,7 +84,15 @@ public class TokenManagementService implements TokenUseCase {
                 .accessTokenExpiresIn(tokenProviderPort.getAccessTokenExpirationSeconds())
                 .build();
 
+        Long crewId = resolveCrewId(member);
         return new AuthResult(token, member.getStatus(), crewId);
+    }
+
+    private Long resolveCrewId(Member member) {
+        if (!member.getStatus().isCrewInfoRequired()) return null;
+        return loadCrewMemberPort.findRecentJoinedCrewMember(member.getId())
+                .map(CrewMember::getCrewId)
+                .orElse(null);
     }
 
     @Override

@@ -8,4 +8,6 @@ public interface TokenPort {
     void deleteByMemberId(Long memberId);
     void addToBlacklist(String accessToken, String reason);
     boolean isBlacklisted(String accessToken);
+    void savePrevToken(Long memberId, String prevToken, long ttlSeconds);
+    Optional<String> findPrevToken(Long memberId);
 }

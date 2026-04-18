@@ -16,6 +16,7 @@ public class RedisTokenAdapter implements TokenPort {
     private final TokenProviderPort tokenProviderPort;
 
     private static final String REFRESH_TOKEN_PREFIX = "RT:";
+    private static final String PREV_TOKEN_PREFIX = "RT_PREV:";
     private static final String BLACKLIST_PREFIX = "BL:";
 
     @Override
@@ -32,6 +33,16 @@ public class RedisTokenAdapter implements TokenPort {
     @Override
     public void deleteByMemberId(Long memberId) {
         redisTemplate.delete(REFRESH_TOKEN_PREFIX + memberId);
+    }
+
+    @Override
+    public void savePrevToken(Long memberId, String prevToken, long ttlSeconds) { // race condition 시 로그아웃 방어하기 위해 10초 동안 임시 저장
+        redisTemplate.opsForValue().set(PREV_TOKEN_PREFIX + memberId, prevToken, ttlSeconds, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public Optional<String> findPrevToken(Long memberId) {
+        return Optional.ofNullable(redisTemplate.opsForValue().get(PREV_TOKEN_PREFIX + memberId));
     }
 
     @Override

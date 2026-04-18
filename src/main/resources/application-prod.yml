@@ -69,6 +69,7 @@ jwt:
   refresh-token-name: azit_rt_prod
   cookie:
     secure: true
+    same-site: Lax
 
 payment:
   bank:
