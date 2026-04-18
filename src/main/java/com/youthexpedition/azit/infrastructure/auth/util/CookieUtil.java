@@ -19,11 +19,15 @@ import lombok.extern.slf4j.Slf4j;
 public class CookieUtil {
 
     private final boolean secure;
+    private final String sameSite;
     private final JwtProvider jwtProvider;
 
-    public CookieUtil(JwtProvider jwtProvider, @Value("${jwt.cookie.secure}") boolean secure) {
+    public CookieUtil(JwtProvider jwtProvider,
+                      @Value("${jwt.cookie.secure}") boolean secure,
+                      @Value("${jwt.cookie.same-site}") String sameSite) {
         this.jwtProvider = jwtProvider;
         this.secure = secure;
+        this.sameSite = sameSite;
     }
 
     /**
@@ -42,7 +46,7 @@ public class CookieUtil {
                 .path("/")
                 .httpOnly(true)
                 .secure(secure) // 운영 환경에서는 HTTPS가 필수이므로 true 설정
-                .sameSite("None")
+                .sameSite(sameSite)
                 .maxAge(maxAgeSeconds)
                 .build();
     }
