@@ -28,7 +28,7 @@ public class TokenManagementService implements TokenUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
 
     private static final String BLACKLIST_REASON_LOGOUT = "logout";
-    private static final long PREV_TOKEN_TTL_SECONDS = 10;
+    private static final long PREV_TOKEN_TTL_SECONDS = 5;
 
     @Override
     public AuthResult reissue(String refreshToken) {
@@ -46,7 +46,7 @@ public class TokenManagementService implements TokenUseCase {
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (!savedRT.equals(refreshToken)) {
-            // 10초 내 재요청(race condition)인지 확인
+            // 5초 내 재요청(race condition)인지 확인
             boolean isGracePeriod = tokenPort.findPrevToken(memberId)
                     .map(prev -> prev.equals(refreshToken))
                     .orElse(false);
@@ -75,7 +75,7 @@ public class TokenManagementService implements TokenUseCase {
         String newAccessToken = tokenProviderPort.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
         String newRefreshToken = tokenProviderPort.generateRefreshToken(member.getId());
 
-        tokenPort.savePrevToken(memberId, refreshToken, PREV_TOKEN_TTL_SECONDS); // 직전 RT 보관 (10초)
+        tokenPort.savePrevToken(memberId, refreshToken, PREV_TOKEN_TTL_SECONDS); // 직전 RT 보관 (5초)
         tokenPort.save(member.getId(), newRefreshToken, tokenProviderPort.getRefreshTokenExpirationSeconds());
 
         AuthToken token = AuthToken.builder()
