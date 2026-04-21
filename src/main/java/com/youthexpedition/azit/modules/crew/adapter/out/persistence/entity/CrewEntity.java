@@ -33,6 +33,9 @@ public class CrewEntity extends BaseTimeEntity {
     @Column(name = "image_url", length = 255)
     private String imageUrl;
 
+    @Column(name = "description", length = 20)
+    private String description;
+
     @Column(name = "invitation_code", nullable = false, unique = true, length = 20)
     private String invitationCode;
 
