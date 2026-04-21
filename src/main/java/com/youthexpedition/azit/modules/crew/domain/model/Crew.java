@@ -69,4 +69,8 @@ public class Crew {
     public void updateInvitationCode(String invitationCode) {
         this.invitationCode = invitationCode;
     }
+
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

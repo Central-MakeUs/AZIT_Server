@@ -42,7 +42,8 @@ public class ImageService implements ImageUseCase {
 
     private String buildS3Key(GeneratePresignedUrlCommand command, String extension) {
         String fileName = LocalDate.now() + "_" + UUID.randomUUID();
-        return ImageUploadType.TEMP_PREFIX + command.type().buildPath(command.memberId()) + "/" + fileName + "." + extension;
+        Long entityId = command.type() == ImageUploadType.CREW_IMAGE ? command.crewId() : command.memberId();
+        return ImageUploadType.TEMP_PREFIX + command.type().buildPath(entityId) + "/" + fileName + "." + extension;
     }
 
     private String extractExtension(String fileName) {
