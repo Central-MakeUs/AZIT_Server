@@ -110,6 +110,13 @@ public class CrewController implements CrewControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
+    @GetMapping("/{crewId}/info")
+    public CommonResponse<CrewInfoResponse> getCrewInfo(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        CrewInfoResponse response = crewUseCase.getCrewInfo(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
     @PatchMapping("/{crewId}/info")
     public CommonResponse<Void> updateCrewInfo(@PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateCrewInfoRequest request) {
         crewUseCase.updateCrewInfo(crewId, memberId, request.toCommand());

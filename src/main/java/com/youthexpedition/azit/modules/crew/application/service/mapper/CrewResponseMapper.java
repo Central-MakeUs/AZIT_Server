@@ -2,6 +2,7 @@ package com.youthexpedition.azit.modules.crew.application.service.mapper;
 
 import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInvitationResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewJoinStatusResponse;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
@@ -30,6 +31,14 @@ public class CrewResponseMapper {
                 crew.getCategory().name(),
                 crew.getMemberCount(),
                 imageUrlFormatUtil.buildFullImageUrl(crew.getImageUrl()),
+                crew.getDescription()
+        );
+    }
+
+    public CrewInfoResponse toCrewInfoResponse(Crew crew) {
+        return CrewInfoResponse.of(
+                imageUrlFormatUtil.buildFullImageUrl(crew.getImageUrl()),
+                crew.getName(),
                 crew.getDescription()
         );
     }
