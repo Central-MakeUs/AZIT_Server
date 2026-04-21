@@ -426,10 +426,10 @@ public class CrewService implements CrewUseCase {
     @Override
     @Transactional(readOnly = true)
     public CrewInfoResponse getCrewInfo(Long crewId, Long memberId) {
-        validateMember(crewId, memberId);
-
         Crew crew = loadCrewPort.findById(crewId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        validateMember(crewId, memberId);
 
         return crewResponseMapper.toCrewInfoResponse(crew);
     }
