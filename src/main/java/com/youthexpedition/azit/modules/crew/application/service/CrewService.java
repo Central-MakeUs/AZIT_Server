@@ -424,10 +424,10 @@ public class CrewService implements CrewUseCase {
 
     @Override
     public void updateCrewInfo(Long crewId, Long memberId, UpdateCrewInfoCommand command) {
-        validateLeader(crewId, memberId);
-
         Crew crew = loadCrewPort.findById(crewId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        validateLeader(crewId, memberId);
 
         crew.updateInfo(command.name(), command.description());
         saveCrewPort.save(crew);
