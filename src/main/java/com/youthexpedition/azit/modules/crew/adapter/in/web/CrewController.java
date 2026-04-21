@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.docs.CrewControllerD
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewImageRequest;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewInfoRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
@@ -105,6 +106,13 @@ public class CrewController implements CrewControllerDocs {
     @PatchMapping("/{crewId}/image")
     public CommonResponse<Void> updateCrewImage(@PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateCrewImageRequest request) {
         crewUseCase.updateCrewImage(crewId, memberId, request.toCommand());
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @PatchMapping("/{crewId}/info")
+    public CommonResponse<Void> updateCrewInfo(@PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateCrewInfoRequest request) {
+        crewUseCase.updateCrewInfo(crewId, memberId, request.toCommand());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
