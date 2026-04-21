@@ -12,6 +12,7 @@ public enum ImageErrorCode implements BaseErrorCode {
     INVALID_FILE_NAME("INVALID_FILE_NAME", "올바르지 않은 파일명입니다.", HttpStatus.BAD_REQUEST),
     IMAGE_NOT_UPLOADED("IMAGE_NOT_UPLOADED", "이미지가 업로드되지 않았습니다. 먼저 이미지를 업로드해 주세요.", HttpStatus.BAD_REQUEST),
     IMAGE_OWNERSHIP_MISMATCH("IMAGE_OWNERSHIP_MISMATCH", "본인이 업로드한 이미지만 사용할 수 있습니다.", HttpStatus.FORBIDDEN),
+    CREW_ID_REQUIRED("CREW_ID_REQUIRED", "크루 이미지 업로드 시 crewId는 필수입니다.", HttpStatus.BAD_REQUEST),
     ;
 
     private final String code;

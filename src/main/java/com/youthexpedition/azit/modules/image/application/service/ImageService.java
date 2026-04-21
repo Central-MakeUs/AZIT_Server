@@ -28,6 +28,10 @@ public class ImageService implements ImageUseCase {
 
     @Override
     public PresignedUrlResponse generatePresignedUrl(GeneratePresignedUrlCommand command) {
+        if (command.type() == ImageUploadType.CREW_IMAGE && command.crewId() == null) {
+            throw new BusinessException(ImageErrorCode.CREW_ID_REQUIRED);
+        }
+
         String extension = extractExtension(command.fileName());
         validateExtension(extension);
 

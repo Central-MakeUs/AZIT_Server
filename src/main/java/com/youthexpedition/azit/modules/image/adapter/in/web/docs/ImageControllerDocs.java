@@ -35,7 +35,7 @@ public interface ImageControllerDocs {
                     """
     )
     @ApiErrorCodeExamples({
-            "UNSUPPORTED_FILE_EXTENSION", "INVALID_FILE_NAME",
+            "UNSUPPORTED_FILE_EXTENSION", "INVALID_FILE_NAME", "CREW_ID_REQUIRED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<PresignedUrlResponse> generatePresignedUrl(
