@@ -18,6 +18,7 @@ public class Crew {
     private CrewCategory category;
     private Region region;
     private String imageUrl;
+    private String description;
     private String invitationCode; // 초대 코드
     private Integer memberCount;
     private CrewStatus status;

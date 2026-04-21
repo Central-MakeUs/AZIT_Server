@@ -29,7 +29,8 @@ public class CrewResponseMapper {
                 crew.getName(),
                 crew.getCategory().name(),
                 crew.getMemberCount(),
-                imageUrlFormatUtil.buildFullImageUrl(crew.getImageUrl())
+                imageUrlFormatUtil.buildFullImageUrl(crew.getImageUrl()),
+                crew.getDescription()
         );
     }
 

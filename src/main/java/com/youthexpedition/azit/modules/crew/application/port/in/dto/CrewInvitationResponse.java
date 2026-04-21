@@ -12,15 +12,18 @@ public record CrewInvitationResponse(
         @Schema(description = "크루에 가입되어 있는 멤버 수")
         long memberCount,
         @Schema(description = "크루 이미지 url")
-        String crewImageUrl
+        String crewImageUrl,
+        @Schema(description = "크루 소개")
+        String description
 ) {
-    public static CrewInvitationResponse of(Long crewId, String name, String category, long memberCount, String crewImageUrl) {
+    public static CrewInvitationResponse of(Long crewId, String name, String category, long memberCount, String crewImageUrl, String description) {
         return new CrewInvitationResponse(
                 crewId,
                 name,
                 category,
                 memberCount,
-                crewImageUrl
+                crewImageUrl,
+                description
         );
     }
 }
