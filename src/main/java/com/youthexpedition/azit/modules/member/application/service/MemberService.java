@@ -271,7 +271,7 @@ public class MemberService implements MemberUseCase {
     }
 
     private void validateImageOwnership(String tempS3Key, Long memberId) {
-        Long imageOwnerMemberId = ImageUploadType.extractMemberIdFromTempKey(tempS3Key);
+        Long imageOwnerMemberId = ImageUploadType.extractEntityIdFromTempKey(tempS3Key);
         if (imageOwnerMemberId == null) {
             throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
         }

@@ -398,7 +398,7 @@ public class CrewService implements CrewUseCase {
         }
 
         // temp 경로의 crewId가 요청 crewId와 일치하는지 검증
-        Long pathCrewId = ImageUploadType.extractMemberIdFromTempKey(tempS3Key);
+        Long pathCrewId = ImageUploadType.extractEntityIdFromTempKey(tempS3Key);
         if (!crewId.equals(pathCrewId)) {
             throw new BusinessException(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH);
         }
