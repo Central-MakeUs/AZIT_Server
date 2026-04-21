@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateCrewImageCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 
 import java.util.List;
@@ -20,4 +21,5 @@ public interface CrewUseCase {
     void expelCrewMember(Long crewId, Long leaderId, Long targetMemberId);
     void exitCrew(Long crewId, Long memberId);
     InvitationCodeResponse regenerateInvitationCode(Long crewId, Long memberId);
+    void updateCrewImage(Long crewId, Long memberId, UpdateCrewImageCommand command);
 }

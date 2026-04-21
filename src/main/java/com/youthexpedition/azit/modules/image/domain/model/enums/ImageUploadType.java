@@ -13,15 +13,15 @@ public enum ImageUploadType {
 
     private final String directory;
 
-    public String buildPath(Long memberId) {
-        return directory + "/" + memberId;
+    public String buildPath(Long entityId) {
+        return directory + "/" + entityId;
     }
 
     /**
-     * temp S3 Key에서 memberId 추출
-     * 경로 구조: temp/{directory}/{memberId}/{fileName}
+     * temp S3 Key에서 entityId(memberId 또는 crewId) 추출
+     * 경로 구조: temp/{directory}/{entityId}/{fileName}
      */
-    public static Long extractMemberIdFromTempKey(String tempS3Key) {
+    public static Long extractEntityIdFromTempKey(String tempS3Key) {
         try {
             String[] parts = tempS3Key.split("/");
             return Long.parseLong(parts[2]);

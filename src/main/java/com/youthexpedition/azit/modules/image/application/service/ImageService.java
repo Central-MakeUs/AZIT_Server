@@ -28,6 +28,10 @@ public class ImageService implements ImageUseCase {
 
     @Override
     public PresignedUrlResponse generatePresignedUrl(GeneratePresignedUrlCommand command) {
+        if (command.type() == ImageUploadType.CREW_IMAGE && command.crewId() == null) {
+            throw new BusinessException(ImageErrorCode.CREW_ID_REQUIRED);
+        }
+
         String extension = extractExtension(command.fileName());
         validateExtension(extension);
 
@@ -42,7 +46,8 @@ public class ImageService implements ImageUseCase {
 
     private String buildS3Key(GeneratePresignedUrlCommand command, String extension) {
         String fileName = LocalDate.now() + "_" + UUID.randomUUID();
-        return ImageUploadType.TEMP_PREFIX + command.type().buildPath(command.memberId()) + "/" + fileName + "." + extension;
+        Long entityId = command.type() == ImageUploadType.CREW_IMAGE ? command.crewId() : command.memberId();
+        return ImageUploadType.TEMP_PREFIX + command.type().buildPath(entityId) + "/" + fileName + "." + extension;
     }
 
     private String extractExtension(String fileName) {

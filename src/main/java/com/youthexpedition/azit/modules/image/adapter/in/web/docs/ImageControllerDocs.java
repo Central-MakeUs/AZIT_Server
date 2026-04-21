@@ -25,7 +25,8 @@ public interface ImageControllerDocs {
                     3. 업로드 완료 후 imageUrl으로 프로필 수정 / 크루 이미지 수정 등 관련 API를 호출합니다. <br><br>
 
                     **[업로드 타입]** <br>
-                    * MEMBER_PROFILE : 프로필 이미지 <br><br>
+                    * MEMBER_PROFILE : 멤버 프로필 이미지 (crewId 불필요) <br>
+                    * CREW_IMAGE : 크루 이미지 (crewId 필수) <br><br>
 
                     **[제약 사항]** <br>
                     * 허용 확장자: jpg, jpeg, png, webp (그 외: UNSUPPORTED_FILE_EXTENSION) <br>
@@ -34,7 +35,7 @@ public interface ImageControllerDocs {
                     """
     )
     @ApiErrorCodeExamples({
-            "UNSUPPORTED_FILE_EXTENSION", "INVALID_FILE_NAME",
+            "UNSUPPORTED_FILE_EXTENSION", "INVALID_FILE_NAME", "CREW_ID_REQUIRED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<PresignedUrlResponse> generatePresignedUrl(

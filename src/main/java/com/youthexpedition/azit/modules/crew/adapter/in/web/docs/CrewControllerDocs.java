@@ -6,6 +6,7 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewImageRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -200,4 +201,28 @@ public interface CrewControllerDocs {
     })
     CommonResponse<InvitationCodeResponse> regenerateInvitationCode(
             @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "크루 이미지 수정",
+            description = """
+                    크루 이미지를 수정합니다. <br><br>
+
+                    **[사전 조건]** <br>
+                    * POST /api/v1/images/presigned-url API에 type: CREW_IMAGE, crewId를 전달하여 Presigned URL을 발급받은 뒤, S3에 이미지를 **실제로 업로드한 후** 호출해야 합니다. <br><br>
+
+                    **[제약 사항]** <br>
+                    * 리더만 크루 이미지를 수정할 수 있습니다. (NOT_CREW_LEADER) <br>
+                    * 업로드되지 않은 이미지 URL을 전달하면 IMAGE_NOT_UPLOADED 오류가 반환됩니다. <br>
+                    * presigned URL 발급 시 사용한 crewId와 요청 경로의 crewId가 일치해야 합니다. (IMAGE_OWNERSHIP_MISMATCH)
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER",
+            "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> updateCrewImage(
+            @PathVariable Long crewId,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId,
+            @Valid @RequestBody UpdateCrewImageRequest request);
 }

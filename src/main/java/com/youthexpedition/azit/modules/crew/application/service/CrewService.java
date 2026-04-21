@@ -5,9 +5,14 @@ import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateCrewImageCommand;
+import com.youthexpedition.azit.modules.image.application.port.out.ImageStoragePort;
+import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
+import com.youthexpedition.azit.modules.image.domain.model.enums.ImageUploadType;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
@@ -53,6 +58,10 @@ public class CrewService implements CrewUseCase {
     private final CrewMemberResponseMapper crewMemberResponseMapper;
     private final CrewResponseMapper crewResponseMapper;
     private final CrewImageProvider crewImageProvider;
+    private final ImageStoragePort imageStoragePort;
+    private final ImageUrlFormatUtil imageUrlFormatUtil;
+
+    private static final String DEFAULT_S3_PREFIX = "default/";
 
     @Override
     @Retryable(
@@ -375,6 +384,41 @@ public class CrewService implements CrewUseCase {
         saveCrewPort.save(crew);
 
         return InvitationCodeResponse.of(newCode);
+    }
+
+    @Override
+    public void updateCrewImage(Long crewId, Long memberId, UpdateCrewImageCommand command) {
+        // 리더 권한 검증
+        validateLeader(crewId, memberId);
+
+        // temp 경로 파일 존재 여부 검증
+        String tempS3Key = imageUrlFormatUtil.extractS3Key(command.imageUrl());
+        if (tempS3Key == null || !tempS3Key.startsWith(ImageUploadType.TEMP_PREFIX) || !imageStoragePort.exists(tempS3Key)) {
+            throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+        }
+
+        // temp 경로의 crewId가 요청 crewId와 일치하는지 검증
+        Long pathCrewId = ImageUploadType.extractEntityIdFromTempKey(tempS3Key);
+        if (!crewId.equals(pathCrewId)) {
+            throw new BusinessException(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH);
+        }
+
+        Crew crew = loadCrewPort.findById(crewId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        // 기존 이미지가 커스텀 업로드 이미지인 경우에만 S3에서 삭제
+        String oldS3Key = imageUrlFormatUtil.extractS3Key(crew.getImageUrl());
+        if (oldS3Key != null && !oldS3Key.startsWith(DEFAULT_S3_PREFIX)) {
+            imageStoragePort.delete(oldS3Key);
+        }
+
+        // temp → 실제 경로로 이동
+        String finalS3Key = tempS3Key.substring(ImageUploadType.TEMP_PREFIX.length());
+        imageStoragePort.move(tempS3Key, finalS3Key);
+
+        // 상대 경로 저장
+        crew.updateImageUrl("/" + finalS3Key);
+        saveCrewPort.save(crew);
     }
 
     // 리더 여부 체크
