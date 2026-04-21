@@ -10,6 +10,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateC
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateCrewImageCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateCrewInfoCommand;
 import com.youthexpedition.azit.modules.image.application.port.out.ImageStoragePort;
 import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
 import com.youthexpedition.azit.modules.image.domain.model.enums.ImageUploadType;
@@ -418,6 +419,17 @@ public class CrewService implements CrewUseCase {
 
         // 상대 경로 저장
         crew.updateImageUrl("/" + finalS3Key);
+        saveCrewPort.save(crew);
+    }
+
+    @Override
+    public void updateCrewInfo(Long crewId, Long memberId, UpdateCrewInfoCommand command) {
+        Crew crew = loadCrewPort.findById(crewId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        validateLeader(crewId, memberId);
+
+        crew.updateInfo(command.name(), command.description());
         saveCrewPort.save(crew);
     }
 

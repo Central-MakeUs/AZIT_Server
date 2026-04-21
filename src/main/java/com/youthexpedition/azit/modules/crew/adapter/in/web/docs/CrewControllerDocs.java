@@ -7,6 +7,7 @@ import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExampl
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewImageRequest;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewInfoRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -225,4 +226,24 @@ public interface CrewControllerDocs {
             @PathVariable Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId,
             @Valid @RequestBody UpdateCrewImageRequest request);
+
+    @Operation(
+            summary = "크루 정보 수정",
+            description = """
+                    크루명과 크루 한줄 소개를 수정합니다. <br><br>
+
+                    **[제약 사항]** <br>
+                    * 리더만 크루 정보를 수정할 수 있습니다. (NOT_CREW_LEADER) <br>
+                    * 크루 이름은 필수이며 최대 15자까지 입력 가능합니다. <br>
+                    * 크루 한줄 소개는 선택이며 최대 20자까지 입력 가능합니다. (미입력 시 null로 저장)
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> updateCrewInfo(
+            @PathVariable Long crewId,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId,
+            @Valid @RequestBody UpdateCrewInfoRequest request);
 }

@@ -74,4 +74,9 @@ public class Crew {
     public void updateImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+
+    public void updateInfo(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 }
