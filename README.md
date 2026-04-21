@@ -49,18 +49,18 @@
 ## 🛠 기술 스택
 
 ### Backend
-* **Language & Framework**: Java, Spring Boot, Spring Batch
+* **Language & Framework**: Java, Spring Boot
 * **Architecture**: Hexagonal Architecture (Port & Adapter Pattern)
 * **Database & ORM**: Spring Data JPA, QueryDSL, MySQL, Redis
 * **Documentation**: Swagger (SpringDoc OpenAPI)
 * **Security**: Spring Security, JWT (Apple/Kakao OAuth)
 
 ### Infrastructure & DevOps
-* **Cloud**: AWS (EC2, RDS, S3, CloudFront, Route53, ECS, Fargate, EventBridge)
+* **Cloud**: AWS (EC2, RDS, S3, CloudFront, Route53)
 * **Container**: Docker, Docker Compose
 * **Web Server**: Nginx (Reverse Proxy, Blue-Green Switching)
 * **CI/CD**: GitHub Actions
-* **Monitoring**: New Relic, Discord (알림 연동)
+* **Monitoring**: New Relic(APM), Sentry, Discord (알림 연동)
 * **OS**: Ubuntu 22.04 LTS
 
 <br>
@@ -76,14 +76,9 @@
 ## ☁️ 인프라 및 CI/CD
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/8d4764a1-ccee-40f3-9a05-dae48b06e621" alt="AZIT Infrastructure Architecture" width="90%">
+  <img src="https://github.com/user-attachments/assets/a9679f5e-dbb5-4e4e-a81d-a6cc0058b0a3" alt="AZIT Infrastructure Architecture" width="90%">
 </div>
 <br>
-
-### ☁️ 서버리스 배치 시스템
-* **자원 격리**: 대용량 데이터 작업이 상시 가동 중인 API 서버(EC2)의 성능에 영향을 주지 않도록 컨테이너 환경을 완전히 분리했습니다.
-* **비용 최적화**: 24시간 서버를 띄우지 않고, 배치 작업이 필요한 시점에만 컨테이너를 실행하며 **Fargate Spot 인스턴스**를 활용해 비용을 절감했습니다.
-* **스케줄링**: **AWS EventBridge**를 통해 각 배치 작업의 실행 주기를 관리합니다.
 
 <br>
 
