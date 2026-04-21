@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewImageRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewInfoRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -226,6 +227,23 @@ public interface CrewControllerDocs {
             @PathVariable Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId,
             @Valid @RequestBody UpdateCrewImageRequest request);
+
+    @Operation(
+            summary = "크루 정보 조회",
+            description = """
+                    크루 이미지, 크루명, 크루 한줄 소개를 조회합니다. <br><br>
+
+                    **[제약 사항]** <br>
+                    * 해당 크루에 가입된 멤버(JOINED 상태)만 조회할 수 있습니다. (NOT_A_CREW_MEMBER)
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<CrewInfoResponse> getCrewInfo(
+            @PathVariable Long crewId,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
             summary = "크루 정보 수정",

@@ -12,6 +12,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewInfoRe
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -108,6 +109,13 @@ public class CrewController implements CrewControllerDocs {
         crewUseCase.updateCrewImage(crewId, memberId, request.toCommand());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @GetMapping("/{crewId}/info")
+    public CommonResponse<CrewInfoResponse> getCrewInfo(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        CrewInfoResponse response = crewUseCase.getCrewInfo(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
     @PatchMapping("/{crewId}/info")
