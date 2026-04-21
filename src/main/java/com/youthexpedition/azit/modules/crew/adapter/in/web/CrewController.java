@@ -12,7 +12,6 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewInfoRe
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
