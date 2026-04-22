@@ -7,8 +7,7 @@ import com.youthexpedition.azit.infrastructure.common.response.code.CommonSucces
 import com.youthexpedition.azit.modules.crew.adapter.in.web.docs.CrewControllerDocs;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
-import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewImageRequest;
-import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewInfoRequest;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewProfileRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
@@ -103,13 +102,6 @@ public class CrewController implements CrewControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
-    @PatchMapping("/{crewId}/image")
-    public CommonResponse<Void> updateCrewImage(@PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateCrewImageRequest request) {
-        crewUseCase.updateCrewImage(crewId, memberId, request.toCommand());
-
-        return CommonResponse.of(CommonSuccessCode.SUCCESS);
-    }
-
     @GetMapping("/{crewId}/info")
     public CommonResponse<CrewInfoResponse> getCrewInfo(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
         CrewInfoResponse response = crewUseCase.getCrewInfo(crewId, memberId);
@@ -118,8 +110,8 @@ public class CrewController implements CrewControllerDocs {
     }
 
     @PatchMapping("/{crewId}/info")
-    public CommonResponse<Void> updateCrewInfo(@PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateCrewInfoRequest request) {
-        crewUseCase.updateCrewInfo(crewId, memberId, request.toCommand());
+    public CommonResponse<Void> updateCrewProfile(@PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateCrewProfileRequest request) {
+        crewUseCase.updateCrewProfile(crewId, memberId, request.toCommand());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }

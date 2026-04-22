@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.modules.image.application.service;
 
-import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
+import com.youthexpedition.azit.infrastructure.common.util.image.ImageUrlFormatUtil;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.image.application.port.in.ImageUseCase;
 import com.youthexpedition.azit.modules.image.application.port.in.command.GeneratePresignedUrlCommand;

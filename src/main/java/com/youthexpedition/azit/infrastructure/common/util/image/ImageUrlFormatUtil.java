@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.infrastructure.common.util;
+package com.youthexpedition.azit.infrastructure.common.util.image;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
