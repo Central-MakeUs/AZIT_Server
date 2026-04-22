@@ -7,12 +7,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record PresignedUrlRequest(
-        @Schema(description = "이미지 업로드 타입", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"MEMBER_PROFILE", "CREW_IMAGE"})
+        @Schema(description = "이미지 업로드 타입", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "이미지 업로드 타입은 필수입니다.")
         ImageUploadType type,
 
-        @Schema(description = "업로드할 파일명 (확장자 포함)", requiredMode = Schema.RequiredMode.REQUIRED,
-                example = "photo.jpg")
+        @Schema(description = "업로드할 파일명 (확장자 포함)", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "파일명은 필수입니다.")
         String fileName,
 
