@@ -11,8 +11,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStat
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
-import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateNicknameRequest;
-import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateProfileImageRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateMemberProfileRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
@@ -101,23 +100,9 @@ public class MemberController implements MemberControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
-    @PatchMapping("/me/nickname")
-    public CommonResponse<Void> updateNickname(@CurrentMemberId Long memberId, @Valid @RequestBody UpdateNicknameRequest request) {
-        memberUseCase.updateNickname(memberId, request.toCommand());
-
-        return CommonResponse.of(CommonSuccessCode.SUCCESS);
-    }
-
-    @PatchMapping("/me/profile-image")
-    public CommonResponse<Void> updateProfileImage(@CurrentMemberId Long memberId, @Valid @RequestBody UpdateProfileImageRequest request) {
-        memberUseCase.updateProfileImage(memberId, request.toCommand());
-
-        return CommonResponse.of(CommonSuccessCode.SUCCESS);
-    }
-
-    @PatchMapping("/me/profile-image/default")
-    public CommonResponse<Void> resetProfileImageToDefault(@CurrentMemberId Long memberId) {
-        memberUseCase.resetProfileImageToDefault(memberId);
+    @PatchMapping("/me/profile")
+    public CommonResponse<Void> updateMemberProfile(@CurrentMemberId Long memberId, @Valid @RequestBody UpdateMemberProfileRequest request) {
+        memberUseCase.updateMemberProfile(memberId, request.toCommand());
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }

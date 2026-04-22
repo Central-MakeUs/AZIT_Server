@@ -8,8 +8,7 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CheckInRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
-import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateNicknameRequest;
-import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateProfileImageRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateMemberProfileRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
@@ -208,53 +207,35 @@ public interface MemberControllerDocs {
     );
 
     @Operation(
-            summary = "닉네임 수정",
+            summary = "프로필 수정",
             description = """
-            로그인한 사용자의 닉네임을 수정합니다. <br><br>
+                    사용자의 프로필 정보를 수정합니다. <br><br>
 
-            **[제약 사항]** <br>
-            * 닉네임은 최대 10자까지 입력 가능합니다. <br>
-            * 특수문자는 사용할 수 없으며, 한글/영문/숫자만 허용됩니다.
-            """
-    )
-    @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND", "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
-    })
-    CommonResponse<Void> updateNickname(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateNicknameRequest request);
+                    **[닉네임 제약 사항]** <br>
+                    * 최대 10자까지 입력 가능합니다. <br>
+                    * 특수문자는 사용할 수 없으며, 한글/영문/숫자만 허용됩니다. <br><br>
+                    
+                    **[프로필 이미지 URL 제약 사항]** <br>
+                    프로필 이미지 URL은 아래 세 가지 중 하나여야 합니다.<br>
+                    1. temp 경로가 포함된 CloudFront URL (새 커스텀 이미지 적용 시)<br>
+                    2. default 경로가 포함된 URL (기본 이미지 적용 시 — 프론트에서 랜덤 선택 후 전달)<br>
+                    3. 현재 이미지 URL (이미지 변경 없음) <br><br>
 
-    @Operation(
-            summary = "프로필 이미지 수정",
-            description = """
-                    로그인한 사용자의 프로필 이미지를 수정합니다. <br><br>
-
-                    **[사전 조건]** <br>
-                    * POST /api/v1/images/presigned-url API로 Presigned URL을 발급받은 뒤, S3에 이미지를 **실제로 업로드한 후** 호출해야 합니다. <br><br>
-
-                    **[제약 사항]** <br>
-                    * 업로드되지 않은 이미지 URL을 전달하면 IMAGE_NOT_UPLOADED 오류가 반환됩니다. <br>
-                    * 본인이 업로드한 이미지 URL만 사용할 수 있습니다. (IMAGE_OWNERSHIP_MISMATCH)
+                    **[이미지 처리 방식]** <br>
+                    imageUrl 값에 따라 아래 세 가지 케이스로 처리됩니다. <br>
+                    1. **새 커스텀 이미지 적용**: temp/ 경로가 포함된 CloudFront URL 전달 <br>
+                       - 사전에 POST /api/v1/images/presigned-url로 Presigned URL 발급 후 S3에 실제 업로드 필요 <br>
+                       - 업로드되지 않은 URL이면 IMAGE_NOT_UPLOADED 오류 <br>
+                       - 본인이 업로드한 이미지만 사용 가능 (IMAGE_OWNERSHIP_MISMATCH) <br>
+                    2. **기본 이미지 적용**: default/ 경로가 포함된 URL 전달 (프론트에서 랜덤 선택 후 전달) <br>
+                       - 기존 커스텀 이미지가 있으면 S3에서 자동 삭제 후 교체 <br>
+                    3. **이미지 변경 없음**: 현재 저장된 이미지 URL 그대로 전달 <br>
+                       - S3 작업 없이 닉네임만 수정됨
                     """
     )
     @ApiErrorCodeExamples({
             "MEMBER_NOT_FOUND", "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> updateProfileImage(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateProfileImageRequest request);
-
-    @Operation(
-            summary = "프로필 이미지 기본 이미지로 변경",
-            description = """
-                    로그인한 사용자의 프로필 이미지를 기본 이미지로 초기화합니다. <br><br>
-
-                    **[참고 사항]** <br>
-                    * 기존에 업로드한 커스텀 이미지가 있는 경우 S3에서 삭제합니다. <br>
-                    * 기본 이미지 중 랜덤으로 1개를 선택하여 적용합니다. <br>
-                    * 이미 기본 이미지를 사용 중인 경우 S3 삭제 없이 다른 기본 이미지로 변경합니다.
-                    """
-    )
-    @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND", "DEFAULT_IMAGE_NOT_FOUND",
-            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
-    })
-    CommonResponse<Void> resetProfileImageToDefault(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+    CommonResponse<Void> updateMemberProfile(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateMemberProfileRequest request);
 }

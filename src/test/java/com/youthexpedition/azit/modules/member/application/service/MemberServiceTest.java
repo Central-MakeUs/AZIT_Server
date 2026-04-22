@@ -1,11 +1,14 @@
 package com.youthexpedition.azit.modules.member.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.util.ImageUrlFormatUtil;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
-import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateNicknameCommand;
+import com.youthexpedition.azit.modules.image.application.port.out.ImageStoragePort;
+import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
+import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
@@ -27,6 +30,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,6 +49,10 @@ class MemberServiceTest {
     private SocialAuthPort socialAuthPort;
     @Mock
     private TokenPort tokenPort;
+    @Mock
+    private ImageStoragePort imageStoragePort;
+    @Mock
+    private ImageUrlFormatUtil imageUrlFormatUtil;
 
     @InjectMocks
     private MemberService memberService;
@@ -257,43 +265,187 @@ class MemberServiceTest {
     }
 
     @Nested
-    @DisplayName("닉네임 변경")
-    class UpdateNickname {
+    @DisplayName("프로필 수정 (닉네임 + 이미지 통합)")
+    class UpdateMemberProfile {
 
         private final Long memberId = 1L;
+        private final String currentImageUrl = "/profile/1/old_image.jpg";
+        private final String currentS3Key = "profile/1/old_image.jpg";
 
         @Test
-        @DisplayName("성공")
-        void updateNickname_success() {
+        @DisplayName("성공 - 닉네임만 수정 (이미지 URL 동일)")
+        void updateMemberProfile_success_nicknameOnly() {
             // given
-            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, "imageUrl");
-            UpdateNicknameCommand command = UpdateNicknameCommand.of("newNickname");
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", currentImageUrl);
+
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(currentS3Key).when(imageUrlFormatUtil).extractS3Key(currentImageUrl);
             doReturn(member).when(saveMemberPort).save(any(Member.class));
 
             // when
-            memberService.updateNickname(memberId, command);
+            memberService.updateMemberProfile(memberId, command);
 
             // then
             assertEquals("newNickname", member.getNickname());
-            verify(loadMemberPort, times(1)).findById(memberId);
+            assertEquals(currentImageUrl, member.getProfileImageUrl()); // 이미지 변경 없음
+            verify(imageStoragePort, never()).exists(anyString());
+            verify(imageStoragePort, never()).move(anyString(), anyString());
+            verify(imageStoragePort, never()).delete(anyString());
             verify(saveMemberPort, times(1)).save(member);
         }
 
         @Test
-        @DisplayName("실패 - 회원을 찾을 수 없음")
-        void updateNickname_fail_memberNotFound() {
+        @DisplayName("성공 - 새 커스텀 이미지로 변경 (기존 커스텀 이미지 삭제 후 이동)")
+        void updateMemberProfile_success_newCustomImage() {
             // given
-            UpdateNicknameCommand command = UpdateNicknameCommand.of("newNickname");
-            doReturn(Optional.empty()).when(loadMemberPort).findById(memberId);
+            String newTempUrl = "https://images.azitcrew.com/temp/profile/1/2026-04-22_uuid.jpg";
+            String newTempS3Key = "temp/profile/1/2026-04-22_uuid.jpg";
+            String finalS3Key = "profile/1/2026-04-22_uuid.jpg";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", newTempUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(newTempS3Key).when(imageUrlFormatUtil).extractS3Key(newTempUrl);
+            doReturn(currentS3Key).when(imageUrlFormatUtil).extractS3Key(currentImageUrl);
+            doReturn(true).when(imageStoragePort).exists(newTempS3Key);
+            doNothing().when(imageStoragePort).delete(currentS3Key);
+            doNothing().when(imageStoragePort).move(newTempS3Key, finalS3Key);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals("newNickname", member.getNickname());
+            assertEquals("/" + finalS3Key, member.getProfileImageUrl());
+            verify(imageStoragePort, times(1)).delete(currentS3Key);
+            verify(imageStoragePort, times(1)).move(newTempS3Key, finalS3Key);
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("성공 - 기본 이미지로 변경 (기존 커스텀 이미지 삭제)")
+        void updateMemberProfile_success_defaultImage() {
+            // given
+            String defaultUrl = "/default/profile/2.png";
+            String defaultS3Key = "default/profile/2.png";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", defaultUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(defaultS3Key).when(imageUrlFormatUtil).extractS3Key(defaultUrl);
+            doReturn(currentS3Key).when(imageUrlFormatUtil).extractS3Key(currentImageUrl);
+            doNothing().when(imageStoragePort).delete(currentS3Key);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals("newNickname", member.getNickname());
+            assertEquals("/" + defaultS3Key, member.getProfileImageUrl());
+            verify(imageStoragePort, times(1)).delete(currentS3Key);
+            verify(imageStoragePort, never()).move(anyString(), anyString());
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("성공 - 이미 기본 이미지 사용 중에 다른 기본 이미지로 변경 (S3 삭제 없음)")
+        void updateMemberProfile_success_defaultToOtherDefault() {
+            // given
+            String existingDefaultUrl = "/default/profile/1.png";
+            String existingDefaultS3Key = "default/profile/1.png";
+            String newDefaultUrl = "/default/profile/3.png";
+            String newDefaultS3Key = "default/profile/3.png";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, existingDefaultUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("nickname", newDefaultUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(newDefaultS3Key).when(imageUrlFormatUtil).extractS3Key(newDefaultUrl);
+            doReturn(existingDefaultS3Key).when(imageUrlFormatUtil).extractS3Key(existingDefaultUrl);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals("/" + newDefaultS3Key, member.getProfileImageUrl());
+            verify(imageStoragePort, never()).delete(anyString()); // 기본 이미지는 S3 삭제 안함
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("실패 - temp 이미지가 S3에 존재하지 않음")
+        void updateMemberProfile_fail_imageNotUploaded() {
+            // given
+            String newTempUrl = "https://images.azitcrew.com/temp/profile/1/2026-04-22_uuid.jpg";
+            String newTempS3Key = "temp/profile/1/2026-04-22_uuid.jpg";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", newTempUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(newTempS3Key).when(imageUrlFormatUtil).extractS3Key(newTempUrl);
+            doReturn(currentS3Key).when(imageUrlFormatUtil).extractS3Key(currentImageUrl);
+            doReturn(false).when(imageStoragePort).exists(newTempS3Key); // S3에 없음
 
             // when & then
             BusinessException exception = assertThrows(BusinessException.class, () ->
-                    memberService.updateNickname(memberId, command)
+                    memberService.updateMemberProfile(memberId, command)
             );
 
-            assertEquals(MemberErrorCode.MEMBER_NOT_FOUND.getCode(), exception.getErrorCode().getCode());
-            verify(loadMemberPort, times(1)).findById(memberId);
+            assertEquals(ImageErrorCode.IMAGE_NOT_UPLOADED.getCode(), exception.getErrorCode().getCode());
+            verify(imageStoragePort, never()).move(anyString(), anyString());
+            verify(saveMemberPort, never()).save(any(Member.class));
+        }
+
+        @Test
+        @DisplayName("실패 - 다른 사람이 업로드한 이미지 URL (소유권 불일치)")
+        void updateMemberProfile_fail_imageOwnershipMismatch() {
+            // given - memberId=1 이지만 이미지 경로의 entityId=99
+            String otherMemberTempUrl = "https://images.azitcrew.com/temp/profile/99/2026-04-22_uuid.jpg";
+            String otherMemberTempS3Key = "temp/profile/99/2026-04-22_uuid.jpg";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", otherMemberTempUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(otherMemberTempS3Key).when(imageUrlFormatUtil).extractS3Key(otherMemberTempUrl);
+            doReturn(currentS3Key).when(imageUrlFormatUtil).extractS3Key(currentImageUrl);
+            doReturn(true).when(imageStoragePort).exists(otherMemberTempS3Key);
+
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class, () ->
+                    memberService.updateMemberProfile(memberId, command)
+            );
+
+            assertEquals(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH.getCode(), exception.getErrorCode().getCode());
+            verify(imageStoragePort, never()).move(anyString(), anyString());
+            verify(saveMemberPort, never()).save(any(Member.class));
+        }
+
+        @Test
+        @DisplayName("실패 - 유효하지 않은 이미지 URL (S3 키 추출 불가)")
+        void updateMemberProfile_fail_invalidImageUrl() {
+            // given
+            String invalidUrl = "not-a-valid-url";
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", invalidUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(null).when(imageUrlFormatUtil).extractS3Key(invalidUrl); // 추출 불가
+            doReturn(currentS3Key).when(imageUrlFormatUtil).extractS3Key(currentImageUrl);
+
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class, () ->
+                    memberService.updateMemberProfile(memberId, command)
+            );
+
+            assertEquals(ImageErrorCode.IMAGE_NOT_UPLOADED.getCode(), exception.getErrorCode().getCode());
             verify(saveMemberPort, never()).save(any(Member.class));
         }
     }

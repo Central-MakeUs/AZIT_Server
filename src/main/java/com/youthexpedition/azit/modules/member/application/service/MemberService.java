@@ -19,9 +19,7 @@ import com.youthexpedition.azit.modules.image.application.port.out.ImageStorageP
 import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
 import com.youthexpedition.azit.modules.image.domain.model.enums.ImageUploadType;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
-import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateNicknameCommand;
-import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateProfileImageCommand;
-import com.youthexpedition.azit.modules.member.domain.model.provider.ProfileImageProvider;
+import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
@@ -53,7 +51,6 @@ public class MemberService implements MemberUseCase {
     private final MemberResponseMapper memberResponseMapper;
     private final ImageStoragePort imageStoragePort;
     private final ImageUrlFormatUtil imageUrlFormatUtil;
-    private final ProfileImageProvider profileImageProvider;
 
     private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
     private static final String DEFAULT_S3_PREFIX = "default/";
@@ -199,57 +196,48 @@ public class MemberService implements MemberUseCase {
     }
 
     @Override
-    public void updateNickname(Long memberId, UpdateNicknameCommand command) {
+    public void updateMemberProfile(Long memberId, UpdateMemberProfileCommand command) {
         Member member = getMember(memberId);
-        member.updateNickname(command.nickname());
-        saveMemberPort.save(member);
-    }
 
-    @Override
-    public void updateProfileImage(Long memberId, UpdateProfileImageCommand command) {
-        // temp 경로 파일 존재 여부 검증
-        String tempS3Key = imageUrlFormatUtil.extractS3Key(command.imageUrl());
-        if (tempS3Key == null || !tempS3Key.startsWith(ImageUploadType.TEMP_PREFIX) || !imageStoragePort.exists(tempS3Key)) {
+        // 닉네임 업데이트
+        member.updateNickname(command.nickname());
+
+        // 이미지 업데이트
+        String incomingS3Key = imageUrlFormatUtil.extractS3Key(command.imageUrl());
+        String currentS3Key = imageUrlFormatUtil.extractS3Key(member.getProfileImageUrl());
+
+        if (incomingS3Key == null) {
             throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
         }
 
-        // 본인이 업로드한 이미지인지 검증
-        validateImageOwnership(tempS3Key, memberId);
+        if (!incomingS3Key.equals(currentS3Key)) {
+            if (incomingS3Key.startsWith(ImageUploadType.TEMP_PREFIX)) {
+                // 새 커스텀 이미지: temp 존재 여부 및 소유권 검증 → 이동
+                if (!imageStoragePort.exists(incomingS3Key)) {
+                    throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+                }
+                validateImageOwnership(incomingS3Key, memberId);
+                deleteOldCustomImage(currentS3Key);
 
-        Member member = getMember(memberId);
-
-        // 기존 업로드 이미지 삭제 (기본 이미지, 외부 URL 제외)
-        String oldS3Key = imageUrlFormatUtil.extractS3Key(member.getProfileImageUrl());
-        if (oldS3Key != null && !oldS3Key.startsWith(DEFAULT_S3_PREFIX)) {
-            imageStoragePort.delete(oldS3Key);
+                String finalS3Key = incomingS3Key.substring(ImageUploadType.TEMP_PREFIX.length());
+                imageStoragePort.move(incomingS3Key, finalS3Key);
+                member.updateProfileImageUrl("/" + finalS3Key);
+            } else if (incomingS3Key.startsWith(DEFAULT_S3_PREFIX)) {
+                // 기본 이미지 선택 (프론트에서 랜덤 선택 후 URL 전달)
+                deleteOldCustomImage(currentS3Key);
+                member.updateProfileImageUrl("/" + incomingS3Key);
+            } else {
+                throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+            }
         }
 
-        // temp → 실제 경로로 이동
-        String finalS3Key = tempS3Key.substring(ImageUploadType.TEMP_PREFIX.length());
-        imageStoragePort.move(tempS3Key, finalS3Key);
-
-        // 상대 경로 저장
-        member.updateProfileImageUrl("/" + finalS3Key);
         saveMemberPort.save(member);
     }
 
-    @Override
-    public void resetProfileImageToDefault(Long memberId) {
-        Member member = getMember(memberId);
-
-        // 기존 이미지가 커스텀 업로드 이미지인 경우에만 S3에서 삭제
-        String oldS3Key = imageUrlFormatUtil.extractS3Key(member.getProfileImageUrl());
+    private void deleteOldCustomImage(String oldS3Key) {
         if (oldS3Key != null && !oldS3Key.startsWith(DEFAULT_S3_PREFIX)) {
             imageStoragePort.delete(oldS3Key);
         }
-
-        String defaultImageUrl = profileImageProvider.getRandomDefaultImage();
-        if (defaultImageUrl == null) {
-            throw new BusinessException(MemberErrorCode.DEFAULT_IMAGE_NOT_FOUND);
-        }
-
-        member.updateProfileImageUrl(defaultImageUrl);
-        saveMemberPort.save(member);
     }
 
     // 본인이 리더인 크루가 있으면 앱 탈퇴 불가
