@@ -44,14 +44,14 @@ naver:
 default:
   member:
     profile-images:
-      - "/default/members/default_1.svg"
-      - "/default/members/default_2.svg"
-      - "/default/members/default_3.svg"
-      - "/default/members/default_4.svg"
-      - "/default/members/default_5.svg"
-      - "/default/members/default_6.svg"
+      - "/default/member/default_1.svg"
+      - "/default/member/default_2.svg"
+      - "/default/member/default_3.svg"
+      - "/default/member/default_4.svg"
+      - "/default/member/default_5.svg"
+      - "/default/member/default_6.svg"
   crew:
-    image: "/default/crews/crew_default.svg"
+    image: "/default/crew/crew_default.svg"
 
 management:
   endpoints:
