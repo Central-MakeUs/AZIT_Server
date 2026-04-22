@@ -33,7 +33,7 @@ public class ImageUpdateUtil {
 
         // S3 키 기준으로 변경 여부 판단
         boolean imageChanged = !Objects.equals(incomingS3Key, currentS3Key) // S3 경로
-                || (allowExternalUrl && incomingS3Key == null && !Objects.equals(incomingUrl, currentUrl)); // 상대 경로
+                || (allowExternalUrl && incomingS3Key == null && !Objects.equals(incomingUrl, currentUrl)); // 외부 URL
 
         if (!imageChanged) return;
 
