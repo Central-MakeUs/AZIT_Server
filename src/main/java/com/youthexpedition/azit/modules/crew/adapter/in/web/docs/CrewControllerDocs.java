@@ -6,8 +6,7 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
-import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewImageRequest;
-import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewInfoRequest;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewProfileRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -205,30 +204,6 @@ public interface CrewControllerDocs {
             @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
-            summary = "크루 이미지 수정",
-            description = """
-                    크루 이미지를 수정합니다. <br><br>
-
-                    **[사전 조건]** <br>
-                    * POST /api/v1/images/presigned-url API에 type: CREW_IMAGE, crewId를 전달하여 Presigned URL을 발급받은 뒤, S3에 이미지를 **실제로 업로드한 후** 호출해야 합니다. <br><br>
-
-                    **[제약 사항]** <br>
-                    * 리더만 크루 이미지를 수정할 수 있습니다. (NOT_CREW_LEADER) <br>
-                    * 업로드되지 않은 이미지 URL을 전달하면 IMAGE_NOT_UPLOADED 오류가 반환됩니다. <br>
-                    * presigned URL 발급 시 사용한 crewId와 요청 경로의 crewId가 일치해야 합니다. (IMAGE_OWNERSHIP_MISMATCH)
-                    """
-    )
-    @ApiErrorCodeExamples({
-            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER",
-            "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH",
-            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
-    })
-    CommonResponse<Void> updateCrewImage(
-            @PathVariable Long crewId,
-            @Parameter(hidden = true) @CurrentMemberId Long memberId,
-            @Valid @RequestBody UpdateCrewImageRequest request);
-
-    @Operation(
             summary = "크루 정보 조회",
             description = """
                     크루 이미지, 크루명, 크루 한줄 소개를 조회합니다. <br><br>
@@ -246,22 +221,38 @@ public interface CrewControllerDocs {
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
-            summary = "크루 정보 수정",
+            summary = "크루 프로필 수정",
             description = """
-                    크루명과 크루 한줄 소개를 수정합니다. <br><br>
+                    크루 프로필을 수정합니다. <br><br>
+                        
+                    **[크루 이미지 URL 제약 사항]** <br>
+                    크루 이미지 URL은 아래 세 가지 중 하나여야 합니다.<br>
+                    1. temp 경로가 포함된 CloudFront URL (새 커스텀 이미지 적용 시)<br>
+                    2. default 경로가 포함된 URL (기본 이미지 적용 시 — 프론트에서 전달)<br>
+                    3. 현재 이미지 URL (이미지 변경 없음) <br><br>
 
-                    **[제약 사항]** <br>
-                    * 리더만 크루 정보를 수정할 수 있습니다. (NOT_CREW_LEADER) <br>
+                    **[이미지 처리 방식]** <br>
+                    imageUrl 값에 따라 아래 두 가지 케이스로 처리됩니다. <br>
+                    1. **새 이미지 적용**: temp/ 경로가 포함된 CloudFront URL 전달 <br>
+                       - 사전에 POST /api/v1/images/presigned-url에 type: CREW_IMAGE, crewId를 전달하여 Presigned URL 발급 후 S3에 실제 업로드 필요 <br>
+                       - 업로드되지 않은 URL이면 IMAGE_NOT_UPLOADED 오류 <br>
+                       - Presigned URL 발급 시 사용한 crewId와 요청 경로의 crewId가 일치해야 합니다. (IMAGE_OWNERSHIP_MISMATCH) <br>
+                    2. **이미지 변경 없음**: 현재 저장된 이미지 URL 그대로 전달 <br>
+                       - S3 작업 없이 크루명·소개만 수정됨 <br><br>
+
+                    **[이외 제약 사항]** <br>
+                    * 리더만 수정할 수 있습니다. (NOT_CREW_LEADER) <br>
                     * 크루 이름은 필수이며 최대 15자까지 입력 가능합니다. <br>
                     * 크루 한줄 소개는 선택이며 최대 20자까지 입력 가능합니다. (미입력 시 null로 저장)
                     """
     )
     @ApiErrorCodeExamples({
             "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER",
+            "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> updateCrewInfo(
+    CommonResponse<Void> updateCrewProfile(
             @PathVariable Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId,
-            @Valid @RequestBody UpdateCrewInfoRequest request);
+            @Valid @RequestBody UpdateCrewProfileRequest request);
 }

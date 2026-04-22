@@ -4,8 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateCrewImageCommand;
-import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateCrewInfoCommand;
+import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateCrewProfileCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
 
@@ -23,7 +22,6 @@ public interface CrewUseCase {
     void expelCrewMember(Long crewId, Long leaderId, Long targetMemberId);
     void exitCrew(Long crewId, Long memberId);
     InvitationCodeResponse regenerateInvitationCode(Long crewId, Long memberId);
-    void updateCrewImage(Long crewId, Long memberId, UpdateCrewImageCommand command);
-    void updateCrewInfo(Long crewId, Long memberId, UpdateCrewInfoCommand command);
+    void updateCrewProfile(Long crewId, Long memberId, UpdateCrewProfileCommand command);
     CrewInfoResponse getCrewInfo(Long crewId, Long memberId);
 }
