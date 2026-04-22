@@ -448,5 +448,83 @@ class MemberServiceTest {
             assertEquals(ImageErrorCode.IMAGE_NOT_UPLOADED.getCode(), exception.getErrorCode().getCode());
             verify(saveMemberPort, never()).save(any(Member.class));
         }
+
+        @Test
+        @DisplayName("성공 - 소셜 로그인 외부 URL 사용자가 닉네임만 수정 (이미지 URL 동일)")
+        void updateMemberProfile_success_externalUrlUnchanged() {
+            // given - 카카오 프로필 이미지(외부 URL)를 그대로 유지
+            String externalUrl = "https://k.kakao.com/profile/abc123.jpg";
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, externalUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", externalUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(null).when(imageUrlFormatUtil).extractS3Key(externalUrl); // 외부 URL → S3 키 null
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals("newNickname", member.getNickname());
+            assertEquals(externalUrl, member.getProfileImageUrl()); // 이미지 그대로 유지
+            verify(imageStoragePort, never()).exists(anyString());
+            verify(imageStoragePort, never()).move(anyString(), anyString());
+            verify(imageStoragePort, never()).delete(anyString());
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("성공 - 소셜 로그인 외부 URL 사용자가 새 커스텀 이미지로 변경 (S3 삭제 없이 이동만)")
+        void updateMemberProfile_success_externalUrlToCustomImage() {
+            // given - 소셜 프로필(외부 URL)에서 새로 업로드한 커스텀 이미지로 교체
+            String externalUrl = "https://k.kakao.com/profile/abc123.jpg";
+            String newTempUrl = "https://images.azitcrew.com/temp/profile/1/2026-04-22_uuid.jpg";
+            String newTempS3Key = "temp/profile/1/2026-04-22_uuid.jpg";
+            String finalS3Key = "profile/1/2026-04-22_uuid.jpg";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, externalUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("nickname", newTempUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(newTempS3Key).when(imageUrlFormatUtil).extractS3Key(newTempUrl);
+            doReturn(null).when(imageUrlFormatUtil).extractS3Key(externalUrl); // 외부 URL → S3 키 null
+            doReturn(true).when(imageStoragePort).exists(newTempS3Key);
+            doNothing().when(imageStoragePort).move(newTempS3Key, finalS3Key);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals("/" + finalS3Key, member.getProfileImageUrl());
+            verify(imageStoragePort, never()).delete(anyString()); // 외부 URL은 S3 삭제 대상 아님
+            verify(imageStoragePort, times(1)).move(newTempS3Key, finalS3Key);
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("성공 - 소셜 로그인 외부 URL 사용자가 기본 이미지로 변경")
+        void updateMemberProfile_success_externalUrlToDefault() {
+            // given
+            String externalUrl = "https://k.kakao.com/profile/abc123.jpg";
+            String newDefaultUrl = "/default/profile/2.png";
+            String newDefaultS3Key = "default/profile/2.png";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, externalUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("nickname", newDefaultUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(newDefaultS3Key).when(imageUrlFormatUtil).extractS3Key(newDefaultUrl);
+            doReturn(null).when(imageUrlFormatUtil).extractS3Key(externalUrl); // 외부 URL → S3 키 null
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals("/" + newDefaultS3Key, member.getProfileImageUrl());
+            verify(imageStoragePort, never()).delete(anyString()); // 외부 URL은 S3 삭제 대상 아님
+            verify(saveMemberPort, times(1)).save(member);
+        }
     }
 }

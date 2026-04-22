@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -206,11 +207,17 @@ public class MemberService implements MemberUseCase {
         String incomingS3Key = imageUrlFormatUtil.extractS3Key(command.imageUrl());
         String currentS3Key = imageUrlFormatUtil.extractS3Key(member.getProfileImageUrl());
 
-        if (incomingS3Key == null) {
-            throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
-        }
+        // 이미지 변경 여부 판단
+        // - S3 이미지: S3 키 기준으로 비교 (CloudFront URL과 상대경로를 동일하게 처리)
+        // - 외부 URL(카카오 프로필 등, S3 키 = null): URL 문자열 직접 비교
+        boolean imageChanged = !Objects.equals(incomingS3Key, currentS3Key)
+                || (incomingS3Key == null && !command.imageUrl().equals(member.getProfileImageUrl()));
 
-        if (!incomingS3Key.equals(currentS3Key)) {
+        if (imageChanged) {
+            if (incomingS3Key == null) {
+                // 외부 URL로의 변경은 지원하지 않음
+                throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+            }
             if (incomingS3Key.startsWith(ImageUploadType.TEMP_PREFIX)) {
                 // 새 커스텀 이미지: temp 존재 여부 및 소유권 검증 → 이동
                 if (!imageStoragePort.exists(incomingS3Key)) {
