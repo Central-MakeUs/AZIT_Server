@@ -55,6 +55,7 @@ public class MemberService implements MemberUseCase {
 
     private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
     private static final String DEFAULT_S3_PREFIX = "default/";
+    private static final String DEFAULT_SLASH = "/";
 
     @Override
     public void agreeToTerms(Long memberId, AgreeToTermsCommand command) {
@@ -210,8 +211,8 @@ public class MemberService implements MemberUseCase {
         // 이미지 변경 여부 판단
         // - S3 이미지: S3 키 기준으로 비교 (CloudFront URL과 상대경로를 동일하게 처리)
         // - 외부 URL(카카오 프로필 등, S3 키 = null): URL 문자열 직접 비교
-        boolean imageChanged = !Objects.equals(incomingS3Key, currentS3Key)
-                || (incomingS3Key == null && !command.imageUrl().equals(member.getProfileImageUrl()));
+        boolean imageChanged = !Objects.equals(incomingS3Key, currentS3Key) // s3 이미지
+                || (incomingS3Key == null && !command.imageUrl().equals(member.getProfileImageUrl())); // 외부 이미지
 
         if (imageChanged) {
             if (incomingS3Key == null) {
@@ -228,11 +229,11 @@ public class MemberService implements MemberUseCase {
 
                 String finalS3Key = incomingS3Key.substring(ImageUploadType.TEMP_PREFIX.length());
                 imageStoragePort.move(incomingS3Key, finalS3Key);
-                member.updateProfileImageUrl("/" + finalS3Key);
+                member.updateProfileImageUrl(DEFAULT_SLASH + finalS3Key);
             } else if (incomingS3Key.startsWith(DEFAULT_S3_PREFIX)) {
                 // 기본 이미지 선택 (프론트에서 랜덤 선택 후 URL 전달)
                 deleteOldCustomImage(currentS3Key);
-                member.updateProfileImageUrl("/" + incomingS3Key);
+                member.updateProfileImageUrl(DEFAULT_SLASH + incomingS3Key);
             } else {
                 throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
             }
