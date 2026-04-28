@@ -2,6 +2,7 @@ package com.youthexpedition.azit.modules.member.application.port.in;
 
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 
@@ -13,4 +14,5 @@ public interface MemberUseCase {
     void confirmMemberStatus(Long memberId);
     MyInfoResponse getMyInfo(Long memberId);
     void updateMemberProfile(Long memberId, UpdateMemberProfileCommand command);
+    LinkedProviderResponse getLinkedProviders(Long memberId);
 }

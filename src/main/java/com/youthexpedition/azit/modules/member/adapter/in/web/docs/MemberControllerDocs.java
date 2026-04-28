@@ -9,6 +9,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStat
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateMemberProfileRequest;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
@@ -238,4 +239,24 @@ public interface MemberControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> updateMemberProfile(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateMemberProfileRequest request);
+
+    @Operation(
+            summary = "연동된 소셜 로그인 조회",
+            description = """
+                    로그인한 사용자가 연동한 소셜 로그인 목록을 반환합니다. <br><br>
+
+                    **[응답값]** <br>
+                    * KAKAO: 카카오 연동 <br>
+                    * APPLE: 애플 연동 <br><br>
+
+                    **[참고 사항]** <br>
+                    * 현재는 계정당 하나의 소셜 로그인만 지원합니다. <br>
+                    * 추후 계정 연동 기능 도입 시 복수의 소셜 로그인이 반환될 수 있습니다.
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<LinkedProviderResponse> getLinkedProviders(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

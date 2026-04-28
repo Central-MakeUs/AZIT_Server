@@ -13,6 +13,7 @@ import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControl
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateMemberProfileRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
@@ -96,6 +97,13 @@ public class MemberController implements MemberControllerDocs {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
         MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
         List<MyAttendanceMonthlyListResponse> response = crewScheduleUseCase.getMyAttendancesForCalendar(query);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/me/providers")
+    public CommonResponse<LinkedProviderResponse> getLinkedProviders(@CurrentMemberId Long memberId) {
+        LinkedProviderResponse response = memberUseCase.getLinkedProviders(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
