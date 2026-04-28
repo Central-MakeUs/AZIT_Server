@@ -17,6 +17,7 @@ import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase
 import com.youthexpedition.azit.infrastructure.common.util.image.ImageUpdateUtil;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
@@ -158,6 +159,15 @@ public class MemberService implements MemberUseCase {
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
         return memberResponseMapper.toMyPageResponse(member, crewMember, crew);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LinkedProviderResponse getLinkedProviders(Long memberId) {
+        Member member = getMember(memberId);
+        // 추후 계정 연동 기능 추가 시, 연동된 소셜 계정 목록을 함께 조회하여 반환
+        List<SocialProvider> providers = List.of(member.getSocialProvider());
+        return LinkedProviderResponse.of(providers);
     }
 
     private Member getMember(Long memberId) {
