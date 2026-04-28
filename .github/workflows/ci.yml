@@ -1,0 +1,57 @@
+name: AZIT CI
+
+on:
+  pull_request:
+    branches: [ develop ]
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  unit-test:
+    name: 단위 테스트
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Run Unit Tests
+        run: |
+          chmod +x gradlew
+          ./gradlew test -PexcludeIntegration
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+          check_name: '단위 테스트 결과'
+          fail_on_failure: true
+
+  build-check:
+    name: 빌드 검증
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build (compile only)
+        run: |
+          chmod +x gradlew
+          ./gradlew build -x test
+        env:
+          SENTRY_AUTH_TOKEN: ''
