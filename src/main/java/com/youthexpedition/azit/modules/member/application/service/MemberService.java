@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -163,11 +162,11 @@ public class MemberService implements MemberUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public LinkedProviderResponse getLinkedProviders(Long memberId) {
         Member member = getMember(memberId);
         // 추후 계정 연동 기능 추가 시, 연동된 소셜 계정 목록을 함께 조회하여 반환
-        List<SocialProvider> providers = new ArrayList<>();
-        providers.add(member.getSocialProvider());
+        List<SocialProvider> providers = List.of(member.getSocialProvider());
         return LinkedProviderResponse.of(providers);
     }
 
