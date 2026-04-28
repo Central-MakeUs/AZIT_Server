@@ -1,4 +1,4 @@
-name: AZIT CI/CD
+name: AZIT CD (Deploy)
 run-name: AZIT server deployed to (${{ github.event.inputs.profile }}) by @${{ github.actor }}
 
 on:
