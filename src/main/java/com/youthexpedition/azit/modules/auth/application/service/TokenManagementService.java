@@ -33,20 +33,29 @@ public class TokenManagementService implements TokenUseCase {
     @Override
     public AuthResult reissue(String refreshToken) {
 
-        // 검증 및 memberId 추출
+        // JWT 서명 검증 및 memberId 추출
         tokenProviderPort.validateToken(refreshToken);
         Long memberId = tokenProviderPort.extractMemberId(refreshToken);
         log.info("[reissue] Token validated, memberId extracted: {}", memberId);
 
-        // Redis의 RT와 비교
-        String savedRT = tokenPort.findByMemberId(memberId)
-                .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED));
-
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        if (!savedRT.equals(refreshToken)) {
-            // 5초 내 재요청(race condition)인지 확인
+        // 신규 토큰 생성 (Lua 스크립트 전달용으로 미리 생성)
+        String newAccessToken = tokenProviderPort.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
+        String newRefreshToken = tokenProviderPort.generateRefreshToken(member.getId());
+
+        // GET-COMPARE-SET을 Lua 스크립트로 원자적 수행
+        boolean rotated = tokenPort.compareAndRotate(
+                memberId, refreshToken, newRefreshToken,
+                PREV_TOKEN_TTL_SECONDS, tokenProviderPort.getRefreshTokenExpirationSeconds()
+        );
+
+        if (!rotated) {
+            // Lua 비교 실패: race condition 패배 or 탈취 의심
+            String currentRT = tokenPort.findByMemberId(memberId)
+                    .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED));
+
             boolean isGracePeriod = tokenPort.findPrevToken(memberId)
                     .map(prev -> prev.equals(refreshToken))
                     .orElse(false);
@@ -57,35 +66,25 @@ public class TokenManagementService implements TokenUseCase {
                 throw new BusinessException(AuthErrorCode.TOKEN_REUSE_DETECTED);
             }
 
-            // Race condition: 이미 교체된 savedRT(RT2)를 그대로 사용하고 AT만 새로 발급
+            // Race condition: 이미 교체된 currentRT를 그대로 사용하고 AT만 새로 발급
             log.info("[TOKEN_MANAGEMENT] memberId: {} 에서 race condition 이 발생했습니다.", memberId);
-
-            String newAccessToken = tokenProviderPort.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
             AuthToken token = AuthToken.builder()
                     .accessToken(newAccessToken)
-                    .refreshToken(savedRT)
+                    .refreshToken(currentRT)
                     .accessTokenExpiresIn(tokenProviderPort.getAccessTokenExpirationSeconds())
                     .build();
 
-            Long crewId = resolveCrewId(member);
-            return new AuthResult(token, member.getStatus(), crewId);
+            return new AuthResult(token, member.getStatus(), resolveCrewId(member));
         }
 
-        // 정상 경로: 신규 토큰 발급 및 Redis 업데이트
-        String newAccessToken = tokenProviderPort.generateAccessToken(member.getId(), member.getRole(), member.getStatus());
-        String newRefreshToken = tokenProviderPort.generateRefreshToken(member.getId());
-
-        tokenPort.savePrevToken(memberId, refreshToken, PREV_TOKEN_TTL_SECONDS); // 직전 RT 보관 (5초)
-        tokenPort.save(member.getId(), newRefreshToken, tokenProviderPort.getRefreshTokenExpirationSeconds());
-
+        // 정상 경로
         AuthToken token = AuthToken.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .accessTokenExpiresIn(tokenProviderPort.getAccessTokenExpirationSeconds())
                 .build();
 
-        Long crewId = resolveCrewId(member);
-        return new AuthResult(token, member.getStatus(), crewId);
+        return new AuthResult(token, member.getStatus(), resolveCrewId(member));
     }
 
     private Long resolveCrewId(Member member) {
