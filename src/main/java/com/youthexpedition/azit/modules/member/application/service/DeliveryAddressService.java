@@ -50,11 +50,6 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
 
     @Override
     public void updateDeliveryAddress(UpdateAddressCommand command) {
-        // 필수값 검증
-        if (!DeliveryAddress.isValidInfo(command.recipientName(), command.phoneNumber(), command.zipcode(), command.baseAddress(), command.detailAddress())) {
-            throw new BusinessException(DeliveryAddressErrorCode.INVALID_ADDRESS_INPUT);
-        }
-
         DeliveryAddress deliveryAddress = getAddressValidated(command.addressId(), command.memberId());
         deliveryAddress.update(command.recipientName(), command.phoneNumber(), command.zipcode(), command.baseAddress(), command.detailAddress());
 
