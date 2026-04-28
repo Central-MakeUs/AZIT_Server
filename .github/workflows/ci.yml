@@ -31,7 +31,7 @@ jobs:
         if: always()
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
-          check_name: '단위 테스트 결과'
+          check_name: '테스트 결과'
           fail_on_failure: true
 
   build-check:
