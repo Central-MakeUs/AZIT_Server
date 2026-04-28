@@ -7,7 +7,7 @@ on:
 
 jobs:
   unit-test:
-    name: 단위 테스트
+    name: 테스트
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +21,7 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Run Unit Tests
+      - name: Run Tests
         run: |
           chmod +x gradlew
           ./gradlew test -PexcludeIntegration
