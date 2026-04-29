@@ -19,6 +19,7 @@ public class CrewMember {
     private CrewMemberStatus status;
     private LocalDateTime expelledAt;
     private LocalDateTime exitedAt;
+    private LocalDateTime cancelledAt;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -81,6 +82,18 @@ public class CrewMember {
     public boolean isRejoinCooldownActive(LocalDateTime now) {
         if (this.expelledAt == null) return false;
         return this.expelledAt.plusHours(REJOINING_COOLDOWN_HOURS).isAfter(now);
+    }
+
+    // 가입 신청 취소 (본인)
+    public void cancel(LocalDateTime cancelledAt) {
+        this.status = CrewMemberStatus.CANCELLED;
+        this.cancelledAt = cancelledAt;
+    }
+
+    // 취소 후 재신청 쿨다운 여부 확인 (24시간)
+    public boolean isCancelCooldownActive(LocalDateTime now) {
+        if (this.cancelledAt == null) return false;
+        return this.cancelledAt.plusHours(REJOINING_COOLDOWN_HOURS).isAfter(now);
     }
 
     // 가입 재신청

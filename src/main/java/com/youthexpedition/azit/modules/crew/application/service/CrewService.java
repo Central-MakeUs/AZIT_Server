@@ -139,6 +139,11 @@ public class CrewService implements CrewUseCase {
                                 throw new BusinessException(CrewErrorCode.EXIT_REJOINING_COOLDOWN);
                             }
 
+                            // 가입 신청 취소 후 24시간 이내 재신청 차단
+                            if (existingMember.getStatus() == CrewMemberStatus.CANCELLED && existingMember.isCancelCooldownActive(now)) {
+                                throw new BusinessException(CrewErrorCode.CANCEL_REJOINING_COOLDOWN);
+                            }
+
                             // 탈퇴, 방출(쿨다운 지남), 거절 상태일 경우 재신청
                             existingMember.reJoin();
                             saveCrewMemberPort.save(existingMember);
@@ -322,6 +327,32 @@ public class CrewService implements CrewUseCase {
 
         member.expel();
         saveMemberPort.save(member);
+    }
+
+    @Override
+    @Transactional
+    public void cancelJoinRequest(Long crewId, Long memberId) {
+        CrewMember crewMember = loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND));
+
+        if (!crewMember.isJoinRequested()) {
+            throw new BusinessException(CrewErrorCode.JOIN_REQUEST_NOT_FOUND);
+        }
+
+        crewMember.cancel(LocalDateTime.now());
+        saveCrewMemberPort.save(crewMember);
+        log.info("[CREW] crewId: {}, memberId: {} 가 가입 신청을 취소합니다.", crewId, memberId);
+
+        Member member = loadMemberPort.findById(memberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // 다른 크루에 가입된 크루가 없을 경우에만 온보딩 대기 상태로 변경
+        long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId);
+        if (joinedCrewCount == 0) {
+            log.info("[CREW] memberId: {}, 가입된 크루가 없으므로 온보딩 상태로 변경합니다.", memberId);
+            member.resetToOnboarding();
+            saveMemberPort.save(member);
+        }
     }
 
     @Override
