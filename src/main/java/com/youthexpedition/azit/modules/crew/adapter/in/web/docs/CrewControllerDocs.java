@@ -152,6 +152,23 @@ public interface CrewControllerDocs {
     CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId, CursorPageQuery query);
 
     @Operation(
+            summary = "크루 가입 신청 취소",
+            description = """
+                    승인 대기 중인 크루 가입 신청을 취소합니다. <br><br>
+
+                    **[제약 사항]** <br>
+                    * 가입 신청(REQUESTED) 상태인 경우에만 취소가 가능합니다. (JOIN_REQUEST_NOT_FOUND) <br>
+                    * 취소 후 24시간 이내에는 동일 크루에 재신청이 불가합니다. (CANCEL_REJOINING_COOLDOWN)
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "JOIN_REQUEST_NOT_FOUND", "MEMBER_NOT_FOUND", "CANCEL_REJOINING_COOLDOWN",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> cancelJoinRequest(
+            @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
             summary = "크루 탈퇴",
             description = """
             로그인한 사용자가 특정 크루에서 자진 탈퇴합니다. <br><br>

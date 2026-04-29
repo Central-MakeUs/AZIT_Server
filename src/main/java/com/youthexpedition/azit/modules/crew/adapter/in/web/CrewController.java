@@ -81,6 +81,13 @@ public class CrewController implements CrewControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
+    @DeleteMapping("/{crewId}/join-request")
+    public CommonResponse<Void> cancelJoinRequest(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        crewUseCase.cancelJoinRequest(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
     @DeleteMapping("/{crewId}/members/me")
     public CommonResponse<Void> exitCrew(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
         crewUseCase.exitCrew(crewId, memberId);

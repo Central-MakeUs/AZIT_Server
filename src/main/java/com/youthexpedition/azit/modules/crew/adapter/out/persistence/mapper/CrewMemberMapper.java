@@ -19,6 +19,7 @@ public class CrewMemberMapper {
                 .status(entity.getStatus())
                 .expelledAt(entity.getExpelledAt())
                 .exitedAt(entity.getExitedAt())
+                .cancelledAt(entity.getCancelledAt())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -33,6 +34,7 @@ public class CrewMemberMapper {
                 .status(domain.getStatus())
                 .expelledAt(domain.getExpelledAt())
                 .exitedAt(domain.getExitedAt())
+                .cancelledAt(domain.getCancelledAt())
                 .build();
     }
 }
