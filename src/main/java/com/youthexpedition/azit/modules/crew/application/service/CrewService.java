@@ -346,8 +346,13 @@ public class CrewService implements CrewUseCase {
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        member.resetToOnboarding();
-        saveMemberPort.save(member);
+        // 다른 크루에 가입된 크루가 없을 경우에만 온보딩 대기 상태로 변경
+        long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId);
+        if (joinedCrewCount == 0) {
+            log.info("[CREW] memberId: {}, 가입된 크루가 없으므로 온보딩 상태로 변경합니다.", memberId);
+            member.resetToOnboarding();
+            saveMemberPort.save(member);
+        }
     }
 
     @Override

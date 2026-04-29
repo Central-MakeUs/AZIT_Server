@@ -294,6 +294,7 @@ class CrewServiceTest {
                     .status(CrewMemberStatus.REQUESTED)
                     .build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(requestedMember));
+            given(loadCrewMemberPort.countJoinedCrewsByMemberId(memberId)).willReturn(0L);
 
             Member member = Member.builder()
                     .id(memberId)
@@ -311,8 +312,8 @@ class CrewServiceTest {
         }
 
         @Test
-        @DisplayName("성공: 취소 후 멤버 상태가 PENDING_ONBOARDING으로 복구된다.")
-        void cancelJoinRequest_Success_MemberStatusRestored() {
+        @DisplayName("성공: 다른 가입 크루가 없으면 멤버 상태가 PENDING_ONBOARDING으로 변경된다.")
+        void cancelJoinRequest_Success_NoOtherCrews_ResetToOnboarding() {
             // given
             CrewMember requestedMember = CrewMember.builder()
                     .crewId(crewId)
@@ -321,6 +322,7 @@ class CrewServiceTest {
                     .status(CrewMemberStatus.REQUESTED)
                     .build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(requestedMember));
+            given(loadCrewMemberPort.countJoinedCrewsByMemberId(memberId)).willReturn(0L);
 
             Member member = Member.builder()
                     .id(memberId)
@@ -334,6 +336,33 @@ class CrewServiceTest {
             // then
             assertThat(member.getStatus()).isEqualTo(MemberStatus.PENDING_ONBOARDING);
             verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("성공: 다른 가입 크루가 있으면 멤버 상태가 ACTIVE로 유지된다.")
+        void cancelJoinRequest_Success_HasOtherCrews_KeepsActive() {
+            // given
+            CrewMember requestedMember = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .role(CrewMemberRole.MEMBER)
+                    .status(CrewMemberStatus.REQUESTED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(requestedMember));
+            given(loadCrewMemberPort.countJoinedCrewsByMemberId(memberId)).willReturn(1L); // 다른 크루에 가입 중
+
+            Member member = Member.builder()
+                    .id(memberId)
+                    .status(MemberStatus.WAITING_FOR_APPROVE)
+                    .build();
+            given(loadMemberPort.findById(memberId)).willReturn(Optional.of(member));
+
+            // when
+            crewService.cancelJoinRequest(crewId, memberId);
+
+            // then
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.WAITING_FOR_APPROVE); // 상태 변경 없음
+            verify(saveMemberPort, never()).save(any());
         }
 
         @Test
