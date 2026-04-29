@@ -213,6 +213,177 @@ class CrewServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining(CrewErrorCode.CREW_NOT_FOUND.getMessage());
         }
+
+        @Test
+        @DisplayName("실패: 취소(CANCELLED) 후 24시간 이내에 재신청하면 CANCEL_REJOINING_COOLDOWN 예외가 발생한다.")
+        void joinCrew_Fail_CancelCooldown() {
+            // given
+            Long crewId = 100L;
+            Long memberId = 1L;
+            String invitationCode = "ABC123";
+            JoinCrewCommand command = JoinCrewCommand.of(memberId, invitationCode);
+
+            Crew mockCrew = Crew.builder().id(crewId).invitationCode(invitationCode).build();
+            given(loadCrewPort.findByInvitationCode(invitationCode)).willReturn(Optional.of(mockCrew));
+
+            CrewMember cancelledMember = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .status(CrewMemberStatus.CANCELLED)
+                    .cancelledAt(LocalDateTime.now().minusHours(1)) // 1시간 전 취소 (쿨다운 중)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(cancelledMember));
+
+            // when & then
+            assertThatThrownBy(() -> crewService.joinCrew(command))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(CrewErrorCode.CANCEL_REJOINING_COOLDOWN.getMessage());
+        }
+
+        @Test
+        @DisplayName("성공: 취소(CANCELLED) 후 24시간이 지나면 재신청이 가능하고 REQUESTED 상태로 변경된다.")
+        void joinCrew_Success_AfterCancelCooldown() {
+            // given
+            Long crewId = 100L;
+            Long memberId = 1L;
+            String invitationCode = "ABC123";
+            JoinCrewCommand command = JoinCrewCommand.of(memberId, invitationCode);
+
+            Crew mockCrew = Crew.builder().id(crewId).invitationCode(invitationCode).build();
+            given(loadCrewPort.findByInvitationCode(invitationCode)).willReturn(Optional.of(mockCrew));
+
+            CrewMember cancelledMember = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .status(CrewMemberStatus.CANCELLED)
+                    .cancelledAt(LocalDateTime.now().minusHours(25)) // 25시간 전 취소 (쿨다운 종료)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(cancelledMember));
+
+            Member member = Member.builder()
+                    .id(memberId)
+                    .status(MemberStatus.PENDING_ONBOARDING)
+                    .build();
+            given(loadMemberPort.findById(memberId)).willReturn(Optional.of(member));
+
+            // when
+            crewService.joinCrew(command);
+
+            // then
+            assertThat(cancelledMember.getStatus()).isEqualTo(CrewMemberStatus.REQUESTED);
+            verify(saveCrewMemberPort, times(1)).save(cancelledMember);
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.WAITING_FOR_APPROVE);
+        }
+    }
+
+    @Nested
+    @DisplayName("가입 신청 취소 테스트")
+    class CancelJoinRequestTest {
+
+        private final Long crewId = 100L;
+        private final Long memberId = 1L;
+
+        @Test
+        @DisplayName("성공: REQUESTED 상태일 때 취소하면 CANCELLED 상태로 변경되고 cancelledAt이 기록된다.")
+        void cancelJoinRequest_Success() {
+            // given
+            CrewMember requestedMember = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .role(CrewMemberRole.MEMBER)
+                    .status(CrewMemberStatus.REQUESTED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(requestedMember));
+
+            Member member = Member.builder()
+                    .id(memberId)
+                    .status(MemberStatus.WAITING_FOR_APPROVE)
+                    .build();
+            given(loadMemberPort.findById(memberId)).willReturn(Optional.of(member));
+
+            // when
+            crewService.cancelJoinRequest(crewId, memberId);
+
+            // then
+            assertThat(requestedMember.getStatus()).isEqualTo(CrewMemberStatus.CANCELLED);
+            assertThat(requestedMember.getCancelledAt()).isNotNull();
+            verify(saveCrewMemberPort, times(1)).save(requestedMember);
+        }
+
+        @Test
+        @DisplayName("성공: 취소 후 멤버 상태가 PENDING_ONBOARDING으로 복구된다.")
+        void cancelJoinRequest_Success_MemberStatusRestored() {
+            // given
+            CrewMember requestedMember = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .role(CrewMemberRole.MEMBER)
+                    .status(CrewMemberStatus.REQUESTED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(requestedMember));
+
+            Member member = Member.builder()
+                    .id(memberId)
+                    .status(MemberStatus.WAITING_FOR_APPROVE)
+                    .build();
+            given(loadMemberPort.findById(memberId)).willReturn(Optional.of(member));
+
+            // when
+            crewService.cancelJoinRequest(crewId, memberId);
+
+            // then
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.PENDING_ONBOARDING);
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("실패: 가입 신청 내역이 없으면 JOIN_REQUEST_NOT_FOUND 예외가 발생한다.")
+        void cancelJoinRequest_Fail_NoRequest() {
+            // given
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> crewService.cancelJoinRequest(crewId, memberId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(CrewErrorCode.JOIN_REQUEST_NOT_FOUND.getMessage());
+
+            verify(saveCrewMemberPort, never()).save(any());
+            verify(saveMemberPort, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패: 이미 승인된(JOINED) 상태에서 취소하면 JOIN_REQUEST_NOT_FOUND 예외가 발생한다.")
+        void cancelJoinRequest_Fail_AlreadyJoined() {
+            // given
+            CrewMember joinedMember = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(joinedMember));
+
+            // when & then
+            assertThatThrownBy(() -> crewService.cancelJoinRequest(crewId, memberId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(CrewErrorCode.JOIN_REQUEST_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("실패: 이미 거절된(REJECTED) 상태에서 취소하면 JOIN_REQUEST_NOT_FOUND 예외가 발생한다.")
+        void cancelJoinRequest_Fail_AlreadyRejected() {
+            // given
+            CrewMember rejectedMember = CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .status(CrewMemberStatus.REJECTED)
+                    .build();
+            given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(rejectedMember));
+
+            // when & then
+            assertThatThrownBy(() -> crewService.cancelJoinRequest(crewId, memberId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(CrewErrorCode.JOIN_REQUEST_NOT_FOUND.getMessage());
+        }
     }
 
     @Nested
