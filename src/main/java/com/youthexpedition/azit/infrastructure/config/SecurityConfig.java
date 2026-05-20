@@ -54,28 +54,12 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // 약관 동의는 약관 동의 대기 상태 회원만 가능
-                        .requestMatchers("/api/v1/members/terms").hasAnyAuthority("STATUS_PENDING_TERMS")
+                        .requestMatchers("/api/v1/members/terms").hasAuthority("STATUS_PENDING_TERMS")
 
-                        // PENDING_TERMS, WITHDRAWN 제외한 상태일 경우 가능
-                        .requestMatchers(
-                                "/api/v1/crews",
-                                "/api/v1/crews/join",
-                                "/api/v1/crews/invitation/**",
-                                "/api/v1/crews/*/join-status"
-                        ).hasAnyAuthority(
-                                "STATUS_PENDING_ONBOARDING",
-                                "STATUS_ACTIVE",
-                                "STATUS_WAITING_FOR_APPROVE",
-                                "STATUS_APPROVED_PENDING_CONFIRM",
-                                "STATUS_REJECTED_PENDING_CONFIRM",
-                                "STATUS_KICKED_PENDING_CONFIRM"
-                        )
+                        // 로그아웃은 약관 동의 전(PENDING_TERMS)·정상(ACTIVE) 회원 모두 가능
+                        .requestMatchers("/api/v1/auth/logout").hasAnyAuthority("STATUS_PENDING_TERMS", "STATUS_ACTIVE")
 
-                        // 사용자 인증 시 상태 상관없이 허용
-                        .requestMatchers(
-                                "/api/v1/auth/logout", "/api/v1/members/**", "/api/v1/images/**"
-                        ).authenticated()
-                        // 나머지 API: 정회원(ACTIVE) 상태만 접근 가능
+                        // 나머지 모든 API: ACTIVE 상태(약관 동의 완료, 비탈퇴) 회원만 접근 가능
                         .anyRequest().hasAuthority("STATUS_ACTIVE")
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
