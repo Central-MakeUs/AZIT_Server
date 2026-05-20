@@ -117,48 +117,19 @@ public class MemberService implements MemberUseCase {
         saveMemberPort.save(member);
     }
 
-    // 멤버 상태 변경
-    @Override
-    @Transactional
-    public void confirmMemberStatus(Long memberId) {
-        Member member = getMember(memberId);
-
-        // 멤버 상태 확인
-        if (!member.canUpdateStatusAfterConfirm()) {
-            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
-        }
-
-        // 가입되어 있는 나머지 크루가 있는지 확인
-        boolean hasJoinedCrews = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId) > 0;
-        member.confirmStatus(hasJoinedCrews);
-
-        saveMemberPort.save(member);
-    }
-
     @Override
     @Transactional(readOnly = true)
     public MyInfoResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
 
-        if (!member.getStatus().isCrewInfoRequired()) {
-            return memberResponseMapper.toMyPageResponse(member, null, null);
-        }
-
-        CrewMemberStatus targetStatus = switch (member.getStatus()) {
-            case KICKED_PENDING_CONFIRM -> CrewMemberStatus.EXPELLED;   // 방출 확인 대기 시 EXPELLED 조회
-            case REJECTED_PENDING_CONFIRM -> CrewMemberStatus.REJECTED; // 가입 거절 확인 대기 시 REJECTED 조회
-            case WAITING_FOR_APPROVE -> CrewMemberStatus.REQUESTED;    // 가입 승인 대기 시 REQUESTED 조회
-            case WITHDRAWN -> CrewMemberStatus.EXITED;
-            default -> CrewMemberStatus.JOINED;                        // 그 외(ACTIVE 등) JOINED 조회
-        };
-
-        CrewMember crewMember = loadCrewMemberPort.findLatestByMemberIdAndStatus(memberId, targetStatus)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_MEMBER_NOT_FOUND));
-
-        Crew crew = loadCrewPort.findById(crewMember.getCrewId())
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
-
-        return memberResponseMapper.toMyPageResponse(member, crewMember, crew);
+        // 가장 최근에 JOINED 상태인 크루 조회 (없으면 크루 정보 없이 반환)
+        return loadCrewMemberPort.findLatestByMemberIdAndStatus(memberId, CrewMemberStatus.JOINED)
+                .map(crewMember -> {
+                    Crew crew = loadCrewPort.findById(crewMember.getCrewId())
+                            .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+                    return memberResponseMapper.toMyPageResponse(member, crewMember, crew);
+                })
+                .orElse(memberResponseMapper.toMyPageResponse(member, null, null));
     }
 
     @Override

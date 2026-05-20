@@ -26,10 +26,8 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.provider.CrewImageProvider;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
-import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
-import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -53,7 +51,6 @@ public class CrewService implements CrewUseCase {
     private final SaveCrewMemberPort saveCrewMemberPort;
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadMemberPort loadMemberPort;
-    private final SaveMemberPort saveMemberPort;
     private final CrewScheduleUseCase crewScheduleUseCase;
     private final CrewMemberResponseMapper crewMemberResponseMapper;
     private final CrewResponseMapper crewResponseMapper;
@@ -80,18 +77,6 @@ public class CrewService implements CrewUseCase {
         // 리더 등록
         CrewMember leader = CrewMember.createAsLeader(savedCrew.getId(), command.leaderId());
         saveCrewMemberPort.save(leader);
-
-        // 온보딩 완료했으므로 ACTIVE로 멤버 상태 변경
-        Member member = loadMemberPort.findById(command.leaderId())
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-        // 멤버 상태 확인
-        if (!member.isJoinable()) {
-            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
-        }
-        member.completeOnboarding();
-
-        saveMemberPort.save(member);
 
         return crewResponseMapper.toCreateResponse(savedCrew);
     }
@@ -164,13 +149,10 @@ public class CrewService implements CrewUseCase {
         Member member = loadMemberPort.findById(command.memberId())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        // 멤버 상태 확인
+        // 멤버 상태 확인 (ACTIVE 상태가 아니면 가입 불가)
         if (!member.isJoinable()) {
             throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
         }
-        // WAITING_FOR_APPROVE 으로 상태 변경
-        member.applyForJoin();
-        saveMemberPort.save(member);
     }
 
     @Override
@@ -222,17 +204,6 @@ public class CrewService implements CrewUseCase {
         log.info("[CREW] crewId: {} 에서 memberId: {} 가 가입되어 크루 인원 수가 증가합니다.", crew.getId(), command.targetMemberId());
         crew.increaseMemberCount(); // 인원 수 +1
         saveCrewPort.save(crew);
-
-        // 해당 유저의 회원 상태를 APPROVED_PENDING_CONFIRM 로 변경 (온보딩 완료 처리)
-        Member member = loadMemberPort.findById(command.targetMemberId())
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-        // 멤버 상태 확인
-        if (member.getStatus() != MemberStatus.WAITING_FOR_APPROVE) {
-            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
-        }
-        member.approveJoin();
-        saveMemberPort.save(member);
     }
 
     @Override
@@ -251,16 +222,6 @@ public class CrewService implements CrewUseCase {
 
         targetCrewMember.reject();
         saveCrewMemberPort.save(targetCrewMember);
-
-        Member member = loadMemberPort.findById(command.targetMemberId())
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-        // 해당 유저의 회원 상태를 REJECTED_PENDING_CONFIRM 으로 변경
-        if (member.getStatus() != MemberStatus.WAITING_FOR_APPROVE) {
-            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
-        }
-        member.rejectJoin();
-        saveMemberPort.save(member);
     }
 
     @Override
@@ -314,25 +275,6 @@ public class CrewService implements CrewUseCase {
         log.info("[CREW] crewId: {} 에서 memberId: {} 가 방출되어 크루 인원 수가 감소합니다.", crewId, targetMemberId);
         crew.decreaseMemberCount();
         saveCrewPort.save(crew);
-
-        // 가입된 잔여 크루 확인 멤버 상태 변경
-        long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(targetMemberId);
-
-        Member member = loadMemberPort.findById(targetMemberId)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-        if (joinedCrewCount == 0) {
-            // 탈퇴한 회원인지 확인
-            if (member.isWithdrawn()) {
-                throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
-            }
-
-            log.info("[CREW] memberId: {}, 가입된 크루가 없으므로 온보딩 상태로 변경합니다.", member.getId());
-            member.resetToOnboarding();
-        }
-
-        member.expel();
-        saveMemberPort.save(member);
     }
 
     @Override
@@ -348,17 +290,6 @@ public class CrewService implements CrewUseCase {
         crewMember.cancel(LocalDateTime.now());
         saveCrewMemberPort.save(crewMember);
         log.info("[CREW] crewId: {}, memberId: {} 가 가입 신청을 취소합니다.", crewId, memberId);
-
-        Member member = loadMemberPort.findById(memberId)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-        // 다른 크루에 가입된 크루가 없을 경우에만 온보딩 대기 상태로 변경
-        long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId);
-        if (joinedCrewCount == 0) {
-            log.info("[CREW] memberId: {}, 가입된 크루가 없으므로 온보딩 상태로 변경합니다.", memberId);
-            member.resetToOnboarding();
-            saveMemberPort.save(member);
-        }
     }
 
     @Override
@@ -387,18 +318,6 @@ public class CrewService implements CrewUseCase {
         log.info("[CREW] crewId: {} 에서 memberId: {} 가 자진 탈퇴하여 크루 인원 수가 감소합니다.", crewId, memberId);
         crew.decreaseMemberCount();
         saveCrewPort.save(crew);
-
-        // 가입된 잔여 크루 확인 후 멤버 상태 변경
-        Member member = loadMemberPort.findById(memberId)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-        long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId);
-
-        if (joinedCrewCount == 0) {
-            log.info("[CREW] memberId: {}, 가입된 크루가 없으므로 온보딩 상태로 변경합니다.", memberId);
-            member.resetToOnboarding();
-            saveMemberPort.save(member);
-        }
     }
 
     @Override

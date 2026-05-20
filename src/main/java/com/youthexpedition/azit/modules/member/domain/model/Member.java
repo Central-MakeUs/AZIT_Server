@@ -49,7 +49,7 @@ public class Member {
                 .build();
     }
 
-    // 약관 동의 시 멤버 상태 업데이트
+    // 약관 동의 완료 시 ACTIVE로 전환
     public void completeTermsAgreement(boolean marketingAgreed, boolean notificationAgreed) {
         this.essentialTermsAgreedAt = LocalDateTime.now();
         this.isMarketingTermsAgreed = marketingAgreed;
@@ -62,7 +62,7 @@ public class Member {
             this.notificationAgreedAt = LocalDateTime.now();
         }
 
-        this.status = MemberStatus.PENDING_ONBOARDING; // 약관 완료 후 온보딩 대기 상태로 변경
+        this.status = MemberStatus.ACTIVE;
     }
 
     // 애플 리프레시 토큰 업데이트
@@ -80,52 +80,8 @@ public class Member {
         return this.status.isJoinable();
     }
 
-    // 리더가 크루 생성 완료했을 경우 상태 변경
-    public void completeOnboarding() {
-        this.status = MemberStatus.ACTIVE;
-    }
-
-    // 크루원이 초대 코드 입력 후 승인 대기할 경우 상태 변경
-    public void applyForJoin() {
-        this.status = MemberStatus.WAITING_FOR_APPROVE;
-    }
-
-    // 리더가 가입 신청을 승인했을 경우 상태 변경
-    public void approveJoin() {
-        this.status = MemberStatus.APPROVED_PENDING_CONFIRM;
-    }
-
-    // 리더가 가입 신청을 거절했을 경우 상태 변경
-    public void rejectJoin() {
-        this.status = MemberStatus.REJECTED_PENDING_CONFIRM;
-    }
-
     public boolean isWithdrawn() {
         return this.status == MemberStatus.WITHDRAWN;
-    }
-
-    // 리더가 방출했을 경우 상태 변경
-    public void expel() {
-        this.status = MemberStatus.KICKED_PENDING_CONFIRM;
-    }
-
-    // 승인/거절/방출 결과 확인 후 상태 업데이트 가능한지 확인
-    public boolean canUpdateStatusAfterConfirm() {
-        return switch (this.status) {
-            case APPROVED_PENDING_CONFIRM, REJECTED_PENDING_CONFIRM, KICKED_PENDING_CONFIRM -> true;
-            default -> false;
-        };
-    }
-
-    // 승인/거절/방출 결과 확인 후 상태 확정
-    public void confirmStatus(boolean hasJoinedCrews) {
-        this.status = switch (this.status) {
-            case APPROVED_PENDING_CONFIRM -> MemberStatus.ACTIVE; // 승인 확인 시 정회원으로 변경
-            // 거절 또는 방출 확인 시: 가입된 크루가 하나라도 있으면 ACTIVE, 없으면 온보딩 상태로 변경
-            case REJECTED_PENDING_CONFIRM, KICKED_PENDING_CONFIRM ->
-                    hasJoinedCrews ? MemberStatus.ACTIVE : MemberStatus.PENDING_ONBOARDING;
-            default -> this.status; // 그 외 상태는 서비스단에서 예외 처리
-        };
     }
 
     // 탈퇴 상태로 변경
@@ -139,13 +95,7 @@ public class Member {
         if (this.status != MemberStatus.WITHDRAWN) {
             return; // 탈퇴 상태가 아니면 패스
         }
-
-        this.status = MemberStatus.PENDING_ONBOARDING; // 추후 기획 확인 필요
-    }
-
-    // 가입된 모든 크루에서 탈퇴하거나 방출되었을 경우, 앱 사용 제한을 위해 다시 크루 가입 단계로 되돌림
-    public void resetToOnboarding() {
-        this.status = MemberStatus.PENDING_ONBOARDING;
+        this.status = MemberStatus.ACTIVE;
     }
 
     // 포인트가 충분한지 체크

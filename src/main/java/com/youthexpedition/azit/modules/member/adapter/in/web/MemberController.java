@@ -47,13 +47,6 @@ public class MemberController implements MemberControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
-    @PostMapping("/me/confirm-status")
-    public CommonResponse<Void> confirmMemberStatus(@CurrentMemberId Long memberId) {
-        memberUseCase.confirmMemberStatus(memberId);
-
-        return CommonResponse.of(CommonSuccessCode.SUCCESS);
-    }
-
     @GetMapping("/me")
     public CommonResponse<MyInfoResponse> getMyInfo(@CurrentMemberId Long memberId) {
         MyInfoResponse response = memberUseCase.getMyInfo(memberId);

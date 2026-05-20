@@ -49,8 +49,8 @@ public class SocialLoginService implements SocialLoginUseCase {
         Member savedMember = saveMemberPort.save(member);
 
         Long crewId = null;
-        // 크루 ID 필요한지 체크 후 가장 최근에 가입한 크루 조회
-        if (member.getStatus().isCrewInfoRequired()) {
+        // ACTIVE 상태일 경우 가장 최근에 가입한 크루 조회
+        if (member.getStatus() == MemberStatus.ACTIVE) {
             crewId = loadCrewMemberPort.findRecentJoinedCrewMember(savedMember.getId())
                     .map(CrewMember::getCrewId)
                     .orElse(null);
