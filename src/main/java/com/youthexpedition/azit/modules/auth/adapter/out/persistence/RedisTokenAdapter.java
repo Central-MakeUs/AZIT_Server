@@ -79,6 +79,6 @@ public class RedisTokenAdapter implements TokenPort {
 
     @Override
     public boolean isBlacklisted(String accessToken) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + accessToken));
+        return redisTemplate.hasKey(BLACKLIST_PREFIX + accessToken);
     }
 }

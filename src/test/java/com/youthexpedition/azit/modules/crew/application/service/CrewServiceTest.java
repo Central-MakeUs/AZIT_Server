@@ -274,6 +274,24 @@ class CrewServiceTest {
             verify(saveCrewMemberPort, times(1)).save(cancelledMember);
             assertThat(member.getStatus()).isEqualTo(MemberStatus.WAITING_FOR_APPROVE);
         }
+
+        @Test
+        @DisplayName("실패: 활성 크루(JOINED + REQUESTED)가 이미 3개이면 CREW_JOIN_LIMIT_EXCEEDED 예외가 발생한다.")
+        void joinCrew_Fail_CrewJoinLimitExceeded() {
+            // given
+            Long memberId = 1L;
+            String invitationCode = "ABC123";
+            JoinCrewCommand command = JoinCrewCommand.of(memberId, invitationCode);
+
+            Crew crew = Crew.builder().id(100L).invitationCode(invitationCode).build();
+            given(loadCrewPort.findByInvitationCode(invitationCode)).willReturn(Optional.of(crew));
+            given(loadCrewMemberPort.countActiveCrewsByMemberId(memberId)).willReturn(3L);
+
+            // when & then
+            assertThatThrownBy(() -> crewService.joinCrew(command))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(CrewErrorCode.CREW_JOIN_LIMIT_EXCEEDED.getMessage());
+        }
     }
 
     @Nested

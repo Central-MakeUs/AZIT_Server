@@ -12,6 +12,7 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
     Optional<CrewMemberEntity> findByCrewIdAndMemberId(Long crewId, Long memberId);
     Optional<CrewMemberEntity> findFirstByMemberIdAndStatusInOrderByIdDesc(Long memberId, Collection<CrewMemberStatus> statuses);
     long countByMemberIdAndStatus(Long memberId, CrewMemberStatus status);
+    long countByMemberIdAndStatusIn(Long memberId, Collection<CrewMemberStatus> statuses);
     List<CrewMemberEntity> findAllByMemberId(Long memberId);
     List<CrewMemberEntity> findByCrew_IdAndMemberIdIn(Long crewId, List<Long> memberIds);
     Optional<CrewMemberEntity> findFirstByMemberIdAndStatusOrderByIdDesc(Long memberId, CrewMemberStatus status);

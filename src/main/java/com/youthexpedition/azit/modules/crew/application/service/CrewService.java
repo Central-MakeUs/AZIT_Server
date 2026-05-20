@@ -118,6 +118,12 @@ public class CrewService implements CrewUseCase {
         Crew crew = loadCrewPort.findByInvitationCode(command.invitationCode())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
+        // 최대 3개 크루 가입 제한 (JOINED + REQUESTED 합산)
+        long activeCrewCount = loadCrewMemberPort.countActiveCrewsByMemberId(command.memberId());
+        if (activeCrewCount >= 3) {
+            throw new BusinessException(CrewErrorCode.CREW_JOIN_LIMIT_EXCEEDED);
+        }
+
         LocalDateTime now = LocalDateTime.now();
 
         // 이미 가입된 멤버인지 확인
