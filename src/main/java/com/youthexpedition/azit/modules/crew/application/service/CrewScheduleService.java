@@ -446,7 +446,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         LocalDateTime now = LocalDateTime.now();
 
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberIdAndMonth(
-                query.memberId(), query.yearMonth(), now);
+                query.memberId(), query.yearMonth(), now, query.crewId());
 
         List<MyAttendanceLogResponse.DailyAttendanceLog> attendanceLogs = crewScheduleResponseMapper.toDailyAttendanceLogs(schedules, query.memberId());
 
@@ -467,7 +467,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         LocalDateTime now = LocalDateTime.now();
 
         Map<LocalDate, Set<RunType>> attendanceMap = loadCrewSchedulePort.findMyMonthlyAttendanceForCalendar(
-                query.memberId(), query.yearMonth(), now);
+                query.memberId(), query.yearMonth(), now, query.crewId());
 
         return crewScheduleResponseMapper.toMyAttendanceMonthlyListResponse(attendanceMap);
     }

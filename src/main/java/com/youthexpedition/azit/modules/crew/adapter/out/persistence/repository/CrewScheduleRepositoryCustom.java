@@ -17,8 +17,8 @@ public interface CrewScheduleRepositoryCustom {
     List<CrewScheduleEntity> findAllByMemberId(Long memberId);
     List<CrewScheduleEntity> findAllTodaySchedulesByMemberId(Long memberId, LocalDateTime now);
     Optional<CrewScheduleEntity> findNextClosestScheduleByMemberId(Long memberId, LocalDateTime now);
-    List<CrewScheduleEntity> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth, LocalDateTime now);
-    Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth, LocalDateTime now);
+    List<CrewScheduleEntity> findAllByMemberIdAndMonth(Long memberId, YearMonth yearMonth, LocalDateTime now, Long crewId);
+    Map<LocalDate, Set<RunType>> findMyMonthlyAttendanceForCalendar(Long memberId, YearMonth yearMonth, LocalDateTime now, Long crewId);
     boolean existsConflictingSchedule(Long memberId, LocalDateTime newMeetingAt, Long excludeScheduleId);
     List<CrewScheduleEntity> findSchedulesToCancelByCreator(Long crewId, Long memberId, LocalDateTime now);
     List<CrewScheduleEntity> findSchedulesToRemoveParticipant(Long crewId, Long memberId, LocalDateTime now);

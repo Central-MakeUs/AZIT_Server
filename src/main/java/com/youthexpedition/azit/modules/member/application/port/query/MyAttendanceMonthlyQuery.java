@@ -4,12 +4,14 @@ import java.time.YearMonth;
 
 public record MyAttendanceMonthlyQuery(
         YearMonth yearMonth,
-        Long memberId
+        Long memberId,
+        Long crewId
 ) {
-    public static MyAttendanceMonthlyQuery of(YearMonth yearMonth, Long memberId) {
+    public static MyAttendanceMonthlyQuery of(YearMonth yearMonth, Long memberId, Long crewId) {
         return new MyAttendanceMonthlyQuery(
                 yearMonth != null ? yearMonth : YearMonth.now(),
-                memberId
+                memberId,
+                crewId
         );
     }
 }
