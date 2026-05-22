@@ -487,7 +487,7 @@ class MemberServiceTest {
         @DisplayName("성공 - 가입된 크루가 없으면 빈 목록 반환")
         void getMyCrews_success_returnsEmpty_whenNoActiveCrews() {
             // given
-            given(loadCrewMemberPort.findAllByMemberId(memberId)).willReturn(List.of());
+            given(loadCrewMemberPort.findAllActiveByMemberId(memberId)).willReturn(List.of());
 
             // when
             List<MyCrewResponse> result = memberService.getMyCrews(memberId);
@@ -506,7 +506,7 @@ class MemberServiceTest {
             Crew crew1 = crew(1L, "크루A");
             Crew crew2 = crew(2L, "크루B");
 
-            given(loadCrewMemberPort.findAllByMemberId(memberId)).willReturn(List.of(crewMember1, crewMember2));
+            given(loadCrewMemberPort.findAllActiveByMemberId(memberId)).willReturn(List.of(crewMember1, crewMember2));
             given(loadCrewPort.findAllByIds(List.of(1L, 2L))).willReturn(List.of(crew1, crew2));
             given(memberResponseMapper.toMyCrewResponse(crewMember1, crew1))
                     .willReturn(MyCrewResponse.of(1L, "크루A", null, CrewMemberRole.LEADER, CrewMemberStatus.JOINED, "CODE01"));
@@ -525,19 +525,17 @@ class MemberServiceTest {
         }
 
         @Test
-        @DisplayName("성공 - JOINED + REQUESTED 혼합 반환, EXITED 제외")
-        void getMyCrews_success_returnsMixed_andExcludesExited() {
+        @DisplayName("성공 - JOINED + REQUESTED 혼합 반환")
+        void getMyCrews_success_returnsMixed_joinedAndRequested() {
             // given
             CrewMember joinedMember = joinedCrewMember(1L, CrewMemberRole.MEMBER);
             CrewMember requestedMember = requestedCrewMember(2L);
-            CrewMember exitedMember = CrewMember.builder()
-                    .crewId(3L).memberId(memberId).status(CrewMemberStatus.EXITED).build();
 
             Crew crew1 = crew(1L, "크루A");
             Crew crew2 = crew(2L, "크루B");
 
-            given(loadCrewMemberPort.findAllByMemberId(memberId))
-                    .willReturn(List.of(joinedMember, requestedMember, exitedMember));
+            given(loadCrewMemberPort.findAllActiveByMemberId(memberId))
+                    .willReturn(List.of(joinedMember, requestedMember));
             given(loadCrewPort.findAllByIds(List.of(1L, 2L))).willReturn(List.of(crew1, crew2));
             given(memberResponseMapper.toMyCrewResponse(joinedMember, crew1))
                     .willReturn(MyCrewResponse.of(1L, "크루A", null, CrewMemberRole.MEMBER, CrewMemberStatus.JOINED, null));
@@ -549,7 +547,8 @@ class MemberServiceTest {
 
             // then
             assertThat(result).hasSize(2);
-            assertThat(result).noneMatch(r -> r.memberStatus() == CrewMemberStatus.EXITED);
+            assertThat(result.get(0).memberStatus()).isEqualTo(CrewMemberStatus.JOINED);
+            assertThat(result.get(1).memberStatus()).isEqualTo(CrewMemberStatus.REQUESTED);
         }
     }
 }

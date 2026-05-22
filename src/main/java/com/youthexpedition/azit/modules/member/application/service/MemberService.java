@@ -130,11 +130,7 @@ public class MemberService implements MemberUseCase {
     @Override
     @Transactional(readOnly = true)
     public List<MyCrewResponse> getMyCrews(Long memberId) {
-        // JOINED + REQUESTED 상태인 크루 멤버십만 추출
-        List<CrewMember> activeCrewMembers = loadCrewMemberPort.findAllByMemberId(memberId).stream()
-                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED
-                        || cm.getStatus() == CrewMemberStatus.REQUESTED)
-                .toList();
+        List<CrewMember> activeCrewMembers = loadCrewMemberPort.findAllActiveByMemberId(memberId);
 
         if (activeCrewMembers.isEmpty()) return List.of();
 
@@ -202,7 +198,7 @@ public class MemberService implements MemberUseCase {
     // 본인이 리더인 크루가 있으면 앱 탈퇴 불가
     private void validateWithdrawal(Long memberId) {
         // 사용자가 JOINED 상태이면서 리더인 크루 조회
-        List<CrewMember> crewMembersAsLeader = loadCrewMemberPort.findAllByMemberId(memberId).stream()
+        List<CrewMember> crewMembersAsLeader = loadCrewMemberPort.findAllActiveByMemberId(memberId).stream()
                 .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
                 .filter(cm -> cm.getRole() == CrewMemberRole.LEADER)
                 .toList();
