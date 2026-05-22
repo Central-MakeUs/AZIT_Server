@@ -18,6 +18,7 @@ import com.youthexpedition.azit.infrastructure.common.util.image.ImageUpdateUtil
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
@@ -32,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -121,15 +124,27 @@ public class MemberService implements MemberUseCase {
     @Transactional(readOnly = true)
     public MyInfoResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
+        return memberResponseMapper.toMyInfoResponse(member);
+    }
 
-        // 가장 최근에 JOINED 상태인 크루 조회 (없으면 크루 정보 없이 반환)
-        return loadCrewMemberPort.findLatestByMemberIdAndStatus(memberId, CrewMemberStatus.JOINED)
-                .map(crewMember -> {
-                    Crew crew = loadCrewPort.findById(crewMember.getCrewId())
-                            .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
-                    return memberResponseMapper.toMyPageResponse(member, crewMember, crew);
-                })
-                .orElse(memberResponseMapper.toMyPageResponse(member, null, null));
+    @Override
+    @Transactional(readOnly = true)
+    public List<MyCrewResponse> getMyCrews(Long memberId) {
+        // JOINED + REQUESTED 상태인 크루 멤버십만 추출
+        List<CrewMember> activeCrewMembers = loadCrewMemberPort.findAllByMemberId(memberId).stream()
+                .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED
+                        || cm.getStatus() == CrewMemberStatus.REQUESTED)
+                .toList();
+
+        if (activeCrewMembers.isEmpty()) return List.of();
+
+        List<Long> crewIds = activeCrewMembers.stream().map(CrewMember::getCrewId).toList();
+        Map<Long, Crew> crewMap = loadCrewPort.findAllByIds(crewIds).stream()
+                .collect(Collectors.toMap(Crew::getId, crew -> crew));
+
+        return activeCrewMembers.stream()
+                .map(cm -> memberResponseMapper.toMyCrewResponse(cm, crewMap.get(cm.getCrewId())))
+                .toList();
     }
 
     @Override

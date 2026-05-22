@@ -12,6 +12,7 @@ import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateMemberPr
 import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -60,21 +61,36 @@ public interface MemberControllerDocs {
     CommonResponse<Void> withdraw(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Parameter(hidden = true) @CurrentAccessToken String accessToken);
 
     @Operation(
-            summary = "내 정보 조회 (마이페이지)",
+            summary = "내 정보 조회 (마이페이지 상단 카드)",
             description = """
-            로그인한 사용자의 기본 프로필 정보와 가장 최근에 가입한(JOINED) 크루 정보를 조회합니다. <br>
-            소속 크루가 없으면 크루 관련 필드는 모두 null로 반환됩니다. <br><br>
+            로그인한 사용자의 기본 프로필 정보(닉네임, 프로필 이미지, 포인트, 출석 횟수)를 조회합니다. <br>
+            """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<MyInfoResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "내 크루 목록 조회 (마이페이지)",
+            description = """
+            로그인한 사용자가 가입(JOINED)하거나 승인 대기(REQUESTED) 중인 크루 목록을 조회합니다. <br>
+            최대 3개의 크루가 반환되며, 크루가 없으면 빈 배열([])을 반환합니다. <br><br>
+
+            **[memberStatus 값]** <br>
+            * JOINED: 정식 가입 상태. memberRole 이 함께 반환됩니다. <br>
+            * REQUESTED: 승인 대기 상태. memberRole 은 null 입니다. <br><br>
 
             **[참고 사항]** <br>
             * invitationCode: 사용자가 해당 크루의 리더이면서 JOINED 상태일 때만 값이 존재하며, 그 외의 경우에는 null로 내려갑니다.
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND", "CREW_MEMBER_NOT_FOUND", "CREW_NOT_FOUND",
+            "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<MyInfoResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId
-    );
+    CommonResponse<List<MyCrewResponse>> getMyCrews(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
             summary = "내 일정 목록 조회",
