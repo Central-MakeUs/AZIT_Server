@@ -83,6 +83,7 @@ class MemberServiceTest {
         void withdraw_success() {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doNothing().when(socialAuthPort).revoke(any());
             doNothing().when(tokenPort).deleteByMemberId(memberId);
@@ -94,8 +95,8 @@ class MemberServiceTest {
 
             // then
             verify(loadMemberPort, times(1)).findById(memberId);
-            // validateWithdrawal + processCrewWithdrawal 에서 각 1회씩 호출
-            verify(loadCrewMemberPort, times(2)).findAllByMemberId(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(socialAuthPort, times(1)).revoke(any());
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, times(1)).addToBlacklist(accessToken, "withdrawn");
@@ -145,6 +146,7 @@ class MemberServiceTest {
         void withdraw_fail_tokenDeletionFails() {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doNothing().when(socialAuthPort).revoke(any());
             doThrow(new RuntimeException("Token deletion failed")).when(tokenPort).deleteByMemberId(memberId);
@@ -156,8 +158,8 @@ class MemberServiceTest {
 
             verify(loadMemberPort, times(1)).findById(memberId);
             verify(socialAuthPort, times(1)).revoke(any());
-            // validateWithdrawal + processCrewWithdrawal 에서 각 1회씩 호출 후 tokenPort에서 예외 발생
-            verify(loadCrewMemberPort, times(2)).findAllByMemberId(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, never()).addToBlacklist(anyString(), anyString());
             verify(saveMemberPort, never()).save(any(Member.class));
