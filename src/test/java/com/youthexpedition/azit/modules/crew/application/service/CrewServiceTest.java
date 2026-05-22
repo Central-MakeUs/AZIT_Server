@@ -20,9 +20,6 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.provider.CrewImageProvider;
-import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
-import com.youthexpedition.azit.modules.member.domain.model.Member;
-import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -53,8 +50,6 @@ class CrewServiceTest {
     private SaveCrewMemberPort saveCrewMemberPort;
     @Mock
     private LoadCrewMemberPort loadCrewMemberPort;
-    @Mock
-    private LoadMemberPort loadMemberPort;
     @Mock
     private CrewMemberResponseMapper crewMemberResponseMapper;
     @Mock
@@ -110,12 +105,6 @@ class CrewServiceTest {
             Crew mockCrew = Crew.builder().id(crewId).invitationCode(invitationCode).build();
             given(loadCrewPort.findByInvitationCode(invitationCode)).willReturn(Optional.of(mockCrew));
 
-            // 기존 가입 내역 없음
-            Member member = Member.builder()
-                    .id(memberId)
-                    .status(MemberStatus.ACTIVE)
-                    .build();
-            given(loadMemberPort.findById(memberId)).willReturn(Optional.of(member));
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.empty());
 
             // when
@@ -146,12 +135,6 @@ class CrewServiceTest {
                     .status(CrewMemberStatus.EXITED)
                     .build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(exitedMember));
-
-            Member member = Member.builder()
-                    .id(memberId)
-                    .status(MemberStatus.ACTIVE)
-                    .build();
-            given(loadMemberPort.findById(memberId)).willReturn(Optional.of(member));
 
             // when
             crewService.joinCrew(command);
@@ -243,12 +226,6 @@ class CrewServiceTest {
                     .cancelledAt(LocalDateTime.now().minusHours(25)) // 25시간 전 취소 (쿨다운 종료)
                     .build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(cancelledMember));
-
-            Member member = Member.builder()
-                    .id(memberId)
-                    .status(MemberStatus.ACTIVE)
-                    .build();
-            given(loadMemberPort.findById(memberId)).willReturn(Optional.of(member));
 
             // when
             crewService.joinCrew(command);

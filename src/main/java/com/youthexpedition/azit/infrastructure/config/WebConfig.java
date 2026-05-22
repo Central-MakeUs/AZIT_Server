@@ -48,6 +48,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/v1/products/**",
                         "/api/v1/orders/**",
                         "/api/v1/carts/**",
+                        // 주소 검색 API
                         "/api/v1/locations/search"
                 );
     }

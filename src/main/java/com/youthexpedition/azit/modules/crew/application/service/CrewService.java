@@ -25,9 +25,6 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.crew.domain.model.provider.CrewImageProvider;
-import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
-import com.youthexpedition.azit.modules.member.domain.model.Member;
-import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -50,7 +47,6 @@ public class CrewService implements CrewUseCase {
     private final LoadCrewPort loadCrewPort;
     private final SaveCrewMemberPort saveCrewMemberPort;
     private final LoadCrewMemberPort loadCrewMemberPort;
-    private final LoadMemberPort loadMemberPort;
     private final CrewScheduleUseCase crewScheduleUseCase;
     private final CrewMemberResponseMapper crewMemberResponseMapper;
     private final CrewResponseMapper crewResponseMapper;
@@ -145,14 +141,6 @@ public class CrewService implements CrewUseCase {
                             saveCrewMemberPort.save(newMember);
                         }
                 );
-
-        Member member = loadMemberPort.findById(command.memberId())
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-        // 멤버 상태 확인 (ACTIVE 상태가 아니면 가입 불가)
-        if (!member.isJoinable()) {
-            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
-        }
     }
 
     @Override

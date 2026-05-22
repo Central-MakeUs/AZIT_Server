@@ -76,10 +76,6 @@ public class Member {
         this.isEmailSharingEnabled = isEnabled;
     }
 
-    public boolean isJoinable() {
-        return this.status.isJoinable();
-    }
-
     public boolean isWithdrawn() {
         return this.status == MemberStatus.WITHDRAWN;
     }
