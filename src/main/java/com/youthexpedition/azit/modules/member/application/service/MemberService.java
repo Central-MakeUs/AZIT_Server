@@ -18,6 +18,7 @@ import com.youthexpedition.azit.infrastructure.common.util.image.ImageUpdateUtil
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
@@ -32,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -117,48 +120,27 @@ public class MemberService implements MemberUseCase {
         saveMemberPort.save(member);
     }
 
-    // 멤버 상태 변경
-    @Override
-    @Transactional
-    public void confirmMemberStatus(Long memberId) {
-        Member member = getMember(memberId);
-
-        // 멤버 상태 확인
-        if (!member.canUpdateStatusAfterConfirm()) {
-            throw new BusinessException(MemberErrorCode.INVALID_MEMBER_STATUS);
-        }
-
-        // 가입되어 있는 나머지 크루가 있는지 확인
-        boolean hasJoinedCrews = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId) > 0;
-        member.confirmStatus(hasJoinedCrews);
-
-        saveMemberPort.save(member);
-    }
-
     @Override
     @Transactional(readOnly = true)
     public MyInfoResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
+        return memberResponseMapper.toMyInfoResponse(member);
+    }
 
-        if (!member.getStatus().isCrewInfoRequired()) {
-            return memberResponseMapper.toMyPageResponse(member, null, null);
-        }
+    @Override
+    @Transactional(readOnly = true)
+    public List<MyCrewResponse> getMyCrews(Long memberId) {
+        List<CrewMember> activeCrewMembers = loadCrewMemberPort.findAllActiveByMemberId(memberId);
 
-        CrewMemberStatus targetStatus = switch (member.getStatus()) {
-            case KICKED_PENDING_CONFIRM -> CrewMemberStatus.EXPELLED;   // 방출 확인 대기 시 EXPELLED 조회
-            case REJECTED_PENDING_CONFIRM -> CrewMemberStatus.REJECTED; // 가입 거절 확인 대기 시 REJECTED 조회
-            case WAITING_FOR_APPROVE -> CrewMemberStatus.REQUESTED;    // 가입 승인 대기 시 REQUESTED 조회
-            case WITHDRAWN -> CrewMemberStatus.EXITED;
-            default -> CrewMemberStatus.JOINED;                        // 그 외(ACTIVE 등) JOINED 조회
-        };
+        if (activeCrewMembers.isEmpty()) return List.of();
 
-        CrewMember crewMember = loadCrewMemberPort.findLatestByMemberIdAndStatus(memberId, targetStatus)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_MEMBER_NOT_FOUND));
+        List<Long> crewIds = activeCrewMembers.stream().map(CrewMember::getCrewId).toList();
+        Map<Long, Crew> crewMap = loadCrewPort.findAllByIds(crewIds).stream()
+                .collect(Collectors.toMap(Crew::getId, crew -> crew));
 
-        Crew crew = loadCrewPort.findById(crewMember.getCrewId())
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
-
-        return memberResponseMapper.toMyPageResponse(member, crewMember, crew);
+        return activeCrewMembers.stream()
+                .map(cm -> memberResponseMapper.toMyCrewResponse(cm, crewMap.get(cm.getCrewId())))
+                .toList();
     }
 
     @Override
@@ -216,7 +198,7 @@ public class MemberService implements MemberUseCase {
     // 본인이 리더인 크루가 있으면 앱 탈퇴 불가
     private void validateWithdrawal(Long memberId) {
         // 사용자가 JOINED 상태이면서 리더인 크루 조회
-        List<CrewMember> crewMembersAsLeader = loadCrewMemberPort.findAllByMemberId(memberId).stream()
+        List<CrewMember> crewMembersAsLeader = loadCrewMemberPort.findAllActiveByMemberId(memberId).stream()
                 .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
                 .filter(cm -> cm.getRole() == CrewMemberRole.LEADER)
                 .toList();

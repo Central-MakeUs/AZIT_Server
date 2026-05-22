@@ -16,6 +16,7 @@ import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase
 import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.query.MyAttendanceMonthlyQuery;
 import jakarta.validation.Valid;
@@ -47,16 +48,16 @@ public class MemberController implements MemberControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
-    @PostMapping("/me/confirm-status")
-    public CommonResponse<Void> confirmMemberStatus(@CurrentMemberId Long memberId) {
-        memberUseCase.confirmMemberStatus(memberId);
-
-        return CommonResponse.of(CommonSuccessCode.SUCCESS);
-    }
-
     @GetMapping("/me")
     public CommonResponse<MyInfoResponse> getMyInfo(@CurrentMemberId Long memberId) {
         MyInfoResponse response = memberUseCase.getMyInfo(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/me/crews")
+    public CommonResponse<List<MyCrewResponse>> getMyCrews(@CurrentMemberId Long memberId) {
+        List<MyCrewResponse> response = memberUseCase.getMyCrews(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }

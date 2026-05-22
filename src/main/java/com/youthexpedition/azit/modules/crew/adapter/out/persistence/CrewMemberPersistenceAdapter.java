@@ -26,6 +26,7 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     private final CrewMemberMapper crewMemberMapper;
 
     private static final List<CrewMemberStatus> ACTIVE_STATUSES = List.of(CrewMemberStatus.JOINED, CrewMemberStatus.REQUESTED, CrewMemberStatus.REJECTED);
+    private static final List<CrewMemberStatus> PARTICIPATING_STATUSES = List.of(CrewMemberStatus.JOINED, CrewMemberStatus.REQUESTED);
 
     @Override
     public CrewMember save(CrewMember crewMember) {
@@ -68,8 +69,20 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
+    public long countActiveCrewsByMemberId(Long memberId) {
+        return crewMemberRepository.countByMemberIdAndStatusIn(memberId, List.of(CrewMemberStatus.JOINED, CrewMemberStatus.REQUESTED));
+    }
+
+    @Override
     public List<CrewMember> findAllByMemberId(Long memberId) {
         return crewMemberRepository.findAllByMemberId(memberId).stream()
+                .map(crewMemberMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<CrewMember> findAllActiveByMemberId(Long memberId) {
+        return crewMemberRepository.findAllByMemberIdAndStatusIn(memberId, PARTICIPATING_STATUSES).stream()
                 .map(crewMemberMapper::toDomain)
                 .toList();
     }
@@ -87,11 +100,5 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
         return crewMemberRepository.findByCrew_IdAndMemberIdIn(crewId, memberIds).stream()
                 .map(crewMemberMapper::toDomain)
                 .collect(Collectors.toMap(CrewMember::getMemberId, cm -> cm));
-    }
-
-    @Override
-    public Optional<CrewMember> findLatestByMemberIdAndStatus(Long memberId, CrewMemberStatus status) {
-        return crewMemberRepository.findFirstByMemberIdAndStatusOrderByIdDesc(memberId, status)
-                .map(crewMemberMapper::toDomain);
     }
 }

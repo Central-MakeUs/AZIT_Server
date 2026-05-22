@@ -33,7 +33,7 @@ public interface CrewControllerDocs {
             
             **[제약 사항]** <br>
             * 크루 이름: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
-            * 온보딩 단계(PENDING_ONBOARDING) 또는 정회원(ACTIVE) 상태의 사용자만 요청 가능합니다. (INVALID_MEMBER_STATUS)
+            * ACTIVE 상태의 사용자만 요청 가능합니다. (INVALID_MEMBER_STATUS)
             """
     )
     @ApiErrorCodeExamples({
@@ -194,7 +194,7 @@ public interface CrewControllerDocs {
             * 해당 크루의 리더(LEADER)만 이 API를 호출할 수 있습니다. (NOT_CREW_LEADER)
             * 리더 본인은 스스로를 방출할 수 없습니다. (CANNOT_KICK_SELF)
             * 가입 완료(JOINED) 상태인 멤버만 방출 가능합니다. (NOT_A_CREW_MEMBER)
-            * 방출 직후 KICKED_PENDING_CONFIRM 상태로 변경됩니다.
+            * 방출 후 크루 가입 상태(CrewMemberStatus)가 EXPELLED로 변경됩니다.
             """
     )
     @ApiErrorCodeExamples({

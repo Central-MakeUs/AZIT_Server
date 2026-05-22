@@ -25,6 +25,7 @@ public enum CrewErrorCode implements BaseErrorCode {
     EXPELLED_REJOINING_COOLDOWN("EXPELLED_REJOINING_COOLDOWN", "방출 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
     EXIT_REJOINING_COOLDOWN("EXIT_REJOINING_COOLDOWN", "탈퇴 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
     CANCEL_REJOINING_COOLDOWN("CANCEL_REJOINING_COOLDOWN", "가입 신청 취소 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
+    CREW_JOIN_LIMIT_EXCEEDED("CREW_JOIN_LIMIT_EXCEEDED", "최대 3개의 크루까지 가입할 수 있습니다.", HttpStatus.BAD_REQUEST),
 
     // 일정 관련
     INVALID_SCHEDULE_TIME("INVALID_SCHEDULE_TIME", "유효하지 않은 일정 시간입니다.", HttpStatus.BAD_REQUEST),

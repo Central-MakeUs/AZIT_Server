@@ -5,15 +5,21 @@ import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.domain.model.Crew;
+import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.service.mapper.MemberResponseMapper;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
-import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,6 +32,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,9 +57,13 @@ class MemberServiceTest {
     @Mock
     private LoadCrewMemberPort loadCrewMemberPort;
     @Mock
+    private LoadCrewPort loadCrewPort;
+    @Mock
     private SocialAuthPort socialAuthPort;
     @Mock
     private TokenPort tokenPort;
+    @Mock
+    private MemberResponseMapper memberResponseMapper;
     @Mock
     private ImageUpdateUtil imageUpdateUtil;
 
@@ -70,6 +83,7 @@ class MemberServiceTest {
         void withdraw_success() {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doNothing().when(socialAuthPort).revoke(any());
             doNothing().when(tokenPort).deleteByMemberId(memberId);
@@ -81,8 +95,8 @@ class MemberServiceTest {
 
             // then
             verify(loadMemberPort, times(1)).findById(memberId);
-            // validateWithdrawal + processCrewWithdrawal 에서 각 1회씩 호출
-            verify(loadCrewMemberPort, times(2)).findAllByMemberId(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(socialAuthPort, times(1)).revoke(any());
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, times(1)).addToBlacklist(accessToken, "withdrawn");
@@ -132,6 +146,7 @@ class MemberServiceTest {
         void withdraw_fail_tokenDeletionFails() {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doNothing().when(socialAuthPort).revoke(any());
             doThrow(new RuntimeException("Token deletion failed")).when(tokenPort).deleteByMemberId(memberId);
@@ -143,8 +158,8 @@ class MemberServiceTest {
 
             verify(loadMemberPort, times(1)).findById(memberId);
             verify(socialAuthPort, times(1)).revoke(any());
-            // validateWithdrawal + processCrewWithdrawal 에서 각 1회씩 호출 후 tokenPort에서 예외 발생
-            verify(loadCrewMemberPort, times(2)).findAllByMemberId(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, never()).addToBlacklist(anyString(), anyString());
             verify(saveMemberPort, never()).save(any(Member.class));
@@ -191,77 +206,6 @@ class MemberServiceTest {
 
             assertEquals(MemberErrorCode.REQUIRED_TERMS_NOT_AGREED, exception.getErrorCode());
             verify(loadMemberPort, never()).findById(anyLong());
-            verify(saveMemberPort, never()).save(any(Member.class));
-        }
-    }
-
-    @Nested
-    @DisplayName("회원 상태 확정 (결과 확인)")
-    class ConfirmMemberStatus {
-
-        private final Long memberId = 1L;
-
-        @Test
-        @DisplayName("성공 - 승인 대기 상태에서 정회원(ACTIVE)으로 전환")
-        void confirmMemberStatus_success_toActive() {
-            // given
-            // 1. 승인 확인 대기 상태의 멤버 생성 (Member.java에 정의된 로직 기반)
-            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, "imageUrl");
-
-            // 가입 신청 단계 -> 리더 승인 단계 순서대로 호출
-            member.completeTermsAgreement(true, true); // PENDING_ONBOARDING
-            member.applyForJoin(); // WAITING_FOR_APPROVE
-            member.approveJoin(); // APPROVED_PENDING_CONFIRM
-
-            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
-            doReturn(member).when(saveMemberPort).save(any(Member.class));
-
-            // when
-            memberService.confirmMemberStatus(memberId);
-
-            // then
-            assertEquals(MemberStatus.ACTIVE, member.getStatus()); // 정회원으로 변경되었는지 확인
-            verify(loadMemberPort, times(1)).findById(memberId);
-            verify(saveMemberPort, times(1)).save(member);
-        }
-
-        @Test
-        @DisplayName("성공 - 거절 확인 후 다시 온보딩 대기(PENDING_ONBOARDING)로 전환")
-        void confirmMemberStatus_success_toPendingOnboarding() {
-            // given
-            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, "imageUrl");
-            member.completeTermsAgreement(true, true);
-            member.applyForJoin();
-            member.rejectJoin(); // REJECTED_PENDING_CONFIRM 상태로 생성
-
-            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
-            doReturn(member).when(saveMemberPort).save(any(Member.class));
-
-            // when
-            memberService.confirmMemberStatus(memberId);
-
-            // then
-            assertEquals(MemberStatus.PENDING_ONBOARDING, member.getStatus()); // 다시 처음으로 돌아갔는지 확인
-            verify(loadMemberPort, times(1)).findById(memberId);
-            verify(saveMemberPort, times(1)).save(member);
-        }
-
-        @Test
-        @DisplayName("실패 - 확정 가능한 상태가 아닐 때 예외 발생")
-        void confirmMemberStatus_fail_invalidStatus() {
-            // given
-            // 확정할 수 없는 상태(예: 처음 가입한 상태)의 멤버
-            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, "imageUrl");
-
-            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
-
-            // when & then
-            BusinessException exception = assertThrows(BusinessException.class, () ->
-                    memberService.confirmMemberStatus(memberId)
-            );
-
-            assertEquals(MemberErrorCode.INVALID_MEMBER_STATUS, exception.getErrorCode());
-            verify(loadMemberPort, times(1)).findById(memberId);
             verify(saveMemberPort, never()).save(any(Member.class));
         }
     }
@@ -507,6 +451,106 @@ class MemberServiceTest {
             // then
             assertEquals(newDefaultUrl, member.getProfileImageUrl());
             verify(saveMemberPort, times(1)).save(member);
+        }
+    }
+
+    @Nested
+    @DisplayName("내 크루 목록 조회")
+    class GetMyCrews {
+
+        private final Long memberId = 1L;
+
+        private CrewMember joinedCrewMember(Long crewId, CrewMemberRole role) {
+            return CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .role(role)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+        }
+
+        private CrewMember requestedCrewMember(Long crewId) {
+            return CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .status(CrewMemberStatus.REQUESTED)
+                    .build();
+        }
+
+        private Crew crew(Long crewId, String name) {
+            return Crew.builder()
+                    .id(crewId)
+                    .name(name)
+                    .invitationCode("CODE01")
+                    .build();
+        }
+
+        @Test
+        @DisplayName("성공 - 가입된 크루가 없으면 빈 목록 반환")
+        void getMyCrews_success_returnsEmpty_whenNoActiveCrews() {
+            // given
+            given(loadCrewMemberPort.findAllActiveByMemberId(memberId)).willReturn(List.of());
+
+            // when
+            List<MyCrewResponse> result = memberService.getMyCrews(memberId);
+
+            // then
+            assertThat(result).isEmpty();
+            verify(loadCrewPort, never()).findAllByIds(any());
+        }
+
+        @Test
+        @DisplayName("성공 - JOINED 크루만 있는 경우 목록 반환")
+        void getMyCrews_success_returnsList_whenOnlyJoinedCrews() {
+            // given
+            CrewMember crewMember1 = joinedCrewMember(1L, CrewMemberRole.LEADER);
+            CrewMember crewMember2 = joinedCrewMember(2L, CrewMemberRole.MEMBER);
+            Crew crew1 = crew(1L, "크루A");
+            Crew crew2 = crew(2L, "크루B");
+
+            given(loadCrewMemberPort.findAllActiveByMemberId(memberId)).willReturn(List.of(crewMember1, crewMember2));
+            given(loadCrewPort.findAllByIds(List.of(1L, 2L))).willReturn(List.of(crew1, crew2));
+            given(memberResponseMapper.toMyCrewResponse(crewMember1, crew1))
+                    .willReturn(MyCrewResponse.of(1L, "크루A", null, CrewMemberRole.LEADER, CrewMemberStatus.JOINED, "CODE01"));
+            given(memberResponseMapper.toMyCrewResponse(crewMember2, crew2))
+                    .willReturn(MyCrewResponse.of(2L, "크루B", null, CrewMemberRole.MEMBER, CrewMemberStatus.JOINED, null));
+
+            // when
+            List<MyCrewResponse> result = memberService.getMyCrews(memberId);
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).memberStatus()).isEqualTo(CrewMemberStatus.JOINED);
+            assertThat(result.get(0).memberRole()).isEqualTo(CrewMemberRole.LEADER);
+            assertThat(result.get(1).memberStatus()).isEqualTo(CrewMemberStatus.JOINED);
+            assertThat(result.get(1).memberRole()).isEqualTo(CrewMemberRole.MEMBER);
+        }
+
+        @Test
+        @DisplayName("성공 - JOINED + REQUESTED 혼합 반환")
+        void getMyCrews_success_returnsMixed_joinedAndRequested() {
+            // given
+            CrewMember joinedMember = joinedCrewMember(1L, CrewMemberRole.MEMBER);
+            CrewMember requestedMember = requestedCrewMember(2L);
+
+            Crew crew1 = crew(1L, "크루A");
+            Crew crew2 = crew(2L, "크루B");
+
+            given(loadCrewMemberPort.findAllActiveByMemberId(memberId))
+                    .willReturn(List.of(joinedMember, requestedMember));
+            given(loadCrewPort.findAllByIds(List.of(1L, 2L))).willReturn(List.of(crew1, crew2));
+            given(memberResponseMapper.toMyCrewResponse(joinedMember, crew1))
+                    .willReturn(MyCrewResponse.of(1L, "크루A", null, CrewMemberRole.MEMBER, CrewMemberStatus.JOINED, null));
+            given(memberResponseMapper.toMyCrewResponse(requestedMember, crew2))
+                    .willReturn(MyCrewResponse.of(2L, "크루B", null, null, CrewMemberStatus.REQUESTED, null));
+
+            // when
+            List<MyCrewResponse> result = memberService.getMyCrews(memberId);
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).memberStatus()).isEqualTo(CrewMemberStatus.JOINED);
+            assertThat(result.get(1).memberStatus()).isEqualTo(CrewMemberStatus.REQUESTED);
         }
     }
 }

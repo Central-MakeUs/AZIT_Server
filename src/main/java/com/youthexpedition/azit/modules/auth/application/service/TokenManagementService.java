@@ -12,6 +12,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -88,7 +89,7 @@ public class TokenManagementService implements TokenUseCase {
     }
 
     private Long resolveCrewId(Member member) {
-        if (!member.getStatus().isCrewInfoRequired()) return null;
+        if (member.getStatus() != MemberStatus.ACTIVE) return null;
         return loadCrewMemberPort.findRecentJoinedCrewMember(member.getId())
                 .map(CrewMember::getCrewId)
                 .orElse(null);

@@ -12,6 +12,7 @@ import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateMemberPr
 import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -60,45 +61,36 @@ public interface MemberControllerDocs {
     CommonResponse<Void> withdraw(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Parameter(hidden = true) @CurrentAccessToken String accessToken);
 
     @Operation(
-            summary = "가입 승인/거절 및 크루 방출 결과 확인",
+            summary = "내 정보 조회 (마이페이지 상단 카드)",
             description = """
-            사용자가 가입 신청 결과(승인/거절) 또는 크루 방출 통보를 확인했음을 서버에 알립니다. <br><br>
-            
-            **[참고 사항]** <br>
-            * APPROVED_PENDING_CONFIRM, REJECTED_PENDING_CONFIRM, KICKED_PENDING_CONFIRM 상태인 회원만 호출 가능합니다. (INVALID_MEMBER_STATUS)
-            * 가입 승인 확인 (APPROVED_PENDING_CONFIRM): 즉시 ACTIVE로 변경됩니다. <br>
-            * 가입 거절/크루 방출 확인 (REJECTED_PENDING_CONFIRM / KICKED_PENDING_CONFIRM): 가입되어 있는 다른 크루가 1개 이상 있는 경우 ACTIVE 상태가 유지되고, 가입되어 있는 다른 크루가 없는 경우 PENDING_ONBOARDING으로 변경됩니다.
+            로그인한 사용자의 기본 프로필 정보(닉네임, 프로필 이미지, 포인트, 출석 횟수)를 조회합니다. <br>
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND", "INVALID_MEMBER_STATUS",
+            "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> confirmMemberStatus(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+    CommonResponse<MyInfoResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
-            summary = "내 정보 조회 (마이페이지 및 크루 정보 확인용)",
+            summary = "내 크루 목록 조회 (마이페이지)",
             description = """
-            로그인한 사용자의 기본 프로필 정보와 소속(또는 관련) 크루 정보를 조회합니다. <br>
-            회원의 현재 상태에 따라 반환되는 크루 정보의 의미가 달라집니다. <br><br>
-            
-            **[상태별 크루 정보 반환 규칙]** <br>
-            1. ACTIVE: 가장 최근에 가입한 크루 정보를 반환합니다. <br>
-            2. KICKED_PENDING_CONFIRM: 방출 통보 화면을 띄우기 위해, 방금 방출된 크루 정보를 반환합니다. <br>
-            3. REJECTED_PENDING_CONFIRM: 가입 거절 안내 화면을 위해, 가장 최근에 가입이 거절된 크루 정보를 반환합니다. <br>
-            4. WAITING_FOR_APPROVE: 승인 대기 화면을 위해, 가장 최근에 가입 신청한 크루 정보를 반환합니다. <br>
-            5. PENDING_TERMS, PENDING_ONBOARDING, WITHDRAWN: 크루 관련 정보는 모두 null로 반환됩니다. <br><br>
-            
+            로그인한 사용자가 가입(JOINED)하거나 승인 대기(REQUESTED) 중인 크루 목록을 조회합니다. <br>
+            최대 3개의 크루가 반환되며, 크루가 없으면 빈 배열([])을 반환합니다. <br><br>
+
+            **[memberStatus 값]** <br>
+            * JOINED: 정식 가입 상태. memberRole 이 함께 반환됩니다. <br>
+            * REQUESTED: 승인 대기 상태. memberRole 은 null 입니다. <br><br>
+
             **[참고 사항]** <br>
             * invitationCode: 사용자가 해당 크루의 리더이면서 JOINED 상태일 때만 값이 존재하며, 그 외의 경우에는 null로 내려갑니다.
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND", "CREW_MEMBER_NOT_FOUND", "CREW_NOT_FOUND",
+            "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<MyInfoResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId
-    );
+    CommonResponse<List<MyCrewResponse>> getMyCrews(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
             summary = "내 일정 목록 조회",
