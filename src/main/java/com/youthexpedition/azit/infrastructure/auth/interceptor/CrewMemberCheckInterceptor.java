@@ -21,7 +21,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CrewMembershipCheckInterceptor implements HandlerInterceptor {
+public class CrewMemberCheckInterceptor implements HandlerInterceptor {
 
     private final LoadCrewMemberPort loadCrewMemberPort;
 
@@ -41,9 +41,9 @@ public class CrewMembershipCheckInterceptor implements HandlerInterceptor {
         long joinedCrewCount = loadCrewMemberPort.countJoinedCrewsByMemberId(memberId);
 
         if (joinedCrewCount == 0) {
-            log.warn("[CREW_MEMBERSHIP_CHECK] memberId: {} 가입된 크루가 없어 접근이 제한됩니다. URI: {}",
+            log.warn("[JOINED_CREW_CHECK] memberId: {} 가입된 크루가 없어 접근이 제한됩니다. URI: {}",
                     memberId, request.getRequestURI());
-            throw new BusinessException(MemberErrorCode.CREW_MEMBERSHIP_REQUIRED);
+            throw new BusinessException(MemberErrorCode.JOINED_CREW_REQUIRED);
         }
 
         return true;

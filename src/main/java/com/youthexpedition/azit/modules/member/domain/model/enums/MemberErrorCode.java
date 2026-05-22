@@ -16,7 +16,7 @@ public enum MemberErrorCode implements BaseErrorCode {
     INSUFFICIENT_POINTS("INSUFFICIENT_POINTS", "포인트가 부족합니다.", HttpStatus.BAD_REQUEST),
     INVALID_POINT_VALUE("INVALID_POINT_VALUE", "유효하지 않은 포인트 요청입니다.", HttpStatus.BAD_REQUEST),
     DEFAULT_IMAGE_NOT_FOUND("DEFAULT_IMAGE_NOT_FOUND", "기본 이미지를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    CREW_MEMBERSHIP_REQUIRED("CREW_MEMBERSHIP_REQUIRED", "크루에 가입한 후 이용할 수 있는 서비스입니다.", HttpStatus.FORBIDDEN);
+    JOINED_CREW_REQUIRED("JOINED_CREW_REQUIRED", "크루에 가입한 후 이용할 수 있는 서비스입니다.", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String message;

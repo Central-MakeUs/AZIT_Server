@@ -1,6 +1,6 @@
 package com.youthexpedition.azit.infrastructure.config;
 
-import com.youthexpedition.azit.infrastructure.auth.interceptor.CrewMembershipCheckInterceptor;
+import com.youthexpedition.azit.infrastructure.auth.interceptor.CrewMemberCheckInterceptor;
 import com.youthexpedition.azit.infrastructure.common.resolver.CurrentAccessTokenArgumentResolver;
 import com.youthexpedition.azit.infrastructure.common.resolver.CursorPageArgumentResolver;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final SocialProviderConverter socialProviderConverter;
     private final CurrentAccessTokenArgumentResolver currentAccessTokenArgumentResolver;
     private final CursorPageArgumentResolver cursorPageArgumentResolver;
-    private final CrewMembershipCheckInterceptor crewMembershipCheckInterceptor;
+    private final CrewMemberCheckInterceptor crewMemberCheckInterceptor;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -34,7 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(crewMembershipCheckInterceptor)
+        registry.addInterceptor(crewMemberCheckInterceptor)
                 .addPathPatterns(
                         // 일정 관련 API (크루 일정)
                         "/api/v1/crews/*/schedules/**",
@@ -47,7 +47,8 @@ public class WebConfig implements WebMvcConfigurer {
                         // 스토어 관련 API
                         "/api/v1/products/**",
                         "/api/v1/orders/**",
-                        "/api/v1/carts/**"
+                        "/api/v1/carts/**",
+                        "/api/v1/locations/search"
                 );
     }
 }
