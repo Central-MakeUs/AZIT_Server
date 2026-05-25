@@ -195,6 +195,17 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                 .fetch();
     }
 
+    @Override
+    public List<CrewScheduleEntity> findActiveSchedulesByCrewId(Long crewId, LocalDateTime now) {
+        return queryFactory.selectFrom(crewScheduleEntity)
+                .where(
+                        crewScheduleEntity.crewId.eq(crewId),
+                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
+                        crewScheduleEntity.meetingAt.gt(now) // 아직 시작하지 않은 일정만
+                )
+                .fetch();
+    }
+
     private BooleanExpression eqDate(LocalDate date) {
         if (date == null) return null;
         // LocalDateTime의 시작(00:00:00)과 끝(23:59:59) 사이 조회

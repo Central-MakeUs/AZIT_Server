@@ -182,7 +182,7 @@ class CrewServiceTest {
         }
 
         @Test
-        @DisplayName("실패: 취소(CANCELLED) 후 24시간 이내에 재신청하면 CANCEL_REJOINING_COOLDOWN 예외가 발생한다.")
+        @DisplayName("실패: 취소(CANCELLED) 후 1시간 이내에 재신청하면 CANCEL_REJOINING_COOLDOWN 예외가 발생한다.")
         void joinCrew_Fail_CancelCooldown() {
             // given
             Long crewId = 100L;
@@ -197,7 +197,7 @@ class CrewServiceTest {
                     .crewId(crewId)
                     .memberId(memberId)
                     .status(CrewMemberStatus.CANCELLED)
-                    .cancelledAt(LocalDateTime.now().minusHours(1)) // 1시간 전 취소 (쿨다운 중)
+                    .cancelledAt(LocalDateTime.now().minusMinutes(30)) // 30분 전 취소 (쿨다운 중)
                     .build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, memberId)).willReturn(Optional.of(cancelledMember));
 

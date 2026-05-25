@@ -66,6 +66,17 @@ public class Crew {
         }
     }
 
+    // 크루 해산
+    public void dissolve(LocalDateTime now) {
+        this.memberCount = 0;
+        this.status = CrewStatus.DISSOLVED;
+        this.updatedAt = now;
+    }
+
+    public boolean isDissolved() {
+        return this.status == CrewStatus.DISSOLVED;
+    }
+
     // 초대 코드 재발급
     public void updateInvitationCode(String invitationCode) {
         this.invitationCode = invitationCode;

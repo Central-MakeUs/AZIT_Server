@@ -24,8 +24,9 @@ public enum CrewErrorCode implements BaseErrorCode {
     CANNOT_SERVICE_WITHDRAW_AS_LEADER("CANNOT_SERVICE_WITHDRAW_AS_LEADER", "리더로 활동 중인 크루가 있습니다. 권한을 위임하거나 크루를 해산한 후 서비스를 탈퇴할 수 있습니다.", HttpStatus.BAD_REQUEST),
     EXPELLED_REJOINING_COOLDOWN("EXPELLED_REJOINING_COOLDOWN", "방출 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
     EXIT_REJOINING_COOLDOWN("EXIT_REJOINING_COOLDOWN", "탈퇴 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
-    CANCEL_REJOINING_COOLDOWN("CANCEL_REJOINING_COOLDOWN", "가입 신청 취소 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
+    CANCEL_REJOINING_COOLDOWN("CANCEL_REJOINING_COOLDOWN", "가입 신청 취소 후 1시간이 지나지 않아 재신청이 불가합니다.", HttpStatus.BAD_REQUEST),
     CREW_JOIN_LIMIT_EXCEEDED("CREW_JOIN_LIMIT_EXCEEDED", "최대 3개의 크루까지 가입할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    CREW_ALREADY_DISSOLVED("CREW_ALREADY_DISSOLVED", "이미 해산된 크루입니다.", HttpStatus.BAD_REQUEST),
 
     // 일정 관련
     INVALID_SCHEDULE_TIME("INVALID_SCHEDULE_TIME", "유효하지 않은 일정 시간입니다.", HttpStatus.BAD_REQUEST),

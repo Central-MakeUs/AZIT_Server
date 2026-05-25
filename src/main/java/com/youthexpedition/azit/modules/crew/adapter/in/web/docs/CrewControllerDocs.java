@@ -158,7 +158,7 @@ public interface CrewControllerDocs {
 
                     **[제약 사항]** <br>
                     * 가입 신청(REQUESTED) 상태인 경우에만 취소가 가능합니다. (JOIN_REQUEST_NOT_FOUND) <br>
-                    * 취소 후 24시간 이내에는 동일 크루에 재신청이 불가합니다. (CANCEL_REJOINING_COOLDOWN)
+                    * 취소 후 1시간 이내에는 동일 크루에 재신청이 불가합니다. (CANCEL_REJOINING_COOLDOWN)
                     """
     )
     @ApiErrorCodeExamples({
@@ -241,7 +241,7 @@ public interface CrewControllerDocs {
             summary = "크루 프로필 수정",
             description = """
                     크루 프로필을 수정합니다. <br><br>
-                        
+                    
                     **[크루 이미지 URL 제약 사항]** <br>
                     크루 이미지 URL은 아래 세 가지 중 하나여야 합니다.<br>
                     1. temp 경로가 포함된 CloudFront URL (새 커스텀 이미지 적용 시)<br>
@@ -272,4 +272,28 @@ public interface CrewControllerDocs {
             @PathVariable Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId,
             @Valid @RequestBody UpdateCrewProfileRequest request);
+
+    @Operation(
+            summary = "크루 해산",
+            description = """
+            리더가 크루를 영구적으로 해산합니다. <br><br>
+
+            **[처리 내용]** <br>
+            * 미래 ACTIVE 일정이 모두 CANCELLED 처리됩니다. <br>
+            * 정회원(JOINED) 전원이 EXITED 처리됩니다. <br>
+            * 크루 인원 수가 0으로 초기화되고 상태가 DISSOLVED로 변경됩니다. <br>
+            * 과거 일정 및 출석 로그는 보존됩니다. <br><br>
+
+            **[제약 사항]** <br>
+            * 크루 리더만 해산을 요청할 수 있습니다. (NOT_CREW_LEADER)
+            * 이미 해산된 크루는 재해산이 불가합니다. (CREW_ALREADY_DISSOLVED)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER", "CREW_ALREADY_DISSOLVED",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> dissolveCrew(
+            @PathVariable Long crewId,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

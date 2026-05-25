@@ -22,4 +22,5 @@ public interface CrewScheduleRepositoryCustom {
     boolean existsConflictingSchedule(Long memberId, LocalDateTime newMeetingAt, Long excludeScheduleId);
     List<CrewScheduleEntity> findSchedulesToCancelByCreator(Long crewId, Long memberId, LocalDateTime now);
     List<CrewScheduleEntity> findSchedulesToRemoveParticipant(Long crewId, Long memberId, LocalDateTime now);
+    List<CrewScheduleEntity> findActiveSchedulesByCrewId(Long crewId, LocalDateTime now);
 }

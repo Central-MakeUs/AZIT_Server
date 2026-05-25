@@ -14,13 +14,16 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
+import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
@@ -47,6 +50,8 @@ public class CrewService implements CrewUseCase {
     private final LoadCrewPort loadCrewPort;
     private final SaveCrewMemberPort saveCrewMemberPort;
     private final LoadCrewMemberPort loadCrewMemberPort;
+    private final LoadCrewSchedulePort loadCrewSchedulePort;
+    private final SaveCrewSchedulePort saveCrewSchedulePort;
     private final CrewScheduleUseCase crewScheduleUseCase;
     private final CrewMemberResponseMapper crewMemberResponseMapper;
     private final CrewResponseMapper crewResponseMapper;
@@ -353,6 +358,50 @@ public class CrewService implements CrewUseCase {
         validateMember(crewId, memberId);
 
         return crewResponseMapper.toCrewInfoResponse(crew);
+    }
+
+    @Override
+    @Transactional
+    public void dissolveCrew(Long crewId, Long leaderId) {
+        Crew crew = loadCrewPort.findById(crewId)
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+
+        // 이미 해산된 크루인지 확인
+        if (crew.isDissolved()) {
+            throw new BusinessException(CrewErrorCode.CREW_ALREADY_DISSOLVED);
+        }
+
+        // 리더 권한 확인
+        validateLeader(crewId, leaderId);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 미래 ACTIVE 일정 전체 취소
+        List<CrewSchedule> activeSchedules = loadCrewSchedulePort.findActiveSchedulesByCrewId(crewId, now);
+        if (!activeSchedules.isEmpty()) {
+            activeSchedules.forEach(CrewSchedule::cancel);
+            saveCrewSchedulePort.saveAll(activeSchedules);
+            log.info("[CREW] crewId: {} 해산으로 인해 ACTIVE 일정 {}건을 취소합니다.", crewId, activeSchedules.size());
+        }
+
+        // JOINED + REQUESTED 상태인 멤버 일괄 처리
+        List<CrewMember> activeMembers = loadCrewMemberPort.findAllActiveByCrewId(crewId);
+        if (!activeMembers.isEmpty()) {
+            activeMembers.forEach(member -> {
+                if (member.getStatus() == CrewMemberStatus.JOINED) {
+                    member.exit(now);       // 정회원 → EXITED
+                } else {
+                    member.cancel(now);     // 가입대기 → CANCELLED
+                }
+            });
+            saveCrewMemberPort.saveAll(activeMembers);
+            log.info("[CREW] crewId: {} 해산합니다.", crewId);
+        }
+
+        // 크루 해산
+        crew.dissolve(now);
+        saveCrewPort.save(crew);
+        log.info("[CREW] crewId: {} 가 해산되었습니다. leaderId: {}", crewId, leaderId);
     }
 
     // 리더 여부 체크
