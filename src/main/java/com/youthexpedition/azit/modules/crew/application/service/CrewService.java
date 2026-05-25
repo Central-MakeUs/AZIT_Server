@@ -384,16 +384,22 @@ public class CrewService implements CrewUseCase {
             log.info("[CREW] crewId: {} 해산으로 인해 ACTIVE 일정 {}건을 취소합니다.", crewId, activeSchedules.size());
         }
 
-        // 회원 전원 EXITED 처리
-        List<CrewMember> joinedMembers = loadCrewMemberPort.findAllJoinedByCrewId(crewId);
-        if (!joinedMembers.isEmpty()) {
-            joinedMembers.forEach(member -> member.exit(now));
-            saveCrewMemberPort.saveAll(joinedMembers);
-            log.info("[CREW] crewId: {} 해산으로 인해 모든 회원을 {}명을 EXITED 처리합니다.", crewId, joinedMembers.size());
+        // JOINED + REQUESTED 상태인 멤버 일괄 처리
+        List<CrewMember> activeMembers = loadCrewMemberPort.findAllActiveByCrewId(crewId);
+        if (!activeMembers.isEmpty()) {
+            activeMembers.forEach(member -> {
+                if (member.getStatus() == CrewMemberStatus.JOINED) {
+                    member.exit(now);       // 정회원 → EXITED
+                } else {
+                    member.cancel(now);     // 가입대기 → CANCELLED
+                }
+            });
+            saveCrewMemberPort.saveAll(activeMembers);
+            log.info("[CREW] crewId: {} 해산합니다.", crewId);
         }
 
         // 크루 해산
-        crew.dissolve();
+        crew.dissolve(now);
         saveCrewPort.save(crew);
         log.info("[CREW] crewId: {} 가 해산되었습니다. leaderId: {}", crewId, leaderId);
     }

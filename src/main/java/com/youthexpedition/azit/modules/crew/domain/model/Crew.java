@@ -67,10 +67,10 @@ public class Crew {
     }
 
     // 크루 해산
-    public void dissolve() {
+    public void dissolve(LocalDateTime now) {
         this.memberCount = 0;
         this.status = CrewStatus.DISSOLVED;
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = now;
     }
 
     public boolean isDissolved() {

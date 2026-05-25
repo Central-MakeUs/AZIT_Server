@@ -158,7 +158,7 @@ public interface CrewControllerDocs {
 
                     **[제약 사항]** <br>
                     * 가입 신청(REQUESTED) 상태인 경우에만 취소가 가능합니다. (JOIN_REQUEST_NOT_FOUND) <br>
-                    * 취소 후 24시간 이내에는 동일 크루에 재신청이 불가합니다. (CANCEL_REJOINING_COOLDOWN)
+                    * 취소 후 1시간 이내에는 동일 크루에 재신청이 불가합니다. (CANCEL_REJOINING_COOLDOWN)
                     """
     )
     @ApiErrorCodeExamples({

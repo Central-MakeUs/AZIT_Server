@@ -22,5 +22,5 @@ public interface LoadCrewMemberPort {
     List<CrewMember> findAllByMemberId(Long memberId);
     List<CrewMember> findAllActiveByMemberId(Long memberId);
     Map<Long, CrewMember> findAllByCrewIdAndMemberIds(Long crewId, List<Long> memberIds);
-    List<CrewMember> findAllJoinedByCrewId(Long crewId);
+    List<CrewMember> findAllActiveByCrewId(Long crewId); // JOINED + REQUESTED
 }
