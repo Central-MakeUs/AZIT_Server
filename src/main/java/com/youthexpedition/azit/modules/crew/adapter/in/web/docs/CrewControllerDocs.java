@@ -278,7 +278,7 @@ public interface CrewControllerDocs {
             description = """
             리더가 크루를 영구적으로 해산합니다. <br><br>
 
-            **[해산 처리 내용]** <br>
+            **[처리 내용]** <br>
             * 미래 ACTIVE 일정이 모두 CANCELLED 처리됩니다. <br>
             * 정회원(JOINED) 전원이 EXITED 처리됩니다. <br>
             * 크루 인원 수가 0으로 초기화되고 상태가 DISSOLVED로 변경됩니다. <br>
