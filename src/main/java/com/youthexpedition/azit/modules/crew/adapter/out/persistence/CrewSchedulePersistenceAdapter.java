@@ -124,4 +124,11 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
                 .map(crewScheduleMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public List<CrewSchedule> findActiveSchedulesByCrewId(Long crewId, LocalDateTime now) {
+        return crewScheduleRepository.findActiveSchedulesByCrewId(crewId, now).stream()
+                .map(crewScheduleMapper::toDomain)
+                .toList();
+    }
 }

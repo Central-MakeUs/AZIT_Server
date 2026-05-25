@@ -25,4 +25,5 @@ public interface CrewUseCase {
     InvitationCodeResponse regenerateInvitationCode(Long crewId, Long memberId);
     void updateCrewProfile(Long crewId, Long memberId, UpdateCrewProfileCommand command);
     CrewInfoResponse getCrewInfo(Long crewId, Long memberId);
+    void dissolveCrew(Long crewId, Long leaderId);
 }

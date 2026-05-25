@@ -272,4 +272,28 @@ public interface CrewControllerDocs {
             @PathVariable Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId,
             @Valid @RequestBody UpdateCrewProfileRequest request);
+
+    @Operation(
+            summary = "크루 해산",
+            description = """
+            리더가 크루를 영구적으로 해산합니다. <br><br>
+
+            **[해산 처리 내용]** <br>
+            * 미래 ACTIVE 일정이 모두 CANCELLED 처리됩니다. <br>
+            * 정회원(JOINED) 전원이 EXITED 처리됩니다. <br>
+            * 크루 인원 수가 0으로 초기화되고 상태가 DISSOLVED로 변경됩니다. <br>
+            * 과거 일정 및 출석 로그는 보존됩니다. <br><br>
+
+            **[제약 사항]** <br>
+            * 크루 리더만 해산을 요청할 수 있습니다. (NOT_CREW_LEADER)
+            * 이미 해산된 크루는 재해산이 불가합니다. (CREW_ALREADY_DISSOLVED)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER", "CREW_ALREADY_DISSOLVED",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> dissolveCrew(
+            @PathVariable Long crewId,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

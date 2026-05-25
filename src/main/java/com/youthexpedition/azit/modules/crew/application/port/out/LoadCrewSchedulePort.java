@@ -23,5 +23,5 @@ public interface LoadCrewSchedulePort {
     boolean existsConflictingSchedule(Long memberId, LocalDateTime newMeetingAt, Long excludeScheduleId);
     List<CrewSchedule> findSchedulesToCancel(Long crewId, Long memberId, LocalDateTime now);
     List<CrewSchedule> findSchedulesToRemoveParticipant(Long crewId, Long memberId, LocalDateTime now);
-
+    List<CrewSchedule> findActiveSchedulesByCrewId(Long crewId, LocalDateTime now);
 }
