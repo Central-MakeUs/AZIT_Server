@@ -118,7 +118,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                         crewScheduleEntity.meetingAt.between(start, end),
                         crewScheduleMemberEntity.isCheckedIn.isTrue()
                                 .or(crewScheduleEntity.meetingAt.lt(now.minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS))),
-                        crewId != null ? crewScheduleEntity.crewId.eq(crewId) : null
+                        eqCrewId(crewId)
                 )
                 .orderBy(crewScheduleEntity.meetingAt.desc())
                 .fetch();
@@ -139,7 +139,7 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
                         crewScheduleEntity.meetingAt.between(start, end),
                         crewScheduleMemberEntity.isCheckedIn.isTrue()
                                 .or(crewScheduleEntity.meetingAt.lt(now.minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS))),
-                        crewId != null ? crewScheduleEntity.crewId.eq(crewId) : null
+                        eqCrewId(crewId)
                 )
                 .fetch();
 
@@ -208,6 +208,10 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
 
     private BooleanExpression eqRunType(RunType runType) {
         return runType != null ? crewScheduleEntity.runType.eq(runType) : null;
+    }
+
+    private BooleanExpression eqCrewId(Long crewId) {
+        return crewId != null ? crewScheduleEntity.crewId.eq(crewId) : null;
     }
 
     private BooleanExpression filterByDateOrMonth(LocalDate date, YearMonth yearMonth) {
