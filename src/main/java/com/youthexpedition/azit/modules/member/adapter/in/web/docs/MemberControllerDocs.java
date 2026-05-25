@@ -161,10 +161,11 @@ public interface MemberControllerDocs {
             summary = "내 출석 로그 목록 조회",
             description = """
             사용자의 월별 출석 횟수, 누적 획득 포인트 및 상세 활동 이력을 조회합니다. <br>
-            
+
             **[쿼리 파라미터]** <br>
             * yearMonth (선택): 조회할 연월(yyyy-MM)입니다. 미입력 시 현재 시간 기준의 월을 조회합니다.<br>
-            
+            * crewId (선택): 특정 크루의 출석 이력만 필터링합니다. 미입력 시 전체 크루의 이력을 조회합니다.<br>
+
             **[참고 사항]** <br>
             * 아직 모임 시간이 지나지 않았고 출석도 하지 않은 예정 일정은 리스트에 나타나지 않습니다. <br>
             * 모임 시간이 이미 지난 일정(출석/결석 확정) 또는 모임 시간 전이라도 출석을 완료한 일정만 반환됩니다. <br><br>
@@ -176,6 +177,8 @@ public interface MemberControllerDocs {
     CommonResponse<MyAttendanceLogResponse> getMyAttendanceLogs(
             @Parameter(description = "조회 연월 (yyyy-MM)")
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @Parameter(description = "크루 ID (특정 크루 필터링, 미입력 시 전체)")
+            @RequestParam(required = false) Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
@@ -184,19 +187,22 @@ public interface MemberControllerDocs {
             description = """
             특정 월의 날짜별 출석 상태(정기런/번개런)를 조회합니다. 신청한 일정이 하나라도 존재하는 날짜만 조회됩니다. <br>
             캘린더에서 각 날짜 하단에 상태 점을 표시하는 데 사용됩니다. <br><br>
-            
+
             **[쿼리 파라미터]** <br>
             * yearMonth (선택): 조회할 연월(yyyy-MM)입니다. 미입력 시 현재 시간 기준의 월을 조회합니다.<br>
-            
+            * crewId (선택): 특정 크루의 출석 이력만 필터링합니다. 미입력 시 전체 크루의 이력을 조회합니다.<br>
+
             **[참고 사항]** <br>
-                * 아직 모임 시간이 지나지 않았고 출석도 하지 않은 예정 일정은 리스트에 나타나지 않습니다. <br>
-                * 모임 시간이 이미 지난 일정(출석/결석 확정) 또는 모임 시간 전이라도 출석을 완료한 일정만 반환됩니다. <br><br>
+            * 아직 모임 시간이 지나지 않았고 출석도 하지 않은 예정 일정은 리스트에 나타나지 않습니다. <br>
+            * 모임 시간이 이미 지난 일정(출석/결석 확정) 또는 모임 시간 전이라도 출석을 완료한 일정만 반환됩니다. <br><br>
             """
     )
     CommonResponse<List<MyAttendanceMonthlyListResponse>> getMyAttendancesForCalendar(
+            @Parameter(description = "조회 연월 (yyyy-MM)")
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @Parameter(description = "크루 ID (특정 크루 필터링, 미입력 시 전체)")
+            @RequestParam(required = false) Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId
-
     );
 
     @Operation(

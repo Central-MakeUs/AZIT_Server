@@ -86,8 +86,10 @@ public class MemberController implements MemberControllerDocs {
 
     @GetMapping("/me/attendances")
     public CommonResponse<MyAttendanceLogResponse> getMyAttendanceLogs(
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
-        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @RequestParam(required = false) Long crewId,
+            @CurrentMemberId Long memberId) {
+        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId, crewId);
         MyAttendanceLogResponse response = crewScheduleUseCase.getMyAttendanceLogs(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
@@ -95,8 +97,10 @@ public class MemberController implements MemberControllerDocs {
 
     @GetMapping("/me/attendances/calendar")
     public CommonResponse<List<MyAttendanceMonthlyListResponse>> getMyAttendancesForCalendar(
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
-        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @RequestParam(required = false) Long crewId,
+            @CurrentMemberId Long memberId) {
+        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId, crewId);
         List<MyAttendanceMonthlyListResponse> response = crewScheduleUseCase.getMyAttendancesForCalendar(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
