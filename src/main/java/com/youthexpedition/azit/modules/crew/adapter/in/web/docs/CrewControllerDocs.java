@@ -241,7 +241,7 @@ public interface CrewControllerDocs {
             summary = "크루 프로필 수정",
             description = """
                     크루 프로필을 수정합니다. <br><br>
-                        
+                    
                     **[크루 이미지 URL 제약 사항]** <br>
                     크루 이미지 URL은 아래 세 가지 중 하나여야 합니다.<br>
                     1. temp 경로가 포함된 CloudFront URL (새 커스텀 이미지 적용 시)<br>

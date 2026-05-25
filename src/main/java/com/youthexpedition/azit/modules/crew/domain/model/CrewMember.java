@@ -24,6 +24,7 @@ public class CrewMember {
     private LocalDateTime updatedAt;
 
     private static final long REJOINING_COOLDOWN_HOURS = 24;
+    private static final long CANCEL_COOLDOWN_HOURS = 1;
 
     // 리더 등록
     public static CrewMember createAsLeader(Long crewId, Long memberId) {
@@ -90,10 +91,10 @@ public class CrewMember {
         this.cancelledAt = cancelledAt;
     }
 
-    // 취소 후 재신청 쿨다운 여부 확인 (24시간)
+    // 취소 후 재신청 쿨다운 여부 확인 (1시간)
     public boolean isCancelCooldownActive(LocalDateTime now) {
         if (this.cancelledAt == null) return false;
-        return this.cancelledAt.plusHours(REJOINING_COOLDOWN_HOURS).isAfter(now);
+        return this.cancelledAt.plusHours(CANCEL_COOLDOWN_HOURS).isAfter(now);
     }
 
     // 가입 재신청
