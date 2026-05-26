@@ -257,4 +257,22 @@ public interface MemberControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<LinkedProviderResponse> getLinkedProviders(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "[테스트용] 약관 동의 전 상태로 초기화",
+            description = """
+                    **프론트엔드 테스트 전용 API입니다. 운영 환경에서는 사용하지 않습니다.** <br><br>
+
+                    현재 로그인한 회원의 상태를 약관 동의 전(PENDING_TERMS)으로 초기화합니다. <br><br>
+
+                    **[처리 내용]** <br>
+                    * 회원 상태를 PENDING_TERMS로 변경합니다. <br>
+                    * 필수 약관 동의 시각, 마케팅·알림 수신 동의 정보를 초기화합니다. <br><br>
+                    * 가입되어 있던 모든 크루를 탈퇴합니다. <br>
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND", "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> resetToPendingTerms(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

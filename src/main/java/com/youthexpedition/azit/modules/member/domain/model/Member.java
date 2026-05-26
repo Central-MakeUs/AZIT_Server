@@ -86,6 +86,16 @@ public class Member {
         this.appleRefreshToken = null;
     }
 
+    // [테스트용] 약관 동의 전 상태로 초기화
+    public void resetToPendingTerms() {
+        this.status = MemberStatus.PENDING_TERMS;
+        this.essentialTermsAgreedAt = null;
+        this.isMarketingTermsAgreed = false;
+        this.marketingTermsAgreedAt = null;
+        this.isNotificationAgreed = false;
+        this.notificationAgreedAt = null;
+    }
+
     // 탈퇴 상태에서 재로그인 할 경우 ACTIVE 처리
     public void reactivate() {
         if (this.status != MemberStatus.WITHDRAWN) {

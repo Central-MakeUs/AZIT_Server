@@ -119,4 +119,11 @@ public class MemberController implements MemberControllerDocs {
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
+
+    @PostMapping("/me/reset-to-pending-terms")
+    public CommonResponse<Void> resetToPendingTerms(@CurrentMemberId Long memberId) {
+        memberUseCase.resetToPendingTerms(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
 }

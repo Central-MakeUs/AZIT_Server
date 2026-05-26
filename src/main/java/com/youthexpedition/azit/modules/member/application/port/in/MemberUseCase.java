@@ -18,4 +18,5 @@ public interface MemberUseCase {
     List<MyCrewResponse> getMyCrews(Long memberId);
     void updateMemberProfile(Long memberId, UpdateMemberProfileCommand command);
     LinkedProviderResponse getLinkedProviders(Long memberId);
+    void resetToPendingTerms(Long memberId);
 }

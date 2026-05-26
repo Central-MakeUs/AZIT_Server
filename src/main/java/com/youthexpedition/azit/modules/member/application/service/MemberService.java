@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.member.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.util.image.ImageUpdateUtil;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialRevokeCommand;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
@@ -14,7 +15,6 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
-import com.youthexpedition.azit.infrastructure.common.util.image.ImageUpdateUtil;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
@@ -192,6 +192,17 @@ public class MemberService implements MemberUseCase {
         // 이미지 업데이트
         imageUpdateUtil.update(command.imageUrl(), member.getProfileImageUrl(), memberId, true, member::updateProfileImageUrl);
 
+        saveMemberPort.save(member);
+    }
+
+    @Override
+    public void resetToPendingTerms(Long memberId) {
+        Member member = getMember(memberId);
+
+        member.resetToPendingTerms();
+
+        // 가입한 크루 인원 수 차감 및 상태 변경
+        processCrewWithdrawal(memberId);
         saveMemberPort.save(member);
     }
 
