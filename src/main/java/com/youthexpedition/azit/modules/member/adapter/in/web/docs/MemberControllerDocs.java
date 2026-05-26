@@ -268,7 +268,6 @@ public interface MemberControllerDocs {
                     **[처리 내용]** <br>
                     * 회원 상태를 PENDING_TERMS로 변경합니다. <br>
                     * 필수 약관 동의 시각, 마케팅·알림 수신 동의 정보를 초기화합니다. <br><br>
-                    * 가입되어 있던 모든 크루를 탈퇴합니다. <br>
                     """
     )
     @ApiErrorCodeExamples({
