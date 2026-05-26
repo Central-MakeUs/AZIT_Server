@@ -22,7 +22,6 @@ public class MemberResponseMapper {
                 member.getId(),
                 member.getNickname(),
                 imageUrlFormatUtil.buildFullImageUrl(member.getProfileImageUrl()),
-                member.getTotalAttendanceCount(),
                 member.getTotalPoints()
         );
     }

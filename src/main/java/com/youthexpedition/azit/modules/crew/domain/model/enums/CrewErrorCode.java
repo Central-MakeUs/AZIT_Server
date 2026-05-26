@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum CrewErrorCode implements BaseErrorCode {
     // 크루 관련
     CREW_NOT_FOUND("CREW_NOT_FOUND", "존재하지 않는 크루입니다.", HttpStatus.NOT_FOUND),
+    EXPIRED_INVITATION_CODE("EXPIRED_INVITATION_CODE", "유효하지 않거나 이미 만료된 초대 코드입니다.", HttpStatus.BAD_REQUEST),
     INVALID_CREW_CATEGORY("INVALID_CREW_CATEGORY", "유효하지 않은 크루 카테고리입니다.", HttpStatus.BAD_REQUEST),
     INVALID_REGION("INVALID_REGION", "유효하지 않은 활동 지역입니다.", HttpStatus.BAD_REQUEST),
     ALREADY_JOINED_CREW("ALREADY_JOINED_CREW", "이미 가입한 크루입니다.", HttpStatus.BAD_REQUEST),
@@ -27,6 +28,7 @@ public enum CrewErrorCode implements BaseErrorCode {
     CANCEL_REJOINING_COOLDOWN("CANCEL_REJOINING_COOLDOWN", "가입 신청 취소 후 1시간이 지나지 않아 재신청이 불가합니다.", HttpStatus.BAD_REQUEST),
     CREW_JOIN_LIMIT_EXCEEDED("CREW_JOIN_LIMIT_EXCEEDED", "최대 3개의 크루까지 가입할 수 있습니다.", HttpStatus.BAD_REQUEST),
     CREW_ALREADY_DISSOLVED("CREW_ALREADY_DISSOLVED", "이미 해산된 크루입니다.", HttpStatus.BAD_REQUEST),
+    RESERVED_CREW_NAME_KEYWORD("RESERVED_CREW_NAME_KEYWORD", "사칭 방지를 위해 사용할 수 없는 단어가 포함되어 있습니다.", HttpStatus.BAD_REQUEST),
 
     // 일정 관련
     INVALID_SCHEDULE_TIME("INVALID_SCHEDULE_TIME", "유효하지 않은 일정 시간입니다.", HttpStatus.BAD_REQUEST),

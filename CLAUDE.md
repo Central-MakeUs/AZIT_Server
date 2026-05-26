@@ -188,19 +188,19 @@ public enum MemberErrorCode implements BaseErrorCode {
 
 - 모든 핵심 비즈니스 로직(Domain, Application 계층)에는 **반드시 단위 테스트**를 포함합니다.
 - 테스트는 외부 의존성을 Mockito로 격리하여 **빠르고 독립적**으로 실행 가능해야 합니다.
-- 테스트 메서드명은 **한글 Given_When_Then 구조**를 따릅니다.
+- 테스트 메서드명은 **영어 snake_case** 로 작성하며, `메서드명_상황_기대결과` 구조를 따릅니다.
 
 ### 메서드 명명 패턴
 
 ```java
 @Test
-void 이메일이_중복될_때_회원가입_실패() { ... }
+void signup_fail_duplicateEmail() { ... }
 
 @Test
-void 유효한_정보로_회원가입_성공() { ... }
+void signup_success() { ... }
 
 @Test
-void 존재하지_않는_사용자_조회시_예외발생() { ... }
+void findById_throwsException_whenMemberNotFound() { ... }
 ```
 
 ### 테스트 구조 템플릿
@@ -219,7 +219,7 @@ class MemberServiceTest {
     private SaveMemberPort saveMemberPort;
 
     @Test
-    void 이미_탈퇴한_회원이_탈퇴_요청시_예외발생() {
+    void withdraw_throwsException_whenMemberAlreadyWithdrawn() {
         // given
         Member member = Member.builder()
                 .id(1L)
@@ -250,7 +250,7 @@ class MemberServiceTest {
 class MemberTest {
 
     @Test
-    void 정상적으로_탈퇴_처리() {
+    void withdraw_success() {
         // given
         Member member = Member.builder()
                 .status(MemberStatus.ACTIVE)
@@ -264,7 +264,7 @@ class MemberTest {
     }
 
     @Test
-    void 이미_탈퇴한_회원이_재탈퇴_시도시_예외발생() {
+    void withdraw_throwsException_whenAlreadyWithdrawn() {
         // given
         Member member = Member.builder()
                 .status(MemberStatus.WITHDRAWN)
@@ -285,10 +285,10 @@ class MemberTest {
 ```java
 public class MemberFixture {
 
-    public static Member 활성_회원() {
+    public static Member activeMember() {
         return Member.builder()
                 .id(1L)
-                .nickname("테스트유저")
+                .nickname("testUser")
                 .status(MemberStatus.ACTIVE)
                 .build();
     }
@@ -310,4 +310,4 @@ public class MemberFixture {
 - [ ] 모든 API 응답이 `CommonResponse.of(CommonSuccessCode.SUCCESS, ...)` 규격을 따르는가?
 - [ ] ErrorCode Enum 필드 순서가 `code → message → status` 순인가?
 - [ ] 핵심 로직에 단위 테스트가 작성되어 있는가?
-- [ ] 테스트 메서드명이 한글 Given_When_Then 구조를 따르는가?
+- [ ] 테스트 메서드명이 영어 `메서드명_상황_기대결과` 구조를 따르는가?
