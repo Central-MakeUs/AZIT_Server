@@ -2,22 +2,16 @@ package com.youthexpedition.azit.modules.crew.application.service;
 
 import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
+import com.youthexpedition.azit.infrastructure.common.util.image.ImageUpdateUtil;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewScheduleUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
-import com.youthexpedition.azit.infrastructure.common.util.image.ImageUpdateUtil;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.CreateCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCrewCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateCrewProfileCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
-import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
-import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
-import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
-import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
-import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
-import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
-import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
+import com.youthexpedition.azit.modules.crew.application.port.out.*;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinedCrewDto;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
@@ -36,11 +30,10 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import org.springframework.util.StringUtils;
 
 
 @Service

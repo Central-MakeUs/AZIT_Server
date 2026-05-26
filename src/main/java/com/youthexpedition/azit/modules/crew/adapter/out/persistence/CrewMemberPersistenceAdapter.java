@@ -112,7 +112,7 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
 
     @Override
     public List<JoinedCrewDto> findJoinedCrewsByMemberId(Long memberId) {
-        return crewMemberRepository.findAllJoinedCrewsByMemberId(memberId).stream()
+        return crewMemberRepository.findAllJoinedCrewsByMemberId(memberId, CrewMemberStatus.JOINED).stream()
                 .map(crewMemberMapper::toJoinedCrewDto)
                 .toList();
     }

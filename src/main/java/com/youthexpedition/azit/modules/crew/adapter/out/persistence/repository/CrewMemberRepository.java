@@ -20,6 +20,6 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
     List<CrewMemberEntity> findByCrew_IdAndMemberIdIn(Long crewId, List<Long> memberIds);
     List<CrewMemberEntity> findByCrew_IdAndStatusIn(Long crewId, Collection<CrewMemberStatus> statuses);
 
-    @Query("SELECT cm FROM CrewMemberEntity cm JOIN FETCH cm.crew WHERE cm.memberId = :memberId AND cm.status = 'JOINED'")
-    List<CrewMemberEntity> findAllJoinedCrewsByMemberId(@Param("memberId") Long memberId);
+    @Query("SELECT cm FROM CrewMemberEntity cm JOIN FETCH cm.crew WHERE cm.memberId = :memberId AND cm.status = :status")
+    List<CrewMemberEntity> findAllJoinedCrewsByMemberId(@Param("memberId") Long memberId, @Param("status") CrewMemberStatus status);
 }
