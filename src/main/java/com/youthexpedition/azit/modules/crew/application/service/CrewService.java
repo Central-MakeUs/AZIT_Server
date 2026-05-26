@@ -19,6 +19,7 @@ import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMember
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinedCrewDto;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewMemberResponseMapper;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewResponseMapper;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.util.StringUtils;
 
@@ -402,6 +404,14 @@ public class CrewService implements CrewUseCase {
         crew.dissolve(now);
         saveCrewPort.save(crew);
         log.info("[CREW] crewId: {} 가 해산되었습니다. leaderId: {}", crewId, leaderId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<JoinedCrewResponse> getJoinedCrews(Long memberId) {
+        List<JoinedCrewDto> joinedCrews = loadCrewMemberPort.findJoinedCrewsByMemberId(memberId);
+
+        return crewResponseMapper.toJoinedCrewResponseList(joinedCrews);
     }
 
     // 리더 여부 체크

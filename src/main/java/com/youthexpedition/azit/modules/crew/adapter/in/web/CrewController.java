@@ -129,4 +129,11 @@ public class CrewController implements CrewControllerDocs {
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
+
+    @GetMapping("/me")
+    public CommonResponse<List<JoinedCrewResponse>> getJoinedCrews(@CurrentMemberId Long memberId) {
+        List<JoinedCrewResponse> response = crewUseCase.getJoinedCrews(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
 }

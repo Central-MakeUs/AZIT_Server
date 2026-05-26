@@ -4,6 +4,7 @@ import com.youthexpedition.azit.infrastructure.common.query.CursorPageQuery;
 import com.youthexpedition.azit.infrastructure.common.response.SliceResponse;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinedCrewDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 
@@ -23,4 +24,5 @@ public interface LoadCrewMemberPort {
     List<CrewMember> findAllActiveByMemberId(Long memberId);
     Map<Long, CrewMember> findAllByCrewIdAndMemberIds(Long crewId, List<Long> memberIds);
     List<CrewMember> findAllActiveByCrewId(Long crewId); // JOINED + REQUESTED
+    List<JoinedCrewDto> findJoinedCrewsByMemberId(Long memberId);
 }
