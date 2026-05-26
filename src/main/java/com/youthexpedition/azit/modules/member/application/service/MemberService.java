@@ -200,9 +200,6 @@ public class MemberService implements MemberUseCase {
         Member member = getMember(memberId);
 
         member.resetToPendingTerms();
-
-        // 가입한 크루 인원 수 차감 및 상태 변경
-        processCrewWithdrawal(memberId);
         saveMemberPort.save(member);
     }
 
