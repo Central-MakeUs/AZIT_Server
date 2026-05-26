@@ -37,6 +37,7 @@ public interface CrewControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
+            "RESERVED_CREW_NAME_KEYWORD",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN" // 인증 관련 에러
     })
     CommonResponse<CreateCrewResponse> createCrew(
@@ -265,7 +266,7 @@ public interface CrewControllerDocs {
     )
     @ApiErrorCodeExamples({
             "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER",
-            "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH",
+            "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH", "RESERVED_CREW_NAME_KEYWORD",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> updateCrewProfile(
