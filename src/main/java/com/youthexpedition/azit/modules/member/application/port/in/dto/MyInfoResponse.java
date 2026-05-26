@@ -9,13 +9,10 @@ public record MyInfoResponse(
         String nickname,
         @Schema(description = "프로필 이미지 URL")
         String profileImageUrl,
-        @Schema(description = "누적 출석 횟수")
-        Integer totalAttendanceCount,
         @Schema(description = "포인트")
         Long totalPoints
 ) {
-    public static MyInfoResponse of(Long id, String nickname, String profileImageUrl,
-                                    Integer totalAttendanceCount, Long totalPoints) {
-        return new MyInfoResponse(id, nickname, profileImageUrl, totalAttendanceCount, totalPoints);
+    public static MyInfoResponse of(Long id, String nickname, String profileImageUrl, Long totalPoints) {
+        return new MyInfoResponse(id, nickname, profileImageUrl, totalPoints);
     }
 }
