@@ -64,7 +64,7 @@ class CrewServiceTest {
     void createCrew_Service_Success() {
         // given
         Long leaderId = 1L;
-        CreateCrewCommand command = CreateCrewCommand.of("아지트 러닝크루", "RUNNING", "SEOUL", leaderId);
+        CreateCrewCommand command = CreateCrewCommand.of("러닝크루", "RUNNING", "SEOUL", leaderId);
         given(crewImageProvider.getCrewDefaultImage()).willReturn("defaultImageUrl");
 
         Crew mockCrew = Crew.builder()
