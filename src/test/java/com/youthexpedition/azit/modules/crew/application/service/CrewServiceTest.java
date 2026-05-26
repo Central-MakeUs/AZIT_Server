@@ -6,7 +6,9 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.JoinCre
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CreateCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.InvitationCodeResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinedCrewResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinRequestMemberResponse;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinedCrewDto;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
@@ -617,6 +619,51 @@ class CrewServiceTest {
             assertThatThrownBy(() -> crewService.regenerateInvitationCode(crewId, leaderId))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining(CrewErrorCode.CREW_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("가입 완료한 크루 목록 조회 테스트")
+    class GetJoinedCrewsTest {
+
+        @Test
+        @DisplayName("성공: 가입한 크루 목록을 반환한다.")
+        void getJoinedCrews_success() {
+            // given
+            Long memberId = 1L;
+            List<JoinedCrewDto> dtos = List.of(
+                    new JoinedCrewDto(10L, "서울런닝크루", "img/1.jpg", "함께 달려요"),
+                    new JoinedCrewDto(20L, "한강러너스", "img/2.jpg", "한강에서 만나요")
+            );
+            List<JoinedCrewResponse> expected = List.of(
+                    new JoinedCrewResponse(10L, "서울런닝크루", "https://cdn.url/img/1.jpg", "함께 달려요"),
+                    new JoinedCrewResponse(20L, "한강러너스", "https://cdn.url/img/2.jpg", "한강에서 만나요")
+            );
+            given(loadCrewMemberPort.findJoinedCrewsByMemberId(memberId)).willReturn(dtos);
+            given(crewResponseMapper.toJoinedCrewResponseList(dtos)).willReturn(expected);
+
+            // when
+            List<JoinedCrewResponse> result = crewService.getJoinedCrews(memberId);
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).crewId()).isEqualTo(10L);
+            assertThat(result.get(0).imageUrl()).isEqualTo("https://cdn.url/img/1.jpg");
+            assertThat(result.get(1).crewId()).isEqualTo(20L);
+        }
+
+        @Test
+        @DisplayName("성공: 가입한 크루가 없으면 빈 리스트를 반환한다.")
+        void getJoinedCrews_success_emptyList() {
+            // given
+            Long memberId = 1L;
+            given(loadCrewMemberPort.findJoinedCrewsByMemberId(memberId)).willReturn(List.of());
+
+            // when
+            List<JoinedCrewResponse> result = crewService.getJoinedCrews(memberId);
+
+            // then
+            assertThat(result).isEmpty();
         }
     }
 

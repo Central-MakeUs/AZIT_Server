@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository.
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinedCrewDto;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
@@ -106,6 +107,13 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     public List<CrewMember> findAllActiveByCrewId(Long crewId) {
         return crewMemberRepository.findByCrew_IdAndStatusIn(crewId, PARTICIPATING_STATUSES).stream()
                 .map(crewMemberMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<JoinedCrewDto> findJoinedCrewsByMemberId(Long memberId) {
+        return crewMemberRepository.findAllJoinedCrewsByMemberId(memberId, CrewMemberStatus.JOINED).stream()
+                .map(crewMemberMapper::toJoinedCrewDto)
                 .toList();
     }
 }

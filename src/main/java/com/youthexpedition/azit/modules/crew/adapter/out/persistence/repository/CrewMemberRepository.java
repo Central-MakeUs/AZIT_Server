@@ -3,6 +3,8 @@ package com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewMemberEntity;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,4 +19,7 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
     List<CrewMemberEntity> findAllByMemberIdAndStatusIn(Long memberId, Collection<CrewMemberStatus> statuses);
     List<CrewMemberEntity> findByCrew_IdAndMemberIdIn(Long crewId, List<Long> memberIds);
     List<CrewMemberEntity> findByCrew_IdAndStatusIn(Long crewId, Collection<CrewMemberStatus> statuses);
+
+    @Query("SELECT cm FROM CrewMemberEntity cm JOIN FETCH cm.crew WHERE cm.memberId = :memberId AND cm.status = :status")
+    List<CrewMemberEntity> findAllJoinedCrewsByMemberId(@Param("memberId") Long memberId, @Param("status") CrewMemberStatus status);
 }

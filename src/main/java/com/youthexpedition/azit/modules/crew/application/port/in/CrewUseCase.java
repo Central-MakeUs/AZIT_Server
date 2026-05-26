@@ -7,6 +7,7 @@ import com.youthexpedition.azit.modules.crew.application.port.in.command.Process
 import com.youthexpedition.azit.modules.crew.application.port.in.command.UpdateCrewProfileCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.JoinedCrewResponse;
 
 import java.util.List;
 
@@ -26,4 +27,5 @@ public interface CrewUseCase {
     void updateCrewProfile(Long crewId, Long memberId, UpdateCrewProfileCommand command);
     CrewInfoResponse getCrewInfo(Long crewId, Long memberId);
     void dissolveCrew(Long crewId, Long leaderId);
+    List<JoinedCrewResponse> getJoinedCrews(Long memberId);
 }

@@ -297,4 +297,16 @@ public interface CrewControllerDocs {
     CommonResponse<Void> dissolveCrew(
             @PathVariable Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "가입 완료한 크루 목록 조회",
+            description = """
+                    사용자가 가입 완료(JOINED) 상태인 크루 목록을 조회합니다. <br><br>
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<List<JoinedCrewResponse>> getJoinedCrews(
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }
