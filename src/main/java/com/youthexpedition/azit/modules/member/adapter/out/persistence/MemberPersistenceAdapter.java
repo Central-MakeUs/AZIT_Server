@@ -43,6 +43,11 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
     }
 
     @Override
+    public void deleteById(Long memberId) {
+        memberRepository.deleteById(memberId);
+    }
+
+    @Override
     public Map<Long, MemberProfileDto> findAllByIds(List<Long> memberIds) {
         return memberRepository.findAllById(memberIds).stream()
                 .filter(entity -> entity.getStatus() != MemberStatus.WITHDRAWN)

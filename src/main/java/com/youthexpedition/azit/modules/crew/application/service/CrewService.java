@@ -39,7 +39,6 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
 public class CrewService implements CrewUseCase {
     private final SaveCrewPort saveCrewPort;
     private final LoadCrewPort loadCrewPort;
@@ -95,6 +94,7 @@ public class CrewService implements CrewUseCase {
     }
 
     @Override
+    @Transactional
     public void joinCrew(JoinCrewCommand command) {
         Crew crew = loadCrewPort.findByInvitationCode(command.invitationCode())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
@@ -328,6 +328,7 @@ public class CrewService implements CrewUseCase {
     }
 
     @Override
+    @Transactional
     public void updateCrewProfile(Long crewId, Long memberId, UpdateCrewProfileCommand command) {
         // 리더 권한 검증
         validateLeader(crewId, memberId);

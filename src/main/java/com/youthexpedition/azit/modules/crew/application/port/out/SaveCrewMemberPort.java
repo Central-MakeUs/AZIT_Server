@@ -7,4 +7,5 @@ import java.util.List;
 public interface SaveCrewMemberPort {
     CrewMember save(CrewMember crewMember);
     void saveAll(List<CrewMember> crewMembers);
+    void deleteByMemberId(Long memberId);
 }
