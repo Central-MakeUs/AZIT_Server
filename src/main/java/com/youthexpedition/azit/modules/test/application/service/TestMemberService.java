@@ -28,6 +28,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TestMemberService implements TestMemberUseCase {
 
     private static final String BLACKLIST_REASON_TEST_WITHDRAWN = "test-force-withdrawn";

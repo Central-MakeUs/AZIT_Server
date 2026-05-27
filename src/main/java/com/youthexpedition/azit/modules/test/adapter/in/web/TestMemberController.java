@@ -7,10 +7,12 @@ import com.youthexpedition.azit.infrastructure.common.response.code.CommonSucces
 import com.youthexpedition.azit.modules.test.adapter.in.web.docs.TestMemberControllerDocs;
 import com.youthexpedition.azit.modules.test.application.port.in.TestMemberUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Profile({"local", "dev"})
 @RestController
 @RequestMapping("/api/v1/test/members")
 @RequiredArgsConstructor
