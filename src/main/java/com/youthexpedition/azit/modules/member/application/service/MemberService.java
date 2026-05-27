@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class MemberService implements MemberUseCase {
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
@@ -55,6 +55,7 @@ public class MemberService implements MemberUseCase {
     private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
 
     @Override
+    @Transactional
     public void agreeToTerms(Long memberId, AgreeToTermsCommand command) {
         command.validateRequired(); // 필수 약관 동의 여부 검증
 
@@ -121,14 +122,12 @@ public class MemberService implements MemberUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public MyInfoResponse getMyInfo(Long memberId) {
         Member member = getMember(memberId);
         return memberResponseMapper.toMyInfoResponse(member);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<MyCrewResponse> getMyCrews(Long memberId) {
         List<CrewMember> activeCrewMembers = loadCrewMemberPort.findAllActiveByMemberId(memberId);
 
@@ -144,12 +143,25 @@ public class MemberService implements MemberUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public LinkedProviderResponse getLinkedProviders(Long memberId) {
         Member member = getMember(memberId);
         // 추후 계정 연동 기능 추가 시, 연동된 소셜 계정 목록을 함께 조회하여 반환
         List<SocialProvider> providers = List.of(member.getSocialProvider());
         return LinkedProviderResponse.of(providers);
+    }
+
+    @Override
+    @Transactional
+    public void updateMemberProfile(Long memberId, UpdateMemberProfileCommand command) {
+        Member member = getMember(memberId);
+
+        // 닉네임 업데이트
+        member.updateNickname(command.nickname());
+
+        // 이미지 업데이트
+        imageUpdateUtil.update(command.imageUrl(), member.getProfileImageUrl(), memberId, true, member::updateProfileImageUrl);
+
+        saveMemberPort.save(member);
     }
 
     private Member getMember(Long memberId) {
@@ -180,19 +192,6 @@ public class MemberService implements MemberUseCase {
         LocalDateTime now = LocalDateTime.now();
         crewMembers.forEach(cm -> cm.exit(now));
         saveCrewMemberPort.saveAll(crewMembers);
-    }
-
-    @Override
-    public void updateMemberProfile(Long memberId, UpdateMemberProfileCommand command) {
-        Member member = getMember(memberId);
-
-        // 닉네임 업데이트
-        member.updateNickname(command.nickname());
-
-        // 이미지 업데이트
-        imageUpdateUtil.update(command.imageUrl(), member.getProfileImageUrl(), memberId, true, member::updateProfileImageUrl);
-
-        saveMemberPort.save(member);
     }
 
     // 본인이 리더인 크루가 있으면 앱 탈퇴 불가

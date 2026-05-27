@@ -49,6 +49,7 @@ public class TestMemberService implements TestMemberUseCase {
     @Transactional
     public void forceWithdraw(Long memberId, String accessToken) {
         log.warn("[TEST] memberId: {} 강제 탈퇴 처리를 시작합니다.", memberId);
+        Member member = getMember(memberId);
 
         // 탈퇴 가능한지 확인
         validateWithdrawal(memberId);
@@ -72,7 +73,6 @@ public class TestMemberService implements TestMemberUseCase {
         saveDeliveryAddressPort.deleteByMemberId(memberId);
 
         // 소셜 연동 해제
-        Member member = getMember(memberId);
         socialAuthPort.revoke(SocialRevokeCommand.from(member));
 
         // member 완전 삭제

@@ -25,7 +25,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class CartService implements CartUseCase {
     private final LoadCartPort loadCartPort;
     private final SaveCartPort saveCartPort;
@@ -33,6 +33,7 @@ public class CartService implements CartUseCase {
     private final CartResponseMapper cartResponseMapper;
 
     @Override
+    @Transactional
     public void addOrUpdateCartItem(AddToCartCommand command) {
         // 장바구니에 이미 동일한 SKU가 있는지 조회
         Optional<CartItem> existingItem = loadCartPort.findByMemberIdAndSkuId(command.memberId(), command.productSkuId());
@@ -96,6 +97,7 @@ public class CartService implements CartUseCase {
     }
 
     @Override
+    @Transactional
     public void deleteCartItems(Long memberId, CartItemDeleteCommand command) {
         if (command.cartItemIds() == null || command.cartItemIds().isEmpty()) {
             return;
@@ -105,7 +107,6 @@ public class CartService implements CartUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CartItemCountResponse getCartItemCount(Long memberId) {
         long count = loadCartPort.countByMemberId(memberId);
 
@@ -113,7 +114,6 @@ public class CartService implements CartUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<CartItemListResponse> getCarts(Long memberId) {
         List<CartItemQueryDto> cartItems = loadCartPort.findCartDetailsByMemberId(memberId);
 

@@ -39,6 +39,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CrewService implements CrewUseCase {
     private final SaveCrewPort saveCrewPort;
     private final LoadCrewPort loadCrewPort;
@@ -53,6 +54,7 @@ public class CrewService implements CrewUseCase {
     private final ImageUpdateUtil imageUpdateUtil;
 
     @Override
+    @Transactional
     @Retryable(
             retryFor = {DataIntegrityViolationException.class}, // db 에러 시 재시도
             maxAttempts = 3,
@@ -144,7 +146,6 @@ public class CrewService implements CrewUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CrewInvitationResponse getCrewInfoByInvitationCode(String invitationCode) {
         Crew crew = loadCrewPort.findByInvitationCode(invitationCode)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
@@ -153,7 +154,6 @@ public class CrewService implements CrewUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CrewJoinStatusResponse getCrewJoinStatus(Long crewId, Long memberId) {
         Crew crew = loadCrewPort.findById(crewId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
@@ -213,7 +213,6 @@ public class CrewService implements CrewUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<JoinRequestMemberResponse> getJoinRequests(Long crewId, Long memberId) {
         validateLeader(crewId, memberId);
 
@@ -223,7 +222,6 @@ public class CrewService implements CrewUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CrewMemberListResponse getCrewMembers(Long crewId, Long memberId, CursorPageQuery query) {
         Crew crew = loadCrewPort.findById(crewId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
@@ -309,6 +307,7 @@ public class CrewService implements CrewUseCase {
     }
 
     @Override
+    @Transactional
     @Retryable(
             retryFor = {DataIntegrityViolationException.class},
             maxAttempts = 3,
@@ -346,7 +345,6 @@ public class CrewService implements CrewUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CrewInfoResponse getCrewInfo(Long crewId, Long memberId) {
         Crew crew = loadCrewPort.findById(crewId)
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
@@ -401,7 +399,6 @@ public class CrewService implements CrewUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<JoinedCrewResponse> getJoinedCrews(Long memberId) {
         List<JoinedCrewDto> joinedCrews = loadCrewMemberPort.findJoinedCrewsByMemberId(memberId);
 
