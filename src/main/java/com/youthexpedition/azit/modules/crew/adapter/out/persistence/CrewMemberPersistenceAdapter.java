@@ -116,4 +116,9 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
                 .map(crewMemberMapper::toJoinedCrewDto)
                 .toList();
     }
+
+    @Override
+    public void deleteByMemberId(Long memberId) {
+        crewMemberRepository.deleteByMemberId(memberId);
+    }
 }

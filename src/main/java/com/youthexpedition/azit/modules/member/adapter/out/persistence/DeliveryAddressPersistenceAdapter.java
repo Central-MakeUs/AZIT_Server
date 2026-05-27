@@ -47,6 +47,11 @@ public class DeliveryAddressPersistenceAdapter implements LoadDeliveryAddressPor
     }
 
     @Override
+    public void deleteByMemberId(Long memberId) {
+        deliveryAddressRepository.deleteByMemberId(memberId);
+    }
+
+    @Override
     public List<DeliveryAddress> findAllByMemberIdOrderByDefaultDescCreatedAtDesc(Long memberId) {
         return deliveryAddressRepository.findAllByMemberIdOrderByDefaultDescCreatedAtDesc(memberId)
                 .stream()

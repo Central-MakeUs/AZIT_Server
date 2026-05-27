@@ -18,4 +18,9 @@ public class PointHistoryPersistenceAdapter implements SavePointHistoryPort {
     public void save(PointHistory pointHistory) {
         pointHistoryRepository.save(pointHistoryMapper.toEntity(pointHistory));
     }
+
+    @Override
+    public void deleteByMemberId(Long memberId) {
+        pointHistoryRepository.deleteByMemberId(memberId);
+    }
 }

@@ -18,13 +18,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class DeliveryAddressService implements DeliveryAddressUseCase {
     private final LoadDeliveryAddressPort loadDeliveryAddressPort;
     private final SaveDeliveryAddressPort saveDeliveryAddressPort;
     private final DeliveryAddressResponseMapper deliveryAddressResponseMapper;
 
     @Override
+    @Transactional
     public void registerDeliveryAddress(RegisterAddressCommand command) {
         // 주소가 이미 있는지 확인
         boolean hasExistingAddress = loadDeliveryAddressPort.existsByMemberId(command.memberId());
@@ -49,6 +50,7 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
     }
 
     @Override
+    @Transactional
     public void updateDeliveryAddress(UpdateAddressCommand command) {
         DeliveryAddress deliveryAddress = getAddressValidated(command.addressId(), command.memberId());
         deliveryAddress.update(command.recipientName(), command.phoneNumber(), command.zipcode(), command.baseAddress(), command.detailAddress());
@@ -63,6 +65,7 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
     }
 
     @Override
+    @Transactional
     public void deleteDeliveryAddress(Long memberId, Long addressId) {
         DeliveryAddress deliveryAddress = getAddressValidated(addressId, memberId);
 
@@ -72,6 +75,13 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
         }
 
         saveDeliveryAddressPort.delete(deliveryAddress);
+    }
+
+    @Override
+    public List<DeliveryAddressResponse> getDeliveryAddresses(Long memberId) {
+        List<DeliveryAddress> deliveryAddresses = loadDeliveryAddressPort.findAllByMemberIdOrderByDefaultDescCreatedAtDesc(memberId);
+
+        return deliveryAddressResponseMapper.toAddressResponseList(deliveryAddresses);
     }
 
     // 주소 조회 및 현재 로그인한 멤버의 소유인지 검증
@@ -93,13 +103,5 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
                     oldDefault.markAsNonDefault();
                     saveDeliveryAddressPort.save(oldDefault);
                 });
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<DeliveryAddressResponse> getDeliveryAddresses(Long memberId) {
-        List<DeliveryAddress> deliveryAddresses = loadDeliveryAddressPort.findAllByMemberIdOrderByDefaultDescCreatedAtDesc(memberId);
-
-        return deliveryAddressResponseMapper.toAddressResponseList(deliveryAddresses);
     }
 }

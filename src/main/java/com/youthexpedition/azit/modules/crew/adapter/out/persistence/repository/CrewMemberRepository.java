@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository
 import com.youthexpedition.azit.modules.crew.adapter.out.persistence.entity.CrewMemberEntity;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,4 +23,8 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
 
     @Query("SELECT cm FROM CrewMemberEntity cm JOIN FETCH cm.crew WHERE cm.memberId = :memberId AND cm.status = :status")
     List<CrewMemberEntity> findAllJoinedCrewsByMemberId(@Param("memberId") Long memberId, @Param("status") CrewMemberStatus status);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM CrewMemberEntity cm WHERE cm.memberId = :memberId")
+    void deleteByMemberId(@Param("memberId") Long memberId);
 }

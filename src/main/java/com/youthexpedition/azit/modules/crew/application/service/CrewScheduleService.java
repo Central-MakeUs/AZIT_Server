@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 public class CrewScheduleService implements CrewScheduleUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadCrewSchedulePort loadCrewSchedulePort;
@@ -62,6 +62,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private static final double CHECK_IN_AVAILABLE_DISTANCE_METERS = 1000.0;
 
     @Override
+    @Transactional
     public void createSchedule(CreateScheduleCommand command) {
         // 크루 정회원인지 확인
         CrewMember creator = getJoinedMember(command.crewId(), command.creatorId());
@@ -100,6 +101,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void updateSchedule(UpdateScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
@@ -140,6 +142,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void cancelSchedule(CancelScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
@@ -166,6 +169,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void participateSchedule(CrewScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
@@ -194,6 +198,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void cancelParticipation(CrewScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
@@ -221,7 +226,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         saveCrewSchedulePort.save(schedule);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public CrewScheduleDetailResponse getScheduleDetail(CrewScheduleCommand command) {
         ScheduleData data = getValidatedScheduleData(command);
@@ -231,7 +235,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public SliceResponse<ParticipantResponse> getScheduleParticipants(CrewScheduleCommand command, CursorPageQuery query) {
         ScheduleData data = getValidatedScheduleData(command);
 
@@ -266,7 +269,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return new ScheduleData(schedule, profileMap, crewMemberMap);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<CrewScheduleListResponse> getSchedules(CrewScheduleQuery query) {
         // 정회원인지 확인
@@ -287,7 +289,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return crewScheduleResponseMapper.toScheduleListResponse(schedules, query.memberId(), activeMemberIdsMap);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<CrewScheduleMonthlyListResponse> getMonthlySchedulesForCalendar(CrewScheduleMonthlyQuery query) {
         // 정회원인지 확인
@@ -298,7 +299,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return crewScheduleResponseMapper.toScheduleMonthlyListResponse(monthlyScheduleMap);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<CrewScheduleListResponse> getMySchedules(Long memberId) {
         // 참여 중인 일정 조회
@@ -315,7 +315,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return crewScheduleResponseMapper.toScheduleListResponse(schedules, memberId, activeMemberIdsMap);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public CheckInStatusResponse getCheckInStatus(Long memberId) {
         LocalDateTime now = LocalDateTime.now();
@@ -398,6 +397,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void checkInSchedule(CheckInCommand command) {
         LocalDateTime now = LocalDateTime.now();
         CrewSchedule schedule = getSchedule(command.scheduleId());
@@ -441,7 +441,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public MyAttendanceLogResponse getMyAttendanceLogs(MyAttendanceMonthlyQuery query) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -461,7 +460,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return crewScheduleResponseMapper.toMyAttendanceLogResponse(attendanceCount, totalPoints, attendanceLogs);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<MyAttendanceMonthlyListResponse> getMyAttendancesForCalendar(MyAttendanceMonthlyQuery query) {
         LocalDateTime now = LocalDateTime.now();

@@ -45,7 +45,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class OrderService implements OrderUseCase {
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
@@ -61,7 +61,6 @@ public class OrderService implements OrderUseCase {
     private final DeliveryAddressResponseMapper deliveryAddressResponseMapper;
 
     @Override
-    @Transactional(readOnly = true)
     public OrderCheckoutResponse getCheckoutInfoFromCart(Long memberId, List<Long> cartItemIds, Long deliveryAddressId) {
         Member member = getMember(memberId);
 
@@ -78,7 +77,6 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public OrderCheckoutResponse getCheckoutInfoDirect(Long memberId, Long skuId, Integer quantity, Long deliveryAddressId) {
         Member member = getMember(memberId);
 
@@ -96,6 +94,7 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
+    @Transactional
     @Retryable(
             retryFor = {DataIntegrityViolationException.class}, // db 에러 시 재시도
             maxAttempts = 3,
@@ -208,7 +207,6 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public OrderDetailResponse getOrderDetail(Long memberId, String orderNumber) {
         Order order = loadOrderPort.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new BusinessException(StoreErrorCode.ORDER_NOT_FOUND));
@@ -222,7 +220,6 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public SliceResponse<OrderListResponse> getOrders(Long memberId, CursorPageQuery query) {
         SliceResponse<Order> orderSlice = loadOrderPort.findOrdersByMemberId(memberId, query);
 
