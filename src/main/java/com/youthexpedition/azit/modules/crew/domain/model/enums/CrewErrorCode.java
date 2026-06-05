@@ -46,6 +46,7 @@ public enum CrewErrorCode implements BaseErrorCode {
     CANNOT_CANCEL_AFTER_CHECK_IN("CANNOT_CANCEL_AFTER_CHECK_IN", "이미 출석 완료된 일정은 취소가 불가능합니다.", HttpStatus.BAD_REQUEST),
     SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME("SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME", "출석이 가능한 일정은 수정 및 삭제가 불가능합니다.", HttpStatus.BAD_REQUEST),
     PARTICIPATION_AND_CANCEL_CLOSED("PARTICIPATION_AND_CANCEL_CLOSED", "출석 가능 시간이 지나 일정 신청 및 취소가 불가능합니다.", HttpStatus.BAD_REQUEST),
+    INVALID_DATE_RANGE("INVALID_DATE_RANGE", "startDate와 endDate는 둘 다 입력되어야 하며, startDate는 endDate보다 이전이어야 합니다.", HttpStatus.BAD_REQUEST),
     ;
 
     private final String code;

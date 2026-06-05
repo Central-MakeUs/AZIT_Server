@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface CrewScheduleRepositoryCustom {
-    List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, YearMonth yearMonth, RunType runType);
+    List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, LocalDate startDate, LocalDate endDate, YearMonth yearMonth, RunType runType);
     Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, YearMonth yearMonth);
     List<CrewScheduleEntity> findAllByMemberId(Long memberId);
     List<CrewScheduleEntity> findAllTodaySchedulesByMemberId(Long memberId, LocalDateTime now);
