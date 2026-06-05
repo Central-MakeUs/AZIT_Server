@@ -197,7 +197,7 @@ public interface CrewScheduleControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "NOT_A_CREW_MEMBER",
+            "NOT_A_CREW_MEMBER", "INVALID_DATE_RANGE",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<List<CrewScheduleListResponse>> getCrewSchedules(

@@ -269,7 +269,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     @Transactional(readOnly = true)
     @Override
     public List<CrewScheduleListResponse> getSchedules(CrewScheduleQuery query) {
-        // 정회원인지 확인
+        validateDateRange(query.startDate(), query.endDate());
         getJoinedMember(query.crewId(), query.memberId());
 
         // 필터링된 일정 목록 조회
@@ -519,6 +519,16 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (!schedule.getCreatorId().equals(memberId)) {
             log.warn("[CREW_SCHEDULE] memberId: {} 가 본인이 생성하지 않은 scheduleId: {} 에 대해 조작을 시도했습니다.", memberId, schedule.getId());
             throw new BusinessException(CommonErrorCode.FORBIDDEN_ERROR);
+        }
+    }
+
+    private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+        // startDate 또는 endDate 둘 중 하나만 있을 경우
+        boolean onlyOnePresent = (startDate == null) != (endDate == null);
+        // startDate가 endDate보다 과거일 경우
+        boolean startAfterEnd = startDate != null && startDate.isAfter(endDate);
+        if (onlyOnePresent || startAfterEnd) {
+            throw new BusinessException(CrewErrorCode.INVALID_DATE_RANGE);
         }
     }
 

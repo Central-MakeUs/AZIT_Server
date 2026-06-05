@@ -94,8 +94,8 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
     public CommonResponse<List<CrewScheduleListResponse>> getCrewSchedules(
             @PathVariable Long crewId,
             @RequestParam(required = false) LocalDate date,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
             @RequestParam(required = false) RunType runType,
             @CurrentMemberId Long memberId) {
