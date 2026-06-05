@@ -15,12 +15,20 @@ import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.LoadTermsVersionPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberTermsConsentPort;
 import com.youthexpedition.azit.modules.member.application.service.mapper.MemberResponseMapper;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
+import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsent;
+import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsentHistory;
+import com.youthexpedition.azit.modules.member.domain.model.TermsVersion;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
+import com.youthexpedition.azit.modules.member.domain.model.enums.TermsType;
+
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -66,6 +74,10 @@ class MemberServiceTest {
     private MemberResponseMapper memberResponseMapper;
     @Mock
     private ImageUpdateUtil imageUpdateUtil;
+    @Mock
+    private LoadTermsVersionPort loadTermsVersionPort;
+    @Mock
+    private SaveMemberTermsConsentPort saveMemberTermsConsentPort;
 
     @InjectMocks
     private MemberService memberService;
@@ -173,30 +185,68 @@ class MemberServiceTest {
         private final Long memberId = 1L;
         private final Member member = Member.create(SocialProvider.KAKAO, "socialId", "test@example.com", "password", true, "nickname");
 
+        private final List<TermsVersion> allLatestVersions = List.of(
+                termsVersion(1L, TermsType.SERVICE, true),
+                termsVersion(2L, TermsType.PRIVACY, true),
+                termsVersion(3L, TermsType.LOCATION, true),
+                termsVersion(4L, TermsType.THIRD_PARTY, true),
+                termsVersion(5L, TermsType.MARKETING, false),
+                termsVersion(6L, TermsType.NOTIFICATION, false)
+        );
+
         @Test
-        @DisplayName("성공")
-        void agreeToTerms_success() {
+        @DisplayName("성공 - 선택 약관 포함 전체 동의")
+        void agreeToTerms_success_withAllTermsAgreed() {
             // given
             AgreeToTermsCommand command = new AgreeToTermsCommand(true, true, true, true, true, true);
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
             doReturn(member).when(saveMemberPort).save(any(Member.class));
+            doReturn(allLatestVersions).when(loadTermsVersionPort).findAllLatest();
 
             // when
             memberService.agreeToTerms(memberId, command);
 
             // then
-            verify(loadMemberPort, times(1)).findById(memberId);
             verify(saveMemberPort, times(1)).save(member);
+            verify(saveMemberTermsConsentPort, times(1)).saveAll(argThat(consents ->
+                    consents.size() == 6 // 전체 6종 동의
+            ));
+            verify(saveMemberTermsConsentPort, times(1)).saveAllHistory(argThat(histories ->
+                    histories.size() == 6 && histories.stream().allMatch(MemberTermsConsentHistory::isAgreed)
+            ));
             assertTrue(member.isMarketingTermsAgreed());
             assertTrue(member.isNotificationAgreed());
             assertNotNull(member.getEssentialTermsAgreedAt());
         }
 
         @Test
+        @DisplayName("성공 - 선택 약관 미동의 시 consent는 저장되지 않고 history에만 미동의 이력 저장")
+        void agreeToTerms_success_withOptionalTermsDeclined() {
+            // given
+            AgreeToTermsCommand command = new AgreeToTermsCommand(true, true, true, true, false, false);
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+            doReturn(allLatestVersions).when(loadTermsVersionPort).findAllLatest();
+
+            // when
+            memberService.agreeToTerms(memberId, command);
+
+            // then
+            verify(saveMemberTermsConsentPort, times(1)).saveAll(argThat(consents ->
+                    consents.size() == 4 // 필수 4종만 저장
+            ));
+            verify(saveMemberTermsConsentPort, times(1)).saveAllHistory(argThat(histories ->
+                    histories.size() == 6 // 전체 6종 이력 저장
+                    && histories.stream().filter(h -> !h.isAgreed()).count() == 2 // 미동의 2건 포함
+            ));
+            assertFalse(member.isMarketingTermsAgreed());
+            assertFalse(member.isNotificationAgreed());
+        }
+
+        @Test
         @DisplayName("실패 - 필수 약관 미동의")
         void agreeToTerms_fail_requiredTermsNotAgreed() {
             // given
-            // 서비스 이용약관(serviceTermsAgreed)을 false로 설정
             AgreeToTermsCommand command = new AgreeToTermsCommand(false, true, true, true, false, false);
 
             // when & then
@@ -207,6 +257,19 @@ class MemberServiceTest {
             assertEquals(MemberErrorCode.REQUIRED_TERMS_NOT_AGREED, exception.getErrorCode());
             verify(loadMemberPort, never()).findById(anyLong());
             verify(saveMemberPort, never()).save(any(Member.class));
+            verify(loadTermsVersionPort, never()).findAllLatest();
+            verify(saveMemberTermsConsentPort, never()).saveAll(any());
+        }
+
+        private TermsVersion termsVersion(Long id, TermsType type, boolean isRequired) {
+            return TermsVersion.builder()
+                    .id(id)
+                    .termsType(type)
+                    .version("1.0")
+                    .isRequired(isRequired)
+                    .effectiveAt(LocalDateTime.of(2024, 1, 1, 0, 0))
+                    .createdAt(LocalDateTime.of(2024, 1, 1, 0, 0))
+                    .build();
         }
     }
 

@@ -86,8 +86,8 @@ public class MemberService implements MemberUseCase {
         // 기존 동의 버전 재동의: agreed_at, updated_at 갱신
         Set<Long> reAgreedVersionIds = latestVersions.stream()
                 .filter(v -> command.isAgreed(v.getTermsType()))
-                .filter(v -> alreadyConsentedVersionIds.contains(v.getId()))
                 .map(TermsVersion::getId)
+                .filter(alreadyConsentedVersionIds::contains)
                 .collect(Collectors.toSet());
         if (!reAgreedVersionIds.isEmpty()) {
             saveMemberTermsConsentPort.updateAgreedAt(memberId, reAgreedVersionIds, now);

@@ -53,7 +53,7 @@ public class TermsPersistenceAdapter implements LoadTermsVersionPort, SaveMember
 
     @Override
     public void updateAgreedAt(Long memberId, Set<Long> versionIds, LocalDateTime agreedAt) {
-        memberTermsConsentRepository.updateAgreedAt(memberId, (Collection<Long>) versionIds, agreedAt);
+        memberTermsConsentRepository.updateAgreedAt(memberId, versionIds, agreedAt);
     }
 
     @Override
