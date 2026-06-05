@@ -273,7 +273,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         getJoinedMember(query.crewId(), query.memberId());
 
         // 필터링된 일정 목록 조회
-        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.yearMonth(), query.runType());
+        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.startDate(), query.endDate(), query.yearMonth(), query.runType());
 
         List<Long> allParticipantIds = schedules.stream()
                 .flatMap(s -> s.getParticipantIds().stream()).distinct().toList();

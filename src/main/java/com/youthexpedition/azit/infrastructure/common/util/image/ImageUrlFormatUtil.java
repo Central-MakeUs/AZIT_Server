@@ -30,7 +30,7 @@ public class ImageUrlFormatUtil {
 
     /**
      * 이미지 경로에서 S3 Key 추출
-     * CloudFront URL: https://azitcrew.com/profile/123/2026-04-07_550e8400.jpg → profile/123/2026-04-07_550e8400.jpg
+     * CloudFront URL: https://images.azitcrew.com/profile/123/2026-04-07_550e8400.jpg → profile/123/2026-04-07_550e8400.jpg
      * 상대 경로:      /profile/123/2026-04-07_550e8400.jpg                     → profile/123/2026-04-07_550e8400.jpg
      */
     public String extractS3Key(String imageUrl) {

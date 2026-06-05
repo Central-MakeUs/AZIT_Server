@@ -27,12 +27,12 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
     private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1;
 
     @Override
-    public List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, YearMonth yearMonth, RunType runType) {
+    public List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, LocalDate startDate, LocalDate endDate, YearMonth yearMonth, RunType runType) {
         return queryFactory.selectFrom(crewScheduleEntity)
                 .where(
                         crewScheduleEntity.crewId.eq(crewId),
-                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE), // 삭제된 일정은 제외
-                        filterByDateOrMonth(date, yearMonth),
+                        crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
+                        filterByDateRange(date, startDate, endDate, yearMonth),
                         eqRunType(runType)
                 )
                 .orderBy(crewScheduleEntity.meetingAt.asc())
@@ -225,14 +225,21 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
         return crewId != null ? crewScheduleEntity.crewId.eq(crewId) : null;
     }
 
-    private BooleanExpression filterByDateOrMonth(LocalDate date, YearMonth yearMonth) {
-        // 특정 날짜가 있으면 해당 일자 조회
+    private BooleanExpression filterByDateRange(LocalDate date, LocalDate startDate, LocalDate endDate, YearMonth yearMonth) {
+        // 특정 날짜가 있으면 해당 일자 조회 (최우선)
         if (date != null) return eqDate(date);
+
+        // startDate/endDate 범위가 있으면 해당 범위 조회
+        if (startDate != null && endDate != null) {
+            return crewScheduleEntity.meetingAt.between(
+                    startDate.atStartOfDay(),
+                    endDate.atTime(LocalTime.MAX)
+            );
+        }
 
         // 월 정보가 없으면 현재 시간 기준 월로 설정
         YearMonth targetMonth = (yearMonth != null) ? yearMonth : YearMonth.now();
 
-        // 해당 월 전체 조회
         return crewScheduleEntity.meetingAt.between(
                 targetMonth.atDay(1).atStartOfDay(),
                 targetMonth.atEndOfMonth().atTime(LocalTime.MAX)
