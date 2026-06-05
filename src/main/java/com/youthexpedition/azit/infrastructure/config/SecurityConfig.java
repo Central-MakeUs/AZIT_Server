@@ -47,17 +47,19 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(securityProperties.getPermitAllPaths().toArray(String[]::new)).permitAll()
-                         // 공통 허용 경로 (로그인 등)
-                        .requestMatchers("/api/v1/auth/social-login/**",
+                         // 비로그인시에도 가능한 공통 허용 경로
+                        .requestMatchers(
+                                "/api/v1/auth/social-login/**",
                                 "/api/v1/auth/reissue",
                                 "/api/v1/auth/apple/notification"
                         ).permitAll()
 
-                        // 약관 동의는 약관 동의 대기 상태 회원만 가능
-                        .requestMatchers("/api/v1/members/terms").hasAuthority("STATUS_PENDING_TERMS")
-
-                        // 로그아웃은 약관 동의 전(PENDING_TERMS)·정상(ACTIVE) 회원 모두 가능
-                        .requestMatchers("/api/v1/auth/logout").hasAnyAuthority("STATUS_PENDING_TERMS", "STATUS_ACTIVE")
+                        // 약관 동의 전(PENDING_TERMS)·정상(ACTIVE) 회원 모두 가능
+                        .requestMatchers(
+                                "/api/v1/auth/logout",
+                                "/api/v1/members/terms"
+                        )
+                        .hasAnyAuthority("STATUS_PENDING_TERMS", "STATUS_ACTIVE")
 
                         // 나머지 모든 API: ACTIVE 상태(약관 동의 완료, 비탈퇴) 회원만 접근 가능
                         .anyRequest().hasAuthority("STATUS_ACTIVE")
