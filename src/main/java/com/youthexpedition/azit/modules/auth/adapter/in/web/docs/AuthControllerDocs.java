@@ -26,7 +26,7 @@ public interface AuthControllerDocs {
     @Operation(
             summary = "소셜 로그인 (애플 제외)",
             description = """
-            카카오 등 소셜 플랫폼의 인가 코드 및 액세스 토큰을 통해 로그인을 진행하고 JWT 토큰과 회원의 현재 상태, 최근 가입한 크루 ID를 반환합니다. <br><br>
+            카카오 등 소셜 플랫폼의 인가 코드 및 액세스 토큰을 통해 로그인을 진행합니다. <br><br>
             
             **[참고 사항]** <br>
             * 보안을 위해 리프레시 토큰은 HttpOnly 쿠키에 저장되어 발급됩니다.

@@ -21,9 +21,14 @@ import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedPro
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.LoadTermsVersionPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberTermsConsentPort;
 import com.youthexpedition.azit.modules.member.application.service.mapper.MemberResponseMapper;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsent;
+import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsentHistory;
+import com.youthexpedition.azit.modules.member.domain.model.TermsVersion;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,6 +57,8 @@ public class MemberService implements MemberUseCase {
     private final TokenPort tokenPort;
     private final MemberResponseMapper memberResponseMapper;
     private final ImageUpdateUtil imageUpdateUtil;
+    private final LoadTermsVersionPort loadTermsVersionPort;
+    private final SaveMemberTermsConsentPort saveMemberTermsConsentPort;
 
     private static final String BLACKLIST_REASON_WITHDRAWN = "withdrawn";
 
@@ -62,7 +70,36 @@ public class MemberService implements MemberUseCase {
         Member member = getMember(memberId);
         member.completeTermsAgreement(command.marketingTermsAgreed(), command.notificationTermsAgreed()); // 멤버 상태 업데이트 (약관 동의)
         saveMemberPort.save(member);
+
+        List<TermsVersion> latestVersions = loadTermsVersionPort.findAllLatest();
+        Set<Long> alreadyConsentedVersionIds = loadTermsVersionPort.findConsentedVersionIdsByMemberId(memberId);
+        LocalDateTime now = LocalDateTime.now();
+
+        // 신규 버전: INSERT
+        List<MemberTermsConsent> newConsents = latestVersions.stream()
+                .filter(v -> command.isAgreed(v.getTermsType()))
+                .filter(v -> !alreadyConsentedVersionIds.contains(v.getId()))
+                .map(v -> MemberTermsConsent.agree(memberId, v.getId()))
+                .toList();
+        saveMemberTermsConsentPort.saveAll(newConsents);
+
+        // 기존 동의 버전 재동의: agreed_at, updated_at 갱신
+        Set<Long> reAgreedVersionIds = latestVersions.stream()
+                .filter(v -> command.isAgreed(v.getTermsType()))
+                .filter(v -> alreadyConsentedVersionIds.contains(v.getId()))
+                .map(TermsVersion::getId)
+                .collect(Collectors.toSet());
+        if (!reAgreedVersionIds.isEmpty()) {
+            saveMemberTermsConsentPort.updateAgreedAt(memberId, reAgreedVersionIds, now);
+        }
+
+        // 이력: 동의/미동의 여부와 관계없이 모든 최신 약관에 대해 저장
+        List<MemberTermsConsentHistory> histories = latestVersions.stream()
+                .map(v -> MemberTermsConsentHistory.create(memberId, v.getId(), command.isAgreed(v.getTermsType())))
+                .toList();
+        saveMemberTermsConsentPort.saveAllHistory(histories);
     }
+
 
     @Override
     @Transactional
