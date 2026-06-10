@@ -1,5 +1,6 @@
 package com.youthexpedition.azit.modules.member.adapter.out.persistence;
 
+import com.youthexpedition.azit.infrastructure.config.CacheConfig;
 import com.youthexpedition.azit.modules.member.adapter.out.mapper.MemberTermsConsentHistoryMapper;
 import com.youthexpedition.azit.modules.member.adapter.out.mapper.MemberTermsConsentMapper;
 import com.youthexpedition.azit.modules.member.adapter.out.mapper.TermsVersionMapper;
@@ -8,7 +9,6 @@ import com.youthexpedition.azit.modules.member.adapter.out.persistence.repositor
 import com.youthexpedition.azit.modules.member.adapter.out.persistence.repository.TermsVersionRepository;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadTermsVersionPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberTermsConsentPort;
-import com.youthexpedition.azit.infrastructure.config.CacheConfig;
 import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsent;
 import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsentHistory;
 import com.youthexpedition.azit.modules.member.domain.model.TermsVersion;
@@ -17,7 +17,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
