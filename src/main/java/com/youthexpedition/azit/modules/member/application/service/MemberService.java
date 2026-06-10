@@ -93,6 +93,16 @@ public class MemberService implements MemberUseCase {
             saveMemberTermsConsentPort.updateAgreedAt(memberId, reAgreedVersionIds, now);
         }
 
+        // 동의 철회: 기존에 동의했지만 이번 요청에서 미동의한 버전은 현재 상태 테이블에서 삭제
+        Set<Long> withdrawnVersionIds = latestVersions.stream()
+                .filter(v -> !command.isAgreed(v.getTermsType()))
+                .map(TermsVersion::getId)
+                .filter(alreadyConsentedVersionIds::contains)
+                .collect(Collectors.toSet());
+        if (!withdrawnVersionIds.isEmpty()) {
+            saveMemberTermsConsentPort.deleteByMemberIdAndVersionIds(memberId, withdrawnVersionIds);
+        }
+
         // 이력: 동의/미동의 여부와 관계없이 모든 최신 약관에 대해 저장
         List<MemberTermsConsentHistory> histories = latestVersions.stream()
                 .map(v -> MemberTermsConsentHistory.create(memberId, v.getId(), command.isAgreed(v.getTermsType())))

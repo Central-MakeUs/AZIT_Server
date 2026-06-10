@@ -12,6 +12,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
+import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
@@ -20,15 +21,11 @@ import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPo
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberTermsConsentPort;
 import com.youthexpedition.azit.modules.member.application.service.mapper.MemberResponseMapper;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
-import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
-import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsent;
 import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsentHistory;
 import com.youthexpedition.azit.modules.member.domain.model.TermsVersion;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
 import com.youthexpedition.azit.modules.member.domain.model.enums.TermsType;
-
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -37,20 +34,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MemberService 단위 테스트")
@@ -241,6 +236,48 @@ class MemberServiceTest {
             ));
             assertFalse(member.isMarketingTermsAgreed());
             assertFalse(member.isNotificationAgreed());
+        }
+
+        @Test
+        @DisplayName("성공 - 기존 동의한 선택 약관 철회 시 consent 삭제 및 철회 이력 저장")
+        void agreeToTerms_success_withOptionalTermsWithdrawn() {
+            // given - 이전에 전체(필수 4종 + 선택 2종) 동의한 상태에서 선택 약관만 철회
+            AgreeToTermsCommand command = new AgreeToTermsCommand(true, true, true, true, false, false);
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+            doReturn(allLatestVersions).when(loadTermsVersionPort).findAllLatest();
+            doReturn(Set.of(1L, 2L, 3L, 4L, 5L, 6L)).when(loadTermsVersionPort).findConsentedVersionIdsByMemberId(memberId);
+
+            // when
+            memberService.agreeToTerms(memberId, command);
+
+            // then
+            verify(saveMemberTermsConsentPort, times(1)).saveAll(argThat(List::isEmpty)); // 신규 INSERT 없음
+            verify(saveMemberTermsConsentPort, times(1)).updateAgreedAt(eq(memberId), eq(Set.of(1L, 2L, 3L, 4L)), any()); // 필수 4종 재동의 갱신
+            verify(saveMemberTermsConsentPort, times(1)).deleteByMemberIdAndVersionIds(memberId, Set.of(5L, 6L)); // 선택 2종 철회 삭제
+            verify(saveMemberTermsConsentPort, times(1)).saveAllHistory(argThat(histories ->
+                    histories.size() == 6
+                    && histories.stream().filter(h -> !h.isAgreed()).count() == 2 // 철회 이력 2건 포함
+            ));
+            assertFalse(member.isMarketingTermsAgreed());
+            assertFalse(member.isNotificationAgreed());
+        }
+
+        @Test
+        @DisplayName("성공 - 기존에 미동의한 선택 약관은 철회 삭제 대상이 아님")
+        void agreeToTerms_success_noDeleteWhenNeverConsented() {
+            // given - 필수 4종만 동의된 상태에서 동일하게 재동의 (선택 약관은 원래 미동의)
+            AgreeToTermsCommand command = new AgreeToTermsCommand(true, true, true, true, false, false);
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+            doReturn(allLatestVersions).when(loadTermsVersionPort).findAllLatest();
+            doReturn(Set.of(1L, 2L, 3L, 4L)).when(loadTermsVersionPort).findConsentedVersionIdsByMemberId(memberId);
+
+            // when
+            memberService.agreeToTerms(memberId, command);
+
+            // then
+            verify(saveMemberTermsConsentPort, never()).deleteByMemberIdAndVersionIds(anyLong(), any()); // 삭제할 동의 레코드 없음
         }
 
         @Test

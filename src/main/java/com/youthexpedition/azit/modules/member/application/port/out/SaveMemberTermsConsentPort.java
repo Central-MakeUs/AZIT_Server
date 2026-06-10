@@ -10,5 +10,6 @@ import java.util.Set;
 public interface SaveMemberTermsConsentPort {
     void saveAll(List<MemberTermsConsent> consents);
     void updateAgreedAt(Long memberId, Set<Long> versionIds, LocalDateTime agreedAt);
+    void deleteByMemberIdAndVersionIds(Long memberId, Set<Long> versionIds);
     void saveAllHistory(List<MemberTermsConsentHistory> histories);
 }
