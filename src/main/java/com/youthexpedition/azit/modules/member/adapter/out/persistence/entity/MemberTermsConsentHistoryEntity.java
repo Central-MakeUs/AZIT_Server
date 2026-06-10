@@ -1,9 +1,8 @@
 package com.youthexpedition.azit.modules.member.adapter.out.persistence.entity;
 
+import com.youthexpedition.azit.infrastructure.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "member_terms_consent_history")
@@ -11,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-public class MemberTermsConsentHistoryEntity {
+public class MemberTermsConsentHistoryEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +24,4 @@ public class MemberTermsConsentHistoryEntity {
 
     @Column(name = "is_agreed", nullable = false)
     private boolean isAgreed;
-
-    @Column(name = "changed_at", nullable = false)
-    private LocalDateTime changedAt;
 }

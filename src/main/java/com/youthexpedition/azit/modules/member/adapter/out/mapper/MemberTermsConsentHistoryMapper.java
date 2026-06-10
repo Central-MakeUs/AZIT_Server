@@ -12,7 +12,6 @@ public class MemberTermsConsentHistoryMapper {
                 .memberId(domain.getMemberId())
                 .termsVersionId(domain.getTermsVersionId())
                 .isAgreed(domain.isAgreed())
-                .changedAt(domain.getChangedAt())
                 .build();
     }
 }
