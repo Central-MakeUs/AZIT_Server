@@ -13,10 +13,15 @@ import com.youthexpedition.azit.modules.auth.domain.model.SocialProfile;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.LoadTermsVersionPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.TermsVersion;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.provider.ProfileImageProvider;
+
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +37,7 @@ public class SocialLoginService implements SocialLoginUseCase {
     private final SaveMemberPort saveMemberPort;
     private final TokenPort tokenPort;
     private final LoadCrewMemberPort loadCrewMemberPort;
+    private final LoadTermsVersionPort loadTermsVersionPort;
     private final JwtProvider jwtProvider;
     private final ProfileImageProvider profileImageProvider;
 
@@ -49,11 +55,13 @@ public class SocialLoginService implements SocialLoginUseCase {
         Member savedMember = saveMemberPort.save(member);
 
         Long crewId = null;
-        // ACTIVE 상태일 경우 가장 최근에 가입한 크루 조회
-        if (member.getStatus() == MemberStatus.ACTIVE) {
+        boolean needsTermsUpdate = false;
+        // ACTIVE 상태일 경우 가장 최근에 가입한 크루 조회 및 약관 버전 체크
+        if (savedMember.getStatus() == MemberStatus.ACTIVE) {
             crewId = loadCrewMemberPort.findRecentJoinedCrewMember(savedMember.getId())
                     .map(CrewMember::getCrewId)
                     .orElse(null);
+            needsTermsUpdate = hasRequiredTermsUpdate(savedMember.getId());
         }
 
         // 토큰 생성
@@ -66,7 +74,12 @@ public class SocialLoginService implements SocialLoginUseCase {
         // Redis에 Refresh Token 저장
         saveRefreshToken(savedMember.getId(), authToken.refreshToken());
 
-        return new AuthResult(authToken, savedMember.getStatus(), crewId);
+        return AuthResult.builder()
+                .authToken(authToken)
+                .status(savedMember.getStatus())
+                .crewId(crewId)
+                .needsTermsUpdate(needsTermsUpdate)
+                .build();
     }
 
     private Member upsertMember(SocialProfile profile) {
@@ -100,6 +113,14 @@ public class SocialLoginService implements SocialLoginUseCase {
         }
 
         return member;
+    }
+
+    private boolean hasRequiredTermsUpdate(Long memberId) {
+        List<TermsVersion> latestVersions = loadTermsVersionPort.findAllLatest();
+        Set<Long> consentedVersionIds = loadTermsVersionPort.findConsentedVersionIdsByMemberId(memberId);
+        return latestVersions.stream()
+                .filter(TermsVersion::isRequired)
+                .anyMatch(v -> !consentedVersionIds.contains(v.getId()));
     }
 
     private void saveRefreshToken(Long memberId, String refreshToken) {

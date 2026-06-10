@@ -7,6 +7,7 @@ import lombok.Builder;
 public record AuthResult(
         AuthToken authToken,
         MemberStatus status,
-        Long crewId
+        Long crewId,
+        boolean needsTermsUpdate
 ) {
 }

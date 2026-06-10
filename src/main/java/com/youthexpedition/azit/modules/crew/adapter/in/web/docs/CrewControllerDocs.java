@@ -69,11 +69,11 @@ public interface CrewControllerDocs {
             사용자가 가입 신청을 하기 전, 크루 정보를 미리 확인할 때 사용합니다. <br><br>
             
             **[제약 사항]** <br>
-            * 존재하지 않거나 잘못된 초대 코드일 경우 CREW_NOT_FOUND 오류가 발생합니다.
+            * 유효하지 않거나 만료된 초대 코드일 경우 INVALID_INVITATION_CODE 오류가 발생합니다.
             """
     )
     @ApiErrorCodeExamples({
-            "CREW_NOT_FOUND",
+            "INVALID_INVITATION_CODE",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CrewInvitationResponse> getCrewByInvitation(@PathVariable String invitationCode);

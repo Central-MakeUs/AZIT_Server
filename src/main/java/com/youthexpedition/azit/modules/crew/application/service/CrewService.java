@@ -148,7 +148,11 @@ public class CrewService implements CrewUseCase {
     @Override
     public CrewInvitationResponse getCrewInfoByInvitationCode(String invitationCode) {
         Crew crew = loadCrewPort.findByInvitationCode(invitationCode)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(CrewErrorCode.INVALID_INVITATION_CODE));
+
+        if (crew.isDissolved()) {
+            throw new BusinessException(CrewErrorCode.INVALID_INVITATION_CODE);
+        }
 
         return crewResponseMapper.toInvitationResponse(crew);
     }

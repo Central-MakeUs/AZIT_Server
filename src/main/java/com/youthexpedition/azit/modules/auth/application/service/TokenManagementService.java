@@ -10,9 +10,14 @@ import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.LoadTermsVersionPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.TermsVersion;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
+
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +32,7 @@ public class TokenManagementService implements TokenUseCase {
     private final TokenPort tokenPort;
     private final TokenProviderPort tokenProviderPort;
     private final LoadCrewMemberPort loadCrewMemberPort;
+    private final LoadTermsVersionPort loadTermsVersionPort;
 
     private static final String BLACKLIST_REASON_LOGOUT = "logout";
     private static final long PREV_TOKEN_TTL_SECONDS = 5;
@@ -75,7 +81,12 @@ public class TokenManagementService implements TokenUseCase {
                     .accessTokenExpiresIn(tokenProviderPort.getAccessTokenExpirationSeconds())
                     .build();
 
-            return new AuthResult(token, member.getStatus(), resolveCrewId(member));
+            return AuthResult.builder()
+                    .authToken(token)
+                    .status(member.getStatus())
+                    .crewId(resolveCrewId(member))
+                    .needsTermsUpdate(hasRequiredTermsUpdate(member))
+                    .build();
         }
 
         // 정상 경로
@@ -85,7 +96,12 @@ public class TokenManagementService implements TokenUseCase {
                 .accessTokenExpiresIn(tokenProviderPort.getAccessTokenExpirationSeconds())
                 .build();
 
-        return new AuthResult(token, member.getStatus(), resolveCrewId(member));
+        return AuthResult.builder()
+                    .authToken(token)
+                    .status(member.getStatus())
+                    .crewId(resolveCrewId(member))
+                    .needsTermsUpdate(hasRequiredTermsUpdate(member))
+                    .build();
     }
 
     private Long resolveCrewId(Member member) {
@@ -93,6 +109,15 @@ public class TokenManagementService implements TokenUseCase {
         return loadCrewMemberPort.findRecentJoinedCrewMember(member.getId())
                 .map(CrewMember::getCrewId)
                 .orElse(null);
+    }
+
+    private boolean hasRequiredTermsUpdate(Member member) {
+        if (member.getStatus() != MemberStatus.ACTIVE) return false;
+        List<TermsVersion> latestVersions = loadTermsVersionPort.findAllLatest();
+        Set<Long> consentedVersionIds = loadTermsVersionPort.findConsentedVersionIdsByMemberId(member.getId());
+        return latestVersions.stream()
+                .filter(TermsVersion::isRequired)
+                .anyMatch(v -> !consentedVersionIds.contains(v.getId()));
     }
 
     @Override
