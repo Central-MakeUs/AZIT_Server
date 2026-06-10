@@ -8,10 +8,12 @@ import com.youthexpedition.azit.modules.member.adapter.out.persistence.repositor
 import com.youthexpedition.azit.modules.member.adapter.out.persistence.repository.TermsVersionRepository;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadTermsVersionPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberTermsConsentPort;
+import com.youthexpedition.azit.infrastructure.config.CacheConfig;
 import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsent;
 import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsentHistory;
 import com.youthexpedition.azit.modules.member.domain.model.TermsVersion;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -30,7 +32,10 @@ public class TermsPersistenceAdapter implements LoadTermsVersionPort, SaveMember
     private final MemberTermsConsentMapper memberTermsConsentMapper;
     private final MemberTermsConsentHistoryMapper memberTermsConsentHistoryMapper;
 
+    // 약관 버전은 변경 빈도가 매우 낮으므로 TTL 기반 로컬 캐시 적용
+    // 추후 어드민에서 약관 변경하는 api 구현될 경우 @CacheEvict 적용 필요
     @Override
+    @Cacheable(value = CacheConfig.LATEST_TERMS_VERSIONS)
     public List<TermsVersion> findAllLatest() {
         return termsVersionRepository.findAllLatest().stream()
                 .map(termsVersionMapper::toDomain)
