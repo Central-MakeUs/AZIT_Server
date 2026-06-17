@@ -53,6 +53,8 @@ public class CrewService implements CrewUseCase {
     private final CrewImageProvider crewImageProvider;
     private final ImageUpdateUtil imageUpdateUtil;
 
+    private static final Long MAX_CREW_LIMIT = 3L;
+
     @Override
     @Transactional
     @Retryable(
@@ -61,6 +63,12 @@ public class CrewService implements CrewUseCase {
             backoff = @Backoff(delay = 100)
     )
     public CreateCrewResponse createCrew(CreateCrewCommand command) {
+        // 최대 3개 크루 가입 제한 (JOINED + REQUESTED 합산)
+        long activeCrewCount = loadCrewMemberPort.countActiveCrewsByMemberId(command.leaderId());
+        if (activeCrewCount >= MAX_CREW_LIMIT) {
+            throw new BusinessException(CrewErrorCode.CREW_JOIN_LIMIT_EXCEEDED);
+        }
+
         // 초대 코드 생성
         String invitationCode = generateUniqueInvitationCode();
 
@@ -103,7 +111,7 @@ public class CrewService implements CrewUseCase {
 
         // 최대 3개 크루 가입 제한 (JOINED + REQUESTED 합산)
         long activeCrewCount = loadCrewMemberPort.countActiveCrewsByMemberId(command.memberId());
-        if (activeCrewCount >= 3) {
+        if (activeCrewCount >= MAX_CREW_LIMIT) {
             throw new BusinessException(CrewErrorCode.CREW_JOIN_LIMIT_EXCEEDED);
         }
 
