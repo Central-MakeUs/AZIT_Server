@@ -61,6 +61,12 @@ public class CrewService implements CrewUseCase {
             backoff = @Backoff(delay = 100)
     )
     public CreateCrewResponse createCrew(CreateCrewCommand command) {
+        // 최대 3개 크루 가입 제한 (JOINED + REQUESTED 합산)
+        long activeCrewCount = loadCrewMemberPort.countActiveCrewsByMemberId(command.leaderId());
+        if (activeCrewCount >= 3) {
+            throw new BusinessException(CrewErrorCode.CREW_JOIN_LIMIT_EXCEEDED);
+        }
+
         // 초대 코드 생성
         String invitationCode = generateUniqueInvitationCode();
 
