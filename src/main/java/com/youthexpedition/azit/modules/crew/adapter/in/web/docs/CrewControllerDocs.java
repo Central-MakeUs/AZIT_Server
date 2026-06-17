@@ -37,7 +37,7 @@ public interface CrewControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "RESERVED_CREW_NAME_KEYWORD",
+            "RESERVED_CREW_NAME_KEYWORD", "CREW_JOIN_LIMIT_EXCEEDED", "INVITATION_CODE_GENERATION_FAILED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN" // 인증 관련 에러
     })
     CommonResponse<CreateCrewResponse> createCrew(
@@ -56,7 +56,7 @@ public interface CrewControllerDocs {
             """
     )
     @ApiErrorCodeExamples({
-            "CREW_NOT_FOUND", "ALREADY_JOINED_CREW", "EXPELLED_REJOINING_COOLDOWN",
+            "CREW_NOT_FOUND", "ALREADY_JOINED_CREW", "EXPELLED_REJOINING_COOLDOWN", "CREW_JOIN_LIMIT_EXCEEDED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> joinCrew(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody JoinCrewRequest request);
