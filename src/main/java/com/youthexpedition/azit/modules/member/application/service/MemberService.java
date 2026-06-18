@@ -229,10 +229,7 @@ public class MemberService implements MemberUseCase {
         // 인원수 일괄 차감
         if (!joinedCrewIds.isEmpty()) {
             log.info("[MEMBER] memberId: {}, crewIds : {} 탈퇴하여 인원수가 차감됩니다.", memberId, joinedCrewIds);
-
-            List<Crew> joinedCrews = loadCrewPort.findAllByIds(joinedCrewIds);
-            joinedCrews.forEach(Crew::decreaseMemberCount);
-            saveCrewPort.saveAll(joinedCrews);
+            saveCrewPort.decrementMemberCountBatch(joinedCrewIds);
         }
 
         // 가입한 모든 크루 상태를 EXITED로 변경 및 저장

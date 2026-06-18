@@ -97,9 +97,7 @@ public class TestMemberService implements TestMemberUseCase {
 
         if (!joinedCrewIds.isEmpty()) {
             log.info("[TEST] memberId: {}, crewIds: {} 탈퇴로 인해 인원수가 차감됩니다.", memberId, joinedCrewIds);
-            List<Crew> joinedCrews = loadCrewPort.findAllByIds(joinedCrewIds);
-            joinedCrews.forEach(Crew::decreaseMemberCount);
-            saveCrewPort.saveAll(joinedCrews);
+            saveCrewPort.decrementMemberCountBatch(joinedCrewIds);
         }
     }
 

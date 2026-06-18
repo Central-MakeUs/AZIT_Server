@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
@@ -19,4 +20,8 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
     @Modifying
     @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount - 1 WHERE c.id = :crewId")
     void decrementMemberCount(@Param("crewId") Long crewId);
+
+    @Modifying
+    @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount - 1 WHERE c.id IN :crewIds")
+    void decrementMemberCountBatch(@Param("crewIds") List<Long> crewIds);
 }

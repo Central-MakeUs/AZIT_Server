@@ -9,4 +9,5 @@ public interface SaveCrewPort {
     void saveAll(List<Crew> crews);
     void incrementMemberCount(Long crewId);
     void decrementMemberCount(Long crewId);
+    void decrementMemberCountBatch(List<Long> crewIds);
 }
