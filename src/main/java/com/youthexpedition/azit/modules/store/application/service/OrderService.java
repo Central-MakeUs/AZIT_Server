@@ -186,9 +186,7 @@ public class OrderService implements OrderUseCase {
         Order savedOrder = saveOrderPort.save(order);
 
         // 포인트 검증
-        if (!member.hasEnoughPoints(command.usedPoints())) {
-            throw new BusinessException(MemberErrorCode.INSUFFICIENT_POINTS);
-        }
+        member.validateEnoughPoints(command.usedPoints());
         // 포인트 차감
         member.deductPoints(command.usedPoints());
         saveMemberPort.save(member);
@@ -242,9 +240,7 @@ public class OrderService implements OrderUseCase {
         }
 
         // 주문 취소 가능한 상태인지 확인
-        if (!order.isCancellable()) {
-            throw new BusinessException(StoreErrorCode.CANNOT_CANCEL_ORDER);
-        }
+        order.validateCancellable();
         // 주문 취소 상태로 변경
         order.cancel();
 

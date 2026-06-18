@@ -126,20 +126,8 @@ public class CrewService implements CrewUseCase {
                                 throw new BusinessException(CrewErrorCode.ALREADY_JOINED_CREW);
                             }
 
-                            // 방출 후 24시간 이내 재가입 차단
-                            if (existingMember.getStatus() == CrewMemberStatus.EXPELLED && existingMember.isRejoinCooldownActive(now)) {
-                                throw new BusinessException(CrewErrorCode.EXPELLED_REJOINING_COOLDOWN);
-                            }
-
-                            // 자진 탈퇴 후 24시간 이내 재가입 차단
-                            if (existingMember.getStatus() == CrewMemberStatus.EXITED && existingMember.isExitCooldownActive(now)) {
-                                throw new BusinessException(CrewErrorCode.EXIT_REJOINING_COOLDOWN);
-                            }
-
-                            // 가입 신청 취소 후 24시간 이내 재신청 차단
-                            if (existingMember.getStatus() == CrewMemberStatus.CANCELLED && existingMember.isCancelCooldownActive(now)) {
-                                throw new BusinessException(CrewErrorCode.CANCEL_REJOINING_COOLDOWN);
-                            }
+                            // 재가입 쿨다운 검증 (방출/탈퇴/취소 후 일정 시간 이내 재가입 차단)
+                            existingMember.validateRejoinEligibility(now);
 
                             // 탈퇴, 방출(쿨다운 지남), 거절 상태일 경우 재신청
                             existingMember.reJoin();

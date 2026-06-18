@@ -126,9 +126,7 @@ public class MemberService implements MemberUseCase {
         processCrewWithdrawal(memberId);
 
         // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
-        if (member.isWithdrawn()) {
-            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
-        }
+        member.validateNotWithdrawn();
         member.withdraw();
 
         tokenPort.deleteByMemberId(memberId); // 리프레시 토큰 삭제
@@ -149,9 +147,7 @@ public class MemberService implements MemberUseCase {
         processCrewWithdrawal(member.getId());
 
         // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
-        if (member.isWithdrawn()) {
-            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
-        }
+        member.validateNotWithdrawn();
         member.withdraw();
 
         tokenPort.deleteByMemberId(member.getId()); // 리프레시 토큰 삭제
