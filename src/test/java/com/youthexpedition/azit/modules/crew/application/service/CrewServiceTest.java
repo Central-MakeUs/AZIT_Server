@@ -358,18 +358,13 @@ class CrewServiceTest {
                     .status(CrewMemberStatus.REQUESTED).build();
             given(loadCrewMemberPort.findByCrewIdAndMemberId(crewId, targetMemberId)).willReturn(Optional.of(targetCrewMember));
 
-            Crew mockCrew = Crew.builder()
-                    .id(crewId)
-                    .memberCount(0)
-                    .build();
-            given(loadCrewPort.findById(crewId)).willReturn(Optional.of(mockCrew));
-
             // when
             crewService.approveJoinRequest(command);
 
             // then
-            assertThat(targetCrewMember.getStatus()).isEqualTo(CrewMemberStatus.JOINED); // 크루 상태 변경 확인
+            assertThat(targetCrewMember.getStatus()).isEqualTo(CrewMemberStatus.JOINED);
             verify(saveCrewMemberPort, times(1)).save(targetCrewMember);
+            verify(saveCrewPort, times(1)).incrementMemberCount(crewId);
         }
 
         @Test
