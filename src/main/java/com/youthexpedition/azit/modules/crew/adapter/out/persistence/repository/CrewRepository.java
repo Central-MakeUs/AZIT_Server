@@ -13,15 +13,15 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
     Optional<CrewEntity> findByInvitationCode(String invitationCode);
     boolean existsByInvitationCode(String invitationCode);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount + 1 WHERE c.id = :crewId")
     void incrementMemberCount(@Param("crewId") Long crewId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount - 1 WHERE c.id = :crewId")
     void decrementMemberCount(@Param("crewId") Long crewId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount - 1 WHERE c.id IN :crewIds")
     void decrementMemberCountBatch(@Param("crewIds") List<Long> crewIds);
 }
