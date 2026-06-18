@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.modules.crew.domain.model;
 
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.RunType;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.ScheduleStatus;
 import lombok.AllArgsConstructor;
@@ -64,6 +66,10 @@ public class CrewSchedule {
         return this.meetingAt != null && this.meetingAt.isAfter(LocalDateTime.now());
     }
 
+    public void validateMeetingTime() {
+        if (!isMeetingTimeValid()) throw new BusinessException(CrewErrorCode.INVALID_SCHEDULE_TIME);
+    }
+
     // 일정 수정
     public void update(
             String title, RunType runType, LocalDateTime meetingAt, Location location,
@@ -89,9 +95,17 @@ public class CrewSchedule {
         return this.status == ScheduleStatus.CANCELLED;
     }
 
+    public void validateNotCancelled() {
+        if (isCancelled()) throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
+    }
+
     // 최대 인원 확인
     public boolean isFull() {
         return participants.size() >= maxParticipants;
+    }
+
+    public void validateNotFull() {
+        if (isFull()) throw new BusinessException(CrewErrorCode.EXCEEDED_MAX_PARTICIPANTS);
     }
 
     // 일정 수정 및 삭제 가능한지 확인 (출석 시작 후 불가)
@@ -99,14 +113,30 @@ public class CrewSchedule {
         return currentTime.isBefore(this.meetingAt.minusHours(ACTIVE_CHECK_IN_WINDOW_HOURS));
     }
 
+    public void validateModifiable(LocalDateTime currentTime) {
+        if (!isModifiable(currentTime)) throw new BusinessException(CrewErrorCode.SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME);
+    }
+
     // 일정 참여 및 참여 취소 가능한 시간인지 확인
     public boolean isParticipationModifiable(LocalDateTime currentTime) {
         return currentTime.isBefore(this.meetingAt.plusHours(ACTIVE_CHECK_IN_WINDOW_HOURS));
     }
 
+    public void validateParticipationModifiable(LocalDateTime currentTime) {
+        if (!isParticipationModifiable(currentTime)) throw new BusinessException(CrewErrorCode.PARTICIPATION_AND_CANCEL_CLOSED);
+    }
+
     // 일정에 참여하고 있는지 확인
     public boolean isParticipating(Long memberId) {
         return participants.containsKey(memberId);
+    }
+
+    public void validateParticipating(Long memberId) {
+        if (!isParticipating(memberId)) throw new BusinessException(CrewErrorCode.NOT_PARTICIPATING_SCHEDULE);
+    }
+
+    public void validateNotParticipating(Long memberId) {
+        if (isParticipating(memberId)) throw new BusinessException(CrewErrorCode.ALREADY_PARTICIPATED);
     }
 
     // 일정 참여

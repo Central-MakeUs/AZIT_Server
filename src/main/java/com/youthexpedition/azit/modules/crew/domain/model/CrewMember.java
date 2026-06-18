@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.modules.crew.domain.model;
 
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.AllArgsConstructor;
@@ -95,6 +97,19 @@ public class CrewMember {
     public boolean isCancelCooldownActive(LocalDateTime now) {
         if (this.cancelledAt == null) return false;
         return this.cancelledAt.plusHours(CANCEL_COOLDOWN_HOURS).isAfter(now);
+    }
+
+    // 재가입 쿨다운 통합 검증
+    public void validateRejoinEligibility(LocalDateTime now) {
+        if (this.status == CrewMemberStatus.EXPELLED && isRejoinCooldownActive(now)) {
+            throw new BusinessException(CrewErrorCode.EXPELLED_REJOINING_COOLDOWN);
+        }
+        if (this.status == CrewMemberStatus.EXITED && isExitCooldownActive(now)) {
+            throw new BusinessException(CrewErrorCode.EXIT_REJOINING_COOLDOWN);
+        }
+        if (this.status == CrewMemberStatus.CANCELLED && isCancelCooldownActive(now)) {
+            throw new BusinessException(CrewErrorCode.CANCEL_REJOINING_COOLDOWN);
+        }
     }
 
     // 가입 재신청

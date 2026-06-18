@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.modules.member.domain.model;
 
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberRole;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
@@ -80,6 +82,10 @@ public class Member {
         return this.status == MemberStatus.WITHDRAWN;
     }
 
+    public void validateNotWithdrawn() {
+        if (isWithdrawn()) throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN);
+    }
+
     // 탈퇴 상태로 변경
     public void withdraw() {
         this.status = MemberStatus.WITHDRAWN;
@@ -97,6 +103,10 @@ public class Member {
     // 포인트가 충분한지 체크
     public boolean hasEnoughPoints(long points) {
         return this.totalPoints >= points;
+    }
+
+    public void validateEnoughPoints(long points) {
+        if (!hasEnoughPoints(points)) throw new BusinessException(MemberErrorCode.INSUFFICIENT_POINTS);
     }
 
     // 포인트 차감

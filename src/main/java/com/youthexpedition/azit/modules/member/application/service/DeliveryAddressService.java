@@ -70,9 +70,7 @@ public class DeliveryAddressService implements DeliveryAddressUseCase {
         DeliveryAddress deliveryAddress = getAddressValidated(addressId, memberId);
 
         // 삭제 가능한지 확인 (기본 배송지는 삭제 불가)
-        if (!deliveryAddress.isDeletable()) {
-            throw new BusinessException(DeliveryAddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS);
-        }
+        deliveryAddress.validateDeletable();
 
         saveDeliveryAddressPort.delete(deliveryAddress);
     }

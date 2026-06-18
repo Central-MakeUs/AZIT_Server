@@ -75,4 +75,8 @@ public class DeliveryAddress {
     public boolean isDeletable() {
         return !this.isDefault;
     }
+
+    public void validateDeletable() {
+        if (!isDeletable()) throw new BusinessException(DeliveryAddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS);
+    }
 }
