@@ -18,10 +18,14 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
     void incrementMemberCount(@Param("crewId") Long crewId);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount - 1 WHERE c.id = :crewId")
+    @Query(value = "UPDATE crew SET member_count = member_count - 1, " +
+            "status = CASE WHEN member_count - 1 = 0 THEN 'INACTIVE' ELSE status END " +
+            "WHERE id = :crewId AND member_count > 0", nativeQuery = true)
     void decrementMemberCount(@Param("crewId") Long crewId);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount - 1 WHERE c.id IN :crewIds")
+    @Query(value = "UPDATE crew SET member_count = member_count - 1, " +
+            "status = CASE WHEN member_count - 1 = 0 THEN 'INACTIVE' ELSE status END " +
+            "WHERE id IN :crewIds AND member_count > 0", nativeQuery = true)
     void decrementMemberCountBatch(@Param("crewIds") List<Long> crewIds);
 }
