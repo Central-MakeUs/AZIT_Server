@@ -15,4 +15,8 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
     @Modifying
     @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount + 1 WHERE c.id = :crewId")
     void incrementMemberCount(@Param("crewId") Long crewId);
+
+    @Modifying
+    @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount - 1 WHERE c.id = :crewId")
+    void decrementMemberCount(@Param("crewId") Long crewId);
 }

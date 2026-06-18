@@ -199,7 +199,7 @@ public class CrewService implements CrewUseCase {
         Crew crew = loadCrewPort.findById(command.crewId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
-        // 크루 인원 수 증가 (Atomic UPDATE로 동시성 보장)
+        // 크루 인원 수 증가
         log.info("[CREW] crewId: {} 에서 memberId: {} 가 가입되어 크루 인원 수가 증가합니다.", crew.getId(), command.targetMemberId());
         saveCrewPort.incrementMemberCount(command.crewId());
     }
@@ -264,13 +264,8 @@ public class CrewService implements CrewUseCase {
         saveCrewMemberPort.save(targetMember);
 
         // 크루 인원 수 1명 감소
-        // TODO: 동시성 이슈 고려 필요
-        Crew crew = loadCrewPort.findById(crewId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
-
         log.info("[CREW] crewId: {} 에서 memberId: {} 가 방출되어 크루 인원 수가 감소합니다.", crewId, targetMemberId);
-        crew.decreaseMemberCount();
-        saveCrewPort.save(crew);
+        saveCrewPort.decrementMemberCount(crewId);
     }
 
     @Override
@@ -308,12 +303,8 @@ public class CrewService implements CrewUseCase {
         saveCrewMemberPort.save(crewMember);
 
         // 크루 인원 수 1명 감소
-        Crew crew = loadCrewPort.findById(crewId)
-                .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
-
         log.info("[CREW] crewId: {} 에서 memberId: {} 가 자진 탈퇴하여 크루 인원 수가 감소합니다.", crewId, memberId);
-        crew.decreaseMemberCount();
-        saveCrewPort.save(crew);
+        saveCrewPort.decrementMemberCount(crewId);
     }
 
     @Override
