@@ -196,14 +196,12 @@ public class CrewService implements CrewUseCase {
         targetCrewMember.approve();
         saveCrewMemberPort.save(targetCrewMember);
 
-        // 크루 인원 수 증가
-        // TODO: 원자성 체크 필요
         Crew crew = loadCrewPort.findById(command.crewId())
                 .orElseThrow(() -> new BusinessException(CrewErrorCode.CREW_NOT_FOUND));
 
+        // 크루 인원 수 증가 (Atomic UPDATE로 동시성 보장)
         log.info("[CREW] crewId: {} 에서 memberId: {} 가 가입되어 크루 인원 수가 증가합니다.", crew.getId(), command.targetMemberId());
-        crew.increaseMemberCount(); // 인원 수 +1
-        saveCrewPort.save(crew);
+        saveCrewPort.incrementMemberCount(command.crewId());
     }
 
     @Override

@@ -7,4 +7,5 @@ import java.util.List;
 public interface SaveCrewPort {
     Crew save(Crew crew);
     void saveAll(List<Crew> crews);
+    void incrementMemberCount(Long crewId);
 }
