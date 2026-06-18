@@ -67,6 +67,7 @@ public class CrewPersistenceAdapter implements LoadCrewPort, SaveCrewPort {
 
     @Override
     public void decrementMemberCountBatch(List<Long> crewIds) {
+        if (crewIds == null || crewIds.isEmpty()) return;
         crewRepository.decrementMemberCountBatch(crewIds);
     }
 }
