@@ -510,7 +510,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
     // 생성할 일정 유효성 체크
     private void validateSchedule(CrewSchedule schedule) {
-        schedule.validateMeetingTime();
+        schedule.validateMeetingTime(LocalDateTime.now());
     }
 
     // 신청하려는 일정과 기존 일정 사이의 간격 검증, 신청하기/일정 생성 시 사용

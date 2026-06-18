@@ -61,13 +61,13 @@ public class CrewSchedule {
         return schedule;
     }
 
-    // 현재보다 과거 시간인지 검증
-    public boolean isMeetingTimeValid() {
-        return this.meetingAt != null && this.meetingAt.isAfter(LocalDateTime.now());
+    // 현재보다 미래 시간인지 검증
+    public boolean isMeetingTimeValid(LocalDateTime now) {
+        return this.meetingAt != null && this.meetingAt.isAfter(now);
     }
 
-    public void validateMeetingTime() {
-        if (!isMeetingTimeValid()) throw new BusinessException(CrewErrorCode.INVALID_SCHEDULE_TIME);
+    public void validateMeetingTime(LocalDateTime now) {
+        if (!isMeetingTimeValid(now)) throw new BusinessException(CrewErrorCode.INVALID_SCHEDULE_TIME);
     }
 
     // 일정 수정
