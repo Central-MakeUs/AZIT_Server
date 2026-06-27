@@ -5,12 +5,12 @@ import java.time.YearMonth;
 
 public record CrewScheduleMonthlyQuery(
         Long crewId,
-        YearMonth yearMonth,
         LocalDate startDate,
         LocalDate endDate,
+        YearMonth yearMonth,
         Long memberId
 ) {
     public static CrewScheduleMonthlyQuery of(Long crewId, LocalDate startDate, LocalDate endDate, YearMonth yearMonth, Long memberId) {
-        return new CrewScheduleMonthlyQuery(crewId, yearMonth, startDate, endDate, memberId);
+        return new CrewScheduleMonthlyQuery(crewId, startDate, endDate, yearMonth, memberId);
     }
 }
