@@ -37,8 +37,11 @@ public class ImageUpdateUtil {
 
         if (!imageChanged) return;
 
-        // 외부 URL(카카오 등 소셜 프로필)인 경우 S3 검증 없이 URL 그대로 반영
+        // 외부 URL(카카오 등 소셜 프로필)인 경우 형식 검증 후 URL 그대로 반영
         if (allowExternalUrl && incomingS3Key == null) {
+            if (!incomingUrl.startsWith("http://") && !incomingUrl.startsWith("https://")) {
+                throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+            }
             deleteOldCustomImage(currentS3Key);
             updateUrl.accept(incomingUrl);
             return;
