@@ -40,19 +40,14 @@ public class CrewScheduleRepositoryImpl implements CrewScheduleRepositoryCustom 
     }
 
     @Override
-    public Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, YearMonth yearMonth) {
-        // 해당 월의 검색 범위 계산
-        LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
-        LocalDateTime end = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
-
-        // 특정 컬럼만 가져오므로 tuple 사용
+    public Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, LocalDate startDate, LocalDate endDate, YearMonth yearMonth) {
         List<Tuple> results = queryFactory
                 .select(crewScheduleEntity.meetingAt, crewScheduleEntity.runType)
                 .from(crewScheduleEntity)
                 .where(
                         crewScheduleEntity.crewId.eq(crewId),
                         crewScheduleEntity.status.eq(ScheduleStatus.ACTIVE),
-                        crewScheduleEntity.meetingAt.between(start, end)
+                        filterByDateRange(null, startDate, endDate, yearMonth)
                 )
                 .fetch();
 

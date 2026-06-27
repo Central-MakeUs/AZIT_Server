@@ -13,7 +13,7 @@ import java.util.Set;
 
 public interface CrewScheduleRepositoryCustom {
     List<CrewScheduleEntity> findAllByFilter(Long crewId, LocalDate date, LocalDate startDate, LocalDate endDate, YearMonth yearMonth, RunType runType);
-    Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, YearMonth yearMonth);
+    Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, LocalDate startDate, LocalDate endDate, YearMonth yearMonth);
     List<CrewScheduleEntity> findAllByMemberId(Long memberId);
     List<CrewScheduleEntity> findAllTodaySchedulesByMemberId(Long memberId, LocalDateTime now);
     Optional<CrewScheduleEntity> findNextClosestScheduleByMemberId(Long memberId, LocalDateTime now);

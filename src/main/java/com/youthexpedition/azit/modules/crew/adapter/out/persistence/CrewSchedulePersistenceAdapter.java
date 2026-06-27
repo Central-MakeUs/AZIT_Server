@@ -50,8 +50,8 @@ public class CrewSchedulePersistenceAdapter implements LoadCrewSchedulePort, Sav
     }
 
     @Override
-    public Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, YearMonth yearMonth) {
-        return crewScheduleRepository.findMonthlySchedulesForCalendar(crewId, yearMonth);
+    public Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, LocalDate startDate, LocalDate endDate, YearMonth yearMonth) {
+        return crewScheduleRepository.findMonthlySchedulesForCalendar(crewId, startDate, endDate, yearMonth);
     }
 
     @Override
