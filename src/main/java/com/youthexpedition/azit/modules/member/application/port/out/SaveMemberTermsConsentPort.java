@@ -11,5 +11,7 @@ public interface SaveMemberTermsConsentPort {
     void saveAll(List<MemberTermsConsent> consents);
     void updateAgreedAt(Long memberId, Set<Long> versionIds, LocalDateTime agreedAt);
     void deleteByMemberIdAndVersionIds(Long memberId, Set<Long> versionIds);
+    void deleteByMemberId(Long memberId);
+    void deleteHistoryByMemberId(Long memberId);
     void saveAllHistory(List<MemberTermsConsentHistory> histories);
 }
