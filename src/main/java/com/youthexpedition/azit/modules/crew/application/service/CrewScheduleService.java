@@ -273,8 +273,9 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     public List<CrewScheduleMonthlyListResponse> getMonthlySchedulesForCalendar(CrewScheduleMonthlyQuery query) {
         // 정회원인지 확인
         getJoinedMember(query.crewId(), query.memberId());
+        validateDateRange(query.startDate(), query.endDate());
 
-        Map<LocalDate, Set<RunType>> monthlyScheduleMap = loadCrewSchedulePort.findMonthlySchedulesForCalendar(query.crewId(), query.yearMonth());
+        Map<LocalDate, Set<RunType>> monthlyScheduleMap = loadCrewSchedulePort.findMonthlySchedulesForCalendar(query.crewId(), query.startDate(), query.endDate(), query.yearMonth());
 
         return crewScheduleResponseMapper.toScheduleMonthlyListResponse(monthlyScheduleMap);
     }

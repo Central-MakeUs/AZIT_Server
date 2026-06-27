@@ -14,7 +14,7 @@ import java.util.Set;
 public interface LoadCrewSchedulePort {
     Optional<CrewSchedule> findById(Long scheduleId);
     List<CrewSchedule> findAllByFilter(Long crewId, LocalDate date, LocalDate startDate, LocalDate endDate, YearMonth yearMonth, RunType runType);
-    Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, YearMonth yearMonth);
+    Map<LocalDate, Set<RunType>> findMonthlySchedulesForCalendar(Long crewId, LocalDate startDate, LocalDate endDate, YearMonth yearMonth);
     List<CrewSchedule> findAllByMemberId(Long memberId);
     List<CrewSchedule> findAllTodaySchedulesByMemberId(Long memberId, LocalDateTime now);
     Optional<CrewSchedule> findNextClosestScheduleByMemberId(Long memberId, LocalDateTime now);

@@ -184,7 +184,7 @@ public interface CrewScheduleControllerDocs {
 
             **[쿼리 파라미터]** <br>
             * date (선택): 특정 날짜(yyyy-MM-dd)의 일정만 조회합니다. 다른 파라미터보다 우선 적용됩니다.
-            * startDate / endDate (선택): 조회할 날짜 범위(yyyy-MM-dd)입니다. 두 값이 모두 있어야 동작하며, 주 단위 조회에 활용합니다.
+            * startDate / endDate (선택): 조회할 날짜 범위(yyyy-MM-dd)입니다. 두 값이 모두 있어야 동작합니다.
             * yearMonth (선택): 조회할 연월(yyyy-MM)입니다. 미입력 시 현재 월을 기준으로 조회합니다.
             * runType (선택): REGULAR 또는 LIGHTNING으로 필터링합니다. 미입력 시 모든 타입을 조회합니다. <br><br>
 
@@ -210,25 +210,31 @@ public interface CrewScheduleControllerDocs {
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
-            summary = "월간 크루 일정 목록 조회 (캘린더 표시용)",
+            summary = "월간/주간 크루 일정 목록 조회 (캘린더 표시용)",
             description = """
-            특정 월의 날짜별 일정 존재 여부(정기런/번개런)를 조회합니다. 일정이 하나라도 존재하는 날짜만 조회됩니다. <br>
+            날짜별 일정 존재 여부(정기런/번개런)를 조회합니다. 일정이 하나라도 존재하는 날짜만 조회됩니다. <br>
             캘린더에서 각 날짜 하단에 상태 점을 표시하는 데 사용됩니다. <br><br>
-            
+
             **[쿼리 파라미터]** <br>
-            * yearMonth (선택): 조회할 연월(yyyy-MM)입니다. 미입력 시 현재 시간 기준의 월을 조회합니다.<br>
-            
+            * startDate / endDate (선택): 조회할 날짜 범위(yyyy-MM-dd)입니다. 두 값이 모두 있어야 동작합니다.<br>
+            * yearMonth (선택): 조회할 연월(yyyy-MM)입니다. 미입력 시 현재 월을 기준으로 조회합니다. <br><br>
+
+            **[파라미터 우선순위]** <br>
+            startDate·endDate > yearMonth > 현재 월 <br><br>
+
             **[참고 사항]** <br>
             * 해당 크루의 정회원(JOINED)만 조회가 가능합니다. (NOT_A_CREW_MEMBER)
             * 취소(삭제)된 일정은 응답에서 제외됩니다.
             """
     )
     @ApiErrorCodeExamples({
-            "NOT_A_CREW_MEMBER",
+            "NOT_A_CREW_MEMBER", "INVALID_DATE_RANGE",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<List<CrewScheduleMonthlyListResponse>> getMonthlySchedulesForCalendar(
             @PathVariable Long crewId,
+            @Parameter(description = "조회 시작 날짜 (yyyy-MM-dd), endDate와 함께 사용") LocalDate startDate,
+            @Parameter(description = "조회 종료 날짜 (yyyy-MM-dd), startDate와 함께 사용") LocalDate endDate,
             @Parameter(description = "조회 연월 (yyyy-MM)") YearMonth yearMonth,
             @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }
