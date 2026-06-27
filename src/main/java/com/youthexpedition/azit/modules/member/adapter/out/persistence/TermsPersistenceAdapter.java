@@ -66,6 +66,11 @@ public class TermsPersistenceAdapter implements LoadTermsVersionPort, SaveMember
     }
 
     @Override
+    public void deleteByMemberId(Long memberId) {
+        memberTermsConsentRepository.deleteByMemberId(memberId);
+    }
+
+    @Override
     public void saveAllHistory(List<MemberTermsConsentHistory> histories) {
         memberTermsConsentHistoryRepository.saveAll(
                 histories.stream()

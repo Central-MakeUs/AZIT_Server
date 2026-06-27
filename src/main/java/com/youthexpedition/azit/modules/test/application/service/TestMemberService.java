@@ -13,6 +13,7 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveDeliveryAddressPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberTermsConsentPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SavePointHistoryPort;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
@@ -43,6 +44,7 @@ public class TestMemberService implements TestMemberUseCase {
     private final SavePointHistoryPort savePointHistoryPort;
     private final SaveCartItemPort saveCartItemPort;
     private final SaveDeliveryAddressPort saveDeliveryAddressPort;
+    private final SaveMemberTermsConsentPort saveMemberTermsConsentPort;
     private final SaveMemberPort saveMemberPort;
     private final TokenPort tokenPort;
 
@@ -72,6 +74,9 @@ public class TestMemberService implements TestMemberUseCase {
 
         // delivery_address 완전 삭제
         saveDeliveryAddressPort.deleteByMemberId(memberId);
+
+        // member_terms_consent 완전 삭제
+        saveMemberTermsConsentPort.deleteByMemberId(memberId);
 
         // 소셜 연동 해제
         socialAuthPort.revoke(SocialRevokeCommand.from(member));
