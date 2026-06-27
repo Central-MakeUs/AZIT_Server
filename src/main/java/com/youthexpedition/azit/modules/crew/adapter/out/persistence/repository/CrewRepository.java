@@ -13,7 +13,7 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
     Optional<CrewEntity> findByInvitationCode(String invitationCode);
     boolean existsByInvitationCode(String invitationCode);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE CrewEntity c SET c.memberCount = c.memberCount + 1 WHERE c.id = :crewId")
     void incrementMemberCount(@Param("crewId") Long crewId);
 
