@@ -16,6 +16,8 @@ public class ImageUpdateUtil {
 
     public static final String DEFAULT_S3_PREFIX = "default/";
     public static final String DEFAULT_SLASH = "/";
+    public static final String HTTP_PREFIX = "http://";
+    public static final String HTTPS_PREFIX = "https://";
 
     private final ImageUrlFormatUtil imageUrlFormatUtil;
     private final ImageStoragePort imageStoragePort;
@@ -36,6 +38,16 @@ public class ImageUpdateUtil {
                 || (allowExternalUrl && incomingS3Key == null && !Objects.equals(incomingUrl, currentUrl)); // 외부 URL
 
         if (!imageChanged) return;
+
+        // 외부 URL(카카오 등 소셜 프로필)인 경우 형식 검증 후 URL 그대로 반영
+        if (allowExternalUrl && incomingS3Key == null) {
+            if (incomingUrl != null && !incomingUrl.isBlank() && !incomingUrl.startsWith(HTTP_PREFIX) && !incomingUrl.startsWith(HTTPS_PREFIX)) {
+                throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);
+            }
+            deleteOldCustomImage(currentS3Key);
+            updateUrl.accept(incomingUrl);
+            return;
+        }
 
         if (incomingS3Key == null) {
             throw new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED);

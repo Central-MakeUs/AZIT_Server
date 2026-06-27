@@ -27,9 +27,8 @@ public class MemberResponseMapper {
     }
 
     public MyCrewResponse toMyCrewResponse(CrewMember crewMember, Crew crew) {
-        // 리더이면서 JOINED 상태일 때만 초대 코드 노출
-        String invitationCode = (crewMember.getRole() == CrewMemberRole.LEADER
-                && crewMember.getStatus() == CrewMemberStatus.JOINED)
+        // JOINED 상태일 때 초대 코드 노출
+        String invitationCode = crewMember.getStatus() == CrewMemberStatus.JOINED
                 ? crew.getInvitationCode() : null;
 
         return MyCrewResponse.of(
