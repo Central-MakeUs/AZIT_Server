@@ -57,7 +57,13 @@ public class Crew {
     }
 
     private static void validateName(String name) {
+        // 크루 이름은 한글, 숫자, 영어만 가능 (특수문자 제한)
+        if (!name.matches("^[가-힣a-zA-Z0-9]+$")) {
+            throw new BusinessException(CrewErrorCode.INVALID_CREW_NAME_CHARACTERS);
+        }
+
         String lowerName = name.toLowerCase();
+        // 불가 예약어 검사
         boolean hasReservedKeyword = RESERVED_KEYWORDS.stream().anyMatch(lowerName::contains);
         if (hasReservedKeyword) {
             throw new BusinessException(CrewErrorCode.RESERVED_CREW_NAME_KEYWORD);
