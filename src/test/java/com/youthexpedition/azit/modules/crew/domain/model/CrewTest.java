@@ -19,7 +19,7 @@ class CrewTest {
     @DisplayName("크루 생성 시 6자리의 영문 대문자 및 숫자 조합 초대 코드가 생성된다.")
     void create_success() {
         // given
-        String name = "서울 러닝 크루";
+        String name = "서울러닝크루";
         CrewCategory category = CrewCategory.RUNNING;
         Region region = Region.SEOUL;
         String invitationCode = "ABC123";
@@ -29,7 +29,7 @@ class CrewTest {
         Crew crew = Crew.create(name, category, region, imageUrl, invitationCode);
 
         // then
-        assertThat(crew.getName()).isEqualTo(name);
+        assertThat(crew.getName()).isEqualTo("서울러닝크루");
         assertThat(crew.getInvitationCode()).hasSize(6);
         assertThat(crew.getInvitationCode()).matches("^[A-Z0-9]{6}$");
     }
@@ -40,7 +40,7 @@ class CrewTest {
 
         @ParameterizedTest(name = "예약어 포함 크루명 \"{0}\" 으로 생성 시 예외 발생")
         @ValueSource(strings = {
-                "AZIT 러닝", "azit크루", "아지트크루", "관리자크루", "어드민크루",
+                "AZIT러닝", "azit크루", "아지트크루", "관리자크루", "어드민크루",
                 "Admin크루", "admin크루", "공식크루", "Official러닝", "official크루",
                 "운영진크루", "스태프크루", "Staff러닝", "staff크루",
                 "스폰서크루", "Sponsor러닝", "sponsor크루", "제휴크루", "파트너크루",
@@ -58,10 +58,10 @@ class CrewTest {
         @DisplayName("크루명 수정 시 예약어가 포함되면 예외가 발생한다.")
         void updateInfo_throwsException_whenNameContainsReservedKeyword() {
             // given
-            Crew crew = Crew.create("서울 러닝 크루", CrewCategory.RUNNING, Region.SEOUL, "img.png", "ABC123");
+            Crew crew = Crew.create("서울러닝크루", CrewCategory.RUNNING, Region.SEOUL, "img.png", "ABC123");
 
             // when & then
-            assertThatThrownBy(() -> crew.updateInfo("AZIT 공식 크루", "설명"))
+            assertThatThrownBy(() -> crew.updateInfo("AZIT공식크루", "설명"))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", CrewErrorCode.RESERVED_CREW_NAME_KEYWORD);
         }
@@ -70,13 +70,13 @@ class CrewTest {
         @DisplayName("예약어가 없는 크루명으로 수정 시 정상 반영된다.")
         void updateInfo_success_whenNameHasNoReservedKeyword() {
             // given
-            Crew crew = Crew.create("서울 러닝 크루", CrewCategory.RUNNING, Region.SEOUL, "img.png", "ABC123");
+            Crew crew = Crew.create("서울러닝크루", CrewCategory.RUNNING, Region.SEOUL, "img.png", "ABC123");
 
             // when
-            crew.updateInfo("한강 러닝 크루", "한강에서 달리는 크루");
+            crew.updateInfo("한강러닝크루", "한강에서 달리는 크루");
 
             // then
-            assertThat(crew.getName()).isEqualTo("한강 러닝 크루");
+            assertThat(crew.getName()).isEqualTo("한강러닝크루");
         }
     }
 }

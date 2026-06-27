@@ -33,11 +33,12 @@ public interface CrewControllerDocs {
             
             **[제약 사항]** <br>
             * 크루 이름: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
+            * 크루 이름: 한글, 영문, 숫자만 사용 가능합니다. (INVALID_CREW_NAME_CHARACTERS)
             * ACTIVE 상태의 사용자만 요청 가능합니다. (INVALID_MEMBER_STATUS)
             """
     )
     @ApiErrorCodeExamples({
-            "RESERVED_CREW_NAME_KEYWORD", "CREW_JOIN_LIMIT_EXCEEDED", "INVITATION_CODE_GENERATION_FAILED",
+            "INVALID_CREW_NAME_CHARACTERS", "RESERVED_CREW_NAME_KEYWORD", "CREW_JOIN_LIMIT_EXCEEDED", "INVITATION_CODE_GENERATION_FAILED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN" // 인증 관련 에러
     })
     CommonResponse<CreateCrewResponse> createCrew(
@@ -261,12 +262,13 @@ public interface CrewControllerDocs {
                     **[이외 제약 사항]** <br>
                     * 리더만 수정할 수 있습니다. (NOT_CREW_LEADER) <br>
                     * 크루 이름은 필수이며 최대 15자까지 입력 가능합니다. <br>
+                    * 크루 이름: 한글, 영문, 숫자만 사용 가능합니다. (INVALID_CREW_NAME_CHARACTERS) <br>
                     * 크루 한줄 소개는 선택이며 최대 20자까지 입력 가능합니다. (미입력 시 null로 저장)
                     """
     )
     @ApiErrorCodeExamples({
             "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER",
-            "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH", "RESERVED_CREW_NAME_KEYWORD",
+            "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH", "INVALID_CREW_NAME_CHARACTERS", "RESERVED_CREW_NAME_KEYWORD",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> updateCrewProfile(

@@ -11,6 +11,7 @@ import lombok.Getter;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Getter
 @Builder
@@ -28,6 +29,7 @@ public class Crew {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private static final Pattern VALID_NAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z0-9]+$");
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int CODE_LENGTH = 6;
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -57,7 +59,13 @@ public class Crew {
     }
 
     private static void validateName(String name) {
+        // 크루 이름은 한글, 숫자, 영어만 가능 (특수문자 제한)
+        if (!VALID_NAME_PATTERN.matcher(name).matches()) {
+            throw new BusinessException(CrewErrorCode.INVALID_CREW_NAME_CHARACTERS);
+        }
+
         String lowerName = name.toLowerCase();
+        // 불가 예약어 검사
         boolean hasReservedKeyword = RESERVED_KEYWORDS.stream().anyMatch(lowerName::contains);
         if (hasReservedKeyword) {
             throw new BusinessException(CrewErrorCode.RESERVED_CREW_NAME_KEYWORD);
