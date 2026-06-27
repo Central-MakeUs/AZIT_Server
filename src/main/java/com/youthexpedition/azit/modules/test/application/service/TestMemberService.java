@@ -75,6 +75,9 @@ public class TestMemberService implements TestMemberUseCase {
         // delivery_address 완전 삭제
         saveDeliveryAddressPort.deleteByMemberId(memberId);
 
+        // member_terms_consent_history 완전 삭제
+        saveMemberTermsConsentPort.deleteHistoryByMemberId(memberId);
+
         // member_terms_consent 완전 삭제
         saveMemberTermsConsentPort.deleteByMemberId(memberId);
 
