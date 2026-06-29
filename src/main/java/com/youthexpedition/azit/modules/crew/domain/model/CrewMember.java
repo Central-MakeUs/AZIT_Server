@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.modules.crew.domain.model;
 
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
 import lombok.AllArgsConstructor;
@@ -17,8 +19,14 @@ public class CrewMember {
     private final Long memberId;
     private CrewMemberRole role;
     private CrewMemberStatus status;
+    private LocalDateTime expelledAt;
+    private LocalDateTime exitedAt;
+    private LocalDateTime cancelledAt;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private static final long REJOINING_COOLDOWN_HOURS = 24;
+    private static final long CANCEL_COOLDOWN_HOURS = 1;
 
     // 리더 등록
     public static CrewMember createAsLeader(Long crewId, Long memberId) {
@@ -56,13 +64,52 @@ public class CrewMember {
     }
 
     // 크루 탈퇴
-    public void exit() {
+    public void exit(LocalDateTime exitedAt) {
         this.status = CrewMemberStatus.EXITED;
+        this.exitedAt = exitedAt;
+    }
+
+    // 자진 탈퇴 후 재가입 쿨다운 여부 확인 (24시간)
+    public boolean isExitCooldownActive(LocalDateTime now) {
+        if (this.exitedAt == null) return false;
+        return this.exitedAt.plusHours(REJOINING_COOLDOWN_HOURS).isAfter(now);
     }
 
     // 크루 방출
-    public void expel() {
+    public void expel(LocalDateTime expelledAt) {
         this.status = CrewMemberStatus.EXPELLED;
+        this.expelledAt = expelledAt;
+    }
+
+    // 방출 후 재가입 쿨다운 여부 확인 (24시간)
+    public boolean isRejoinCooldownActive(LocalDateTime now) {
+        if (this.expelledAt == null) return false;
+        return this.expelledAt.plusHours(REJOINING_COOLDOWN_HOURS).isAfter(now);
+    }
+
+    // 가입 신청 취소 (본인)
+    public void cancel(LocalDateTime cancelledAt) {
+        this.status = CrewMemberStatus.CANCELLED;
+        this.cancelledAt = cancelledAt;
+    }
+
+    // 취소 후 재신청 쿨다운 여부 확인 (1시간)
+    public boolean isCancelCooldownActive(LocalDateTime now) {
+        if (this.cancelledAt == null) return false;
+        return this.cancelledAt.plusHours(CANCEL_COOLDOWN_HOURS).isAfter(now);
+    }
+
+    // 재가입 쿨다운 통합 검증
+    public void validateRejoinEligibility(LocalDateTime now) {
+        if (this.status == CrewMemberStatus.EXPELLED && isRejoinCooldownActive(now)) {
+            throw new BusinessException(CrewErrorCode.EXPELLED_REJOINING_COOLDOWN);
+        }
+        if (this.status == CrewMemberStatus.EXITED && isExitCooldownActive(now)) {
+            throw new BusinessException(CrewErrorCode.EXIT_REJOINING_COOLDOWN);
+        }
+        if (this.status == CrewMemberStatus.CANCELLED && isCancelCooldownActive(now)) {
+            throw new BusinessException(CrewErrorCode.CANCEL_REJOINING_COOLDOWN);
+        }
     }
 
     // 가입 재신청

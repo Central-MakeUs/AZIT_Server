@@ -1,5 +1,7 @@
 package com.youthexpedition.azit.modules.member.domain.model;
 
+import com.youthexpedition.azit.infrastructure.exception.BusinessException;
+import com.youthexpedition.azit.modules.member.domain.model.enums.DeliveryAddressErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +27,10 @@ public class DeliveryAddress {
 
     public static DeliveryAddress create(Long memberId, String recipientName, String phoneNumber,
                                          String zipcode, String baseAddress, String detailAddress, boolean isDefault) {
+
+        if (!isValidInfo(recipientName, phoneNumber, zipcode, baseAddress, detailAddress)) {
+            throw new BusinessException(DeliveryAddressErrorCode.INVALID_ADDRESS_INPUT);
+        }
         return DeliveryAddress.builder()
                 .memberId(memberId)
                 .recipientName(recipientName)
@@ -68,5 +74,9 @@ public class DeliveryAddress {
     // 삭제 가능 여부 확인
     public boolean isDeletable() {
         return !this.isDefault;
+    }
+
+    public void validateDeletable() {
+        if (!isDeletable()) throw new BusinessException(DeliveryAddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS);
     }
 }

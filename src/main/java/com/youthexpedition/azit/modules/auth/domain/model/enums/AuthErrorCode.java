@@ -11,7 +11,9 @@ public enum AuthErrorCode implements BaseErrorCode {
     UNAUTHORIZED("UNAUTHORIZED", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
 
     // 소셜 로그인
+    MISSING_SOCIAL_CREDENTIAL("MISSING_SOCIAL_CREDENTIAL", "인가 코드 또는 액세스 토큰이 필요합니다.", HttpStatus.BAD_REQUEST),
     INVALID_SOCIAL_CODE("INVALID_SOCIAL_CODE", "잘못된 소셜 인가 코드입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_KAKAO_ACCESS_TOKEN("INVALID_KAKAO_ACCESS_TOKEN", "유효하지 않거나 만료된 카카오 액세스 토큰입니다.", HttpStatus.UNAUTHORIZED),
     INVALID_SOCIAL_PROVIDER("INVALID_SOCIAL_PROVIDER", "지원하지 않는 소셜 로그인 제공자입니다.", HttpStatus.BAD_REQUEST),
     SOCIAL_AUTHENTICATION_FAILED("SOCIAL_AUTHENTICATION_FAILED", "소셜 인증에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 

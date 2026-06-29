@@ -3,6 +3,7 @@ package com.youthexpedition.azit.modules.store.adapter.out.persistence;
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.entity.CartItemEntity;
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.mapper.CartMapper;
 import com.youthexpedition.azit.modules.store.adapter.out.persistence.repository.CartItemRepository;
+import com.youthexpedition.azit.modules.store.application.port.out.SaveCartItemPort;
 import com.youthexpedition.azit.modules.store.application.port.out.LoadCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.SaveCartPort;
 import com.youthexpedition.azit.modules.store.application.port.out.query.CartItemQueryDto;
@@ -17,7 +18,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class CartPersistenceAdapter implements LoadCartPort, SaveCartPort {
+public class CartPersistenceAdapter implements LoadCartPort, SaveCartPort, SaveCartItemPort {
     private final CartItemRepository cartItemRepository;
     private final CartMapper cartMapper;
 
@@ -57,6 +58,11 @@ public class CartPersistenceAdapter implements LoadCartPort, SaveCartPort {
     @Override
     public List<CartItemQueryDto> findCartDetailsByMemberId(Long memberId) {
         return cartItemRepository.findCartDetailsByMemberId(memberId);
+    }
+
+    @Override
+    public void deleteByMemberId(Long memberId) {
+        cartItemRepository.deleteByMemberId(memberId);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.youthexpedition.azit.infrastructure.common.util;
+package com.youthexpedition.azit.infrastructure.common.util.image;
 
 import com.youthexpedition.azit.modules.crew.domain.model.provider.CrewImageProvider;
 import com.youthexpedition.azit.modules.member.domain.model.provider.ProfileImageProvider;

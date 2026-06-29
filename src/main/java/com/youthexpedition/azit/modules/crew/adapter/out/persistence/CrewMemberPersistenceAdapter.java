@@ -8,6 +8,7 @@ import com.youthexpedition.azit.modules.crew.adapter.out.persistence.repository.
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.CrewMemberInfoDto;
+import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinedCrewDto;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.JoinRequestDto;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
@@ -26,6 +27,7 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     private final CrewMemberMapper crewMemberMapper;
 
     private static final List<CrewMemberStatus> ACTIVE_STATUSES = List.of(CrewMemberStatus.JOINED, CrewMemberStatus.REQUESTED, CrewMemberStatus.REJECTED);
+    private static final List<CrewMemberStatus> PARTICIPATING_STATUSES = List.of(CrewMemberStatus.JOINED, CrewMemberStatus.REQUESTED);
 
     @Override
     public CrewMember save(CrewMember crewMember) {
@@ -68,8 +70,20 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
+    public long countActiveCrewsByMemberId(Long memberId) {
+        return crewMemberRepository.countByMemberIdAndStatusIn(memberId, List.of(CrewMemberStatus.JOINED, CrewMemberStatus.REQUESTED));
+    }
+
+    @Override
     public List<CrewMember> findAllByMemberId(Long memberId) {
         return crewMemberRepository.findAllByMemberId(memberId).stream()
+                .map(crewMemberMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<CrewMember> findAllActiveByMemberId(Long memberId) {
+        return crewMemberRepository.findAllByMemberIdAndStatusIn(memberId, PARTICIPATING_STATUSES).stream()
                 .map(crewMemberMapper::toDomain)
                 .toList();
     }
@@ -90,8 +104,21 @@ public class CrewMemberPersistenceAdapter implements LoadCrewMemberPort, SaveCre
     }
 
     @Override
-    public Optional<CrewMember> findLatestByMemberIdAndStatus(Long memberId, CrewMemberStatus status) {
-        return crewMemberRepository.findFirstByMemberIdAndStatusOrderByIdDesc(memberId, status)
-                .map(crewMemberMapper::toDomain);
+    public List<CrewMember> findAllActiveByCrewId(Long crewId) {
+        return crewMemberRepository.findByCrew_IdAndStatusIn(crewId, PARTICIPATING_STATUSES).stream()
+                .map(crewMemberMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<JoinedCrewDto> findJoinedCrewsByMemberId(Long memberId) {
+        return crewMemberRepository.findAllJoinedCrewsByMemberId(memberId, CrewMemberStatus.JOINED).stream()
+                .map(crewMemberMapper::toJoinedCrewDto)
+                .toList();
+    }
+
+    @Override
+    public void deleteByMemberId(Long memberId) {
+        crewMemberRepository.deleteByMemberId(memberId);
     }
 }

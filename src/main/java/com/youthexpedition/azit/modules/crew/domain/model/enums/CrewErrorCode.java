@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum CrewErrorCode implements BaseErrorCode {
     // 크루 관련
     CREW_NOT_FOUND("CREW_NOT_FOUND", "존재하지 않는 크루입니다.", HttpStatus.NOT_FOUND),
+    INVALID_INVITATION_CODE("INVALID_INVITATION_CODE", "유효하지 않거나 이미 만료된 초대 코드입니다.", HttpStatus.BAD_REQUEST),
     INVALID_CREW_CATEGORY("INVALID_CREW_CATEGORY", "유효하지 않은 크루 카테고리입니다.", HttpStatus.BAD_REQUEST),
     INVALID_REGION("INVALID_REGION", "유효하지 않은 활동 지역입니다.", HttpStatus.BAD_REQUEST),
     ALREADY_JOINED_CREW("ALREADY_JOINED_CREW", "이미 가입한 크루입니다.", HttpStatus.BAD_REQUEST),
@@ -20,7 +21,15 @@ public enum CrewErrorCode implements BaseErrorCode {
     NOT_A_CREW_MEMBER("NOT_A_CREW_MEMBER", "해당 크루의 멤버가 아닙니다.", HttpStatus.FORBIDDEN),
     CREW_MEMBER_NOT_FOUND("CREW_MEMBER_NOT_FOUND", "가입한 크루가 없습니다.", HttpStatus.NOT_FOUND),
     CANNOT_KICK_SELF("CANNOT_KICK_SELF", "스스로를 방출할 수 없습니다.", HttpStatus.BAD_REQUEST),
-    CANNOT_WITHDRAW_AS_LEADER("CANNOT_WITHDRAW_AS_LEADER", "리더로 활동 중인 크루에 다른 멤버가 존재하여 탈퇴가 불가능합니다.", HttpStatus.BAD_REQUEST),
+    CANNOT_WITHDRAW_AS_LEADER("CANNOT_WITHDRAW_AS_LEADER", "크루 리더는 크루 탈퇴가 불가합니다. 리더 권한을 위임하거나 크루를 해산해 주세요.", HttpStatus.BAD_REQUEST),
+    CANNOT_SERVICE_WITHDRAW_AS_LEADER("CANNOT_SERVICE_WITHDRAW_AS_LEADER", "리더로 활동 중인 크루가 있습니다. 권한을 위임하거나 크루를 해산한 후 서비스를 탈퇴할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    EXPELLED_REJOINING_COOLDOWN("EXPELLED_REJOINING_COOLDOWN", "방출 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
+    EXIT_REJOINING_COOLDOWN("EXIT_REJOINING_COOLDOWN", "탈퇴 후 24시간이 지나지 않아 재가입 요청이 불가합니다.", HttpStatus.BAD_REQUEST),
+    CANCEL_REJOINING_COOLDOWN("CANCEL_REJOINING_COOLDOWN", "가입 신청 취소 후 1시간이 지나지 않아 재신청이 불가합니다.", HttpStatus.BAD_REQUEST),
+    CREW_JOIN_LIMIT_EXCEEDED("CREW_JOIN_LIMIT_EXCEEDED", "최대 3개의 크루까지 가입할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    CREW_ALREADY_DISSOLVED("CREW_ALREADY_DISSOLVED", "이미 해산된 크루입니다.", HttpStatus.BAD_REQUEST),
+    RESERVED_CREW_NAME_KEYWORD("RESERVED_CREW_NAME_KEYWORD", "사칭 방지를 위해 사용할 수 없는 단어가 포함되어 있습니다.", HttpStatus.BAD_REQUEST),
+    INVALID_CREW_NAME_CHARACTERS("INVALID_CREW_NAME_CHARACTERS", "특수문자는 사용할 수 없어요.", HttpStatus.BAD_REQUEST),
 
     // 일정 관련
     INVALID_SCHEDULE_TIME("INVALID_SCHEDULE_TIME", "유효하지 않은 일정 시간입니다.", HttpStatus.BAD_REQUEST),
@@ -38,6 +47,7 @@ public enum CrewErrorCode implements BaseErrorCode {
     CANNOT_CANCEL_AFTER_CHECK_IN("CANNOT_CANCEL_AFTER_CHECK_IN", "이미 출석 완료된 일정은 취소가 불가능합니다.", HttpStatus.BAD_REQUEST),
     SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME("SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME", "출석이 가능한 일정은 수정 및 삭제가 불가능합니다.", HttpStatus.BAD_REQUEST),
     PARTICIPATION_AND_CANCEL_CLOSED("PARTICIPATION_AND_CANCEL_CLOSED", "출석 가능 시간이 지나 일정 신청 및 취소가 불가능합니다.", HttpStatus.BAD_REQUEST),
+    INVALID_DATE_RANGE("INVALID_DATE_RANGE", "startDate와 endDate는 둘 다 입력되어야 하며, startDate는 endDate보다 이전이어야 합니다.", HttpStatus.BAD_REQUEST),
     ;
 
     private final String code;

@@ -2,6 +2,7 @@ package com.youthexpedition.azit.modules.member.application.port.in.command;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
+import com.youthexpedition.azit.modules.member.domain.model.enums.TermsType;
 
 public record AgreeToTermsCommand(
         boolean serviceTermsAgreed,      // 서비스 이용약관 (필수)
@@ -16,6 +17,17 @@ public record AgreeToTermsCommand(
             boolean thirdPartyInfoAgreed, boolean marketingTermsAgreed, boolean notificationTermsAgreed) {
         return new AgreeToTermsCommand(
                 serviceTermsAgreed, privacyPolicyAgreed, locationServiceAgreed, thirdPartyInfoAgreed, marketingTermsAgreed, notificationTermsAgreed);
+    }
+
+    public boolean isAgreed(TermsType termsType) {
+        return switch (termsType) {
+            case SERVICE      -> serviceTermsAgreed;
+            case PRIVACY      -> privacyPolicyAgreed;
+            case LOCATION     -> locationServiceAgreed;
+            case THIRD_PARTY  -> thirdPartyInfoAgreed;
+            case MARKETING    -> marketingTermsAgreed;
+            case NOTIFICATION -> notificationTermsAgreed;
+        };
     }
 
     // 모든 필수 약관에 동의했는지 검증

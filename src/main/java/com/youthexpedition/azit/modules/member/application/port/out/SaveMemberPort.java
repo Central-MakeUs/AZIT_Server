@@ -4,4 +4,5 @@ import com.youthexpedition.azit.modules.member.domain.model.Member;
 
 public interface SaveMemberPort {
     Member save(Member member);
+    void deleteById(Long memberId);
 }

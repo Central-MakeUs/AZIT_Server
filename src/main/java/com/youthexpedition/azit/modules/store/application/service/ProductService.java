@@ -18,13 +18,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class ProductService implements ProductUseCase {
     private final LoadProductPort loadProductPort;
     private final ProductResponseMapper productResponseMapper;
 
     @Override
-    @Transactional(readOnly = true)
     public SliceResponse<ProductListResponse> getProducts(CursorPageQuery query) {
         SliceResponse<Product> productSlice = loadProductPort.findProducts(query);
 
@@ -36,7 +35,6 @@ public class ProductService implements ProductUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ProductDetailResponse getProduct(Long productId) {
         Product product = loadProductPort.findById(productId)
                 .orElseThrow(() -> new BusinessException(StoreErrorCode.PRODUCT_NOT_FOUND));

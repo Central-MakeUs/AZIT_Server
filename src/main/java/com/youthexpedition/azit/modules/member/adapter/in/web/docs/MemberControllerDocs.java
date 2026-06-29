@@ -8,8 +8,11 @@ import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CheckInRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStatusResponse;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateMemberProfileRequest;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -48,55 +51,46 @@ public interface MemberControllerDocs {
             서비스 이용을 중단하고 회원의 소셜 연동 해제 및 탈퇴 처리를 진행합니다. <br><br>
             
             **[참고 사항]** <br>
-            * 리더로 소속된 크루에 다른 멤버가 존재할 경우 탈퇴가 불가능합니다. (CANNOT_WITHDRAW_AS_LEADER)
+            * 리더로 소속된 크루가 있을 경우 서비스 탈퇴가 불가합니다. 리더 권한 위임 또는 크루 해산이 필요합니다. (CANNOT_SERVICE_WITHDRAW_AS_LEADER)
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_ALREADY_WITHDRAWN", "APPLE_REVOKE_FAILED",  "KAKAO_REVOKE_FAILED", "CANNOT_WITHDRAW_AS_LEADER",
+            "MEMBER_ALREADY_WITHDRAWN", "APPLE_REVOKE_FAILED",  "KAKAO_REVOKE_FAILED", "CANNOT_SERVICE_WITHDRAW_AS_LEADER",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> withdraw(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Parameter(hidden = true) @CurrentAccessToken String accessToken);
 
     @Operation(
-            summary = "가입 승인/거절 및 크루 방출 결과 확인",
+            summary = "내 정보 조회 (마이페이지 상단 카드)",
             description = """
-            사용자가 가입 신청 결과(승인/거절) 또는 크루 방출 통보를 확인했음을 서버에 알립니다. <br><br>
-            
-            **[참고 사항]** <br>
-            * APPROVED_PENDING_CONFIRM, REJECTED_PENDING_CONFIRM, KICKED_PENDING_CONFIRM 상태인 회원만 호출 가능합니다. (INVALID_MEMBER_STATUS)
-            * 가입 승인 확인 (APPROVED_PENDING_CONFIRM): 즉시 ACTIVE로 변경됩니다. <br>
-            * 가입 거절/크루 방출 확인 (REJECTED_PENDING_CONFIRM / KICKED_PENDING_CONFIRM): 가입되어 있는 다른 크루가 1개 이상 있는 경우 ACTIVE 상태가 유지되고, 가입되어 있는 다른 크루가 없는 경우 PENDING_ONBOARDING으로 변경됩니다.
+            로그인한 사용자의 기본 프로필 정보(닉네임, 프로필 이미지, 포인트, 출석 횟수)를 조회합니다. <br>
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND", "INVALID_MEMBER_STATUS",
+            "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<Void> confirmMemberStatus(@Parameter(hidden = true) @CurrentMemberId Long memberId);
+    CommonResponse<MyInfoResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
-            summary = "내 정보 조회 (마이페이지 및 크루 정보 확인용)",
+            summary = "내 크루 목록 조회 (마이페이지)",
             description = """
-            로그인한 사용자의 기본 프로필 정보와 소속(또는 관련) 크루 정보를 조회합니다. <br>
-            회원의 현재 상태에 따라 반환되는 크루 정보의 의미가 달라집니다. <br><br>
-            
-            **[상태별 크루 정보 반환 규칙]** <br>
-            1. ACTIVE: 가장 최근에 가입한 크루 정보를 반환합니다. <br>
-            2. KICKED_PENDING_CONFIRM: 방출 통보 화면을 띄우기 위해, 방금 방출된 크루 정보를 반환합니다. <br>
-            3. REJECTED_PENDING_CONFIRM: 가입 거절 안내 화면을 위해, 가장 최근에 가입이 거절된 크루 정보를 반환합니다. <br>
-            4. WAITING_FOR_APPROVE: 승인 대기 화면을 위해, 가장 최근에 가입 신청한 크루 정보를 반환합니다. <br>
-            5. PENDING_TERMS, PENDING_ONBOARDING, WITHDRAWN: 크루 관련 정보는 모두 null로 반환됩니다. <br><br>
-            
+            로그인한 사용자가 가입(JOINED)하거나 승인 대기(REQUESTED) 중인 크루 목록을 조회합니다. <br>
+            최대 3개의 크루가 반환되며, 크루가 없으면 빈 배열([])을 반환합니다. <br><br>
+
+            **[memberStatus 값]** <br>
+            * JOINED: 정식 가입 상태. memberRole 이 함께 반환됩니다. <br>
+            * REQUESTED: 승인 대기 상태. memberRole 은 null 입니다. <br><br>
+
             **[참고 사항]** <br>
-            * invitationCode: 사용자가 해당 크루의 리더이면서 JOINED 상태일 때만 값이 존재하며, 그 외의 경우에는 null로 내려갑니다.
+            * invitationCode: JOINED 상태일 때 값이 존재하며, 그 외의 경우(REQUESTED 등)에는 null로 내려갑니다.
             """
     )
     @ApiErrorCodeExamples({
-            "MEMBER_NOT_FOUND", "CREW_MEMBER_NOT_FOUND", "CREW_NOT_FOUND",
+            "MEMBER_NOT_FOUND",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
-    CommonResponse<MyInfoResponse> getMyInfo(@Parameter(hidden = true) @CurrentMemberId Long memberId
-    );
+    CommonResponse<List<MyCrewResponse>> getMyCrews(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 
     @Operation(
             summary = "내 일정 목록 조회",
@@ -167,10 +161,11 @@ public interface MemberControllerDocs {
             summary = "내 출석 로그 목록 조회",
             description = """
             사용자의 월별 출석 횟수, 누적 획득 포인트 및 상세 활동 이력을 조회합니다. <br>
-            
+
             **[쿼리 파라미터]** <br>
             * yearMonth (선택): 조회할 연월(yyyy-MM)입니다. 미입력 시 현재 시간 기준의 월을 조회합니다.<br>
-            
+            * crewId (선택): 특정 크루의 출석 이력만 필터링합니다. 미입력 시 전체 크루의 이력을 조회합니다.<br>
+
             **[참고 사항]** <br>
             * 아직 모임 시간이 지나지 않았고 출석도 하지 않은 예정 일정은 리스트에 나타나지 않습니다. <br>
             * 모임 시간이 이미 지난 일정(출석/결석 확정) 또는 모임 시간 전이라도 출석을 완료한 일정만 반환됩니다. <br><br>
@@ -182,6 +177,8 @@ public interface MemberControllerDocs {
     CommonResponse<MyAttendanceLogResponse> getMyAttendanceLogs(
             @Parameter(description = "조회 연월 (yyyy-MM)")
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @Parameter(description = "크루 ID (특정 크루 필터링, 미입력 시 전체)")
+            @RequestParam(required = false) Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId
     );
 
@@ -190,19 +187,74 @@ public interface MemberControllerDocs {
             description = """
             특정 월의 날짜별 출석 상태(정기런/번개런)를 조회합니다. 신청한 일정이 하나라도 존재하는 날짜만 조회됩니다. <br>
             캘린더에서 각 날짜 하단에 상태 점을 표시하는 데 사용됩니다. <br><br>
-            
+
             **[쿼리 파라미터]** <br>
             * yearMonth (선택): 조회할 연월(yyyy-MM)입니다. 미입력 시 현재 시간 기준의 월을 조회합니다.<br>
-            
+            * crewId (선택): 특정 크루의 출석 이력만 필터링합니다. 미입력 시 전체 크루의 이력을 조회합니다.<br>
+
             **[참고 사항]** <br>
-                * 아직 모임 시간이 지나지 않았고 출석도 하지 않은 예정 일정은 리스트에 나타나지 않습니다. <br>
-                * 모임 시간이 이미 지난 일정(출석/결석 확정) 또는 모임 시간 전이라도 출석을 완료한 일정만 반환됩니다. <br><br>
+            * 아직 모임 시간이 지나지 않았고 출석도 하지 않은 예정 일정은 리스트에 나타나지 않습니다. <br>
+            * 모임 시간이 이미 지난 일정(출석/결석 확정) 또는 모임 시간 전이라도 출석을 완료한 일정만 반환됩니다. <br><br>
             """
     )
     CommonResponse<List<MyAttendanceMonthlyListResponse>> getMyAttendancesForCalendar(
+            @Parameter(description = "조회 연월 (yyyy-MM)")
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @Parameter(description = "크루 ID (특정 크루 필터링, 미입력 시 전체)")
+            @RequestParam(required = false) Long crewId,
             @Parameter(hidden = true) @CurrentMemberId Long memberId
-
     );
 
+    @Operation(
+            summary = "프로필 수정",
+            description = """
+                    사용자의 프로필 정보를 수정합니다. <br><br>
+
+                    **[닉네임 제약 사항]** <br>
+                    * 최대 10자까지 입력 가능합니다. <br>
+                    * 특수문자는 사용할 수 없으며, 한글/영문/숫자만 허용됩니다. <br><br>
+                    
+                    **[프로필 이미지 URL 제약 사항]** <br>
+                    프로필 이미지 URL은 아래 세 가지 중 하나여야 합니다.<br>
+                    1. temp 경로가 포함된 CloudFront URL (새 커스텀 이미지 적용 시)<br>
+                    2. default 경로가 포함된 URL (기본 이미지 적용 시 — 프론트에서 랜덤 선택 후 전달)<br>
+                    3. 현재 이미지 URL (이미지 변경 없음) <br><br>
+
+                    **[이미지 처리 방식]** <br>
+                    imageUrl 값에 따라 아래 세 가지 케이스로 처리됩니다. <br>
+                    1. **새 커스텀 이미지 적용**: temp/ 경로가 포함된 CloudFront URL 전달 <br>
+                       - 사전에 POST /api/v1/images/presigned-url로 Presigned URL 발급 후 S3에 실제 업로드 필요 <br>
+                       - 업로드되지 않은 URL이면 IMAGE_NOT_UPLOADED 오류 <br>
+                       - 본인이 업로드한 이미지만 사용 가능 (IMAGE_OWNERSHIP_MISMATCH) <br>
+                    2. **기본 이미지 적용**: default/ 경로가 포함된 URL 전달 (프론트에서 랜덤 선택 후 전달) <br>
+                       - 기존 커스텀 이미지가 있으면 S3에서 자동 삭제 후 교체 <br>
+                    3. **이미지 변경 없음**: 현재 저장된 이미지 URL 그대로 전달 <br>
+                       - S3 작업 없이 닉네임만 수정됨
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND", "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> updateMemberProfile(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody UpdateMemberProfileRequest request);
+
+    @Operation(
+            summary = "연동된 소셜 로그인 조회",
+            description = """
+                    로그인한 사용자가 연동한 소셜 로그인 목록을 반환합니다. <br><br>
+
+                    **[응답값]** <br>
+                    * KAKAO: 카카오 연동 <br>
+                    * APPLE: 애플 연동 <br><br>
+
+                    **[참고 사항]** <br>
+                    * 현재는 계정당 하나의 소셜 로그인만 지원합니다. <br>
+                    * 추후 계정 연동 기능 도입 시 복수의 소셜 로그인이 반환될 수 있습니다.
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "MEMBER_NOT_FOUND",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<LinkedProviderResponse> getLinkedProviders(@Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

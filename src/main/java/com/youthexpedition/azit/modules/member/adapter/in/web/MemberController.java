@@ -11,9 +11,12 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.CheckInStat
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewScheduleListResponse;
 import com.youthexpedition.azit.modules.member.adapter.in.web.docs.MemberControllerDocs;
 import com.youthexpedition.azit.modules.member.adapter.in.web.dto.AgreeToTermsRequest;
+import com.youthexpedition.azit.modules.member.adapter.in.web.dto.UpdateMemberProfileRequest;
 import com.youthexpedition.azit.modules.member.application.port.in.MemberUseCase;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.LinkedProviderResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceLogResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyInfoResponse;
 import com.youthexpedition.azit.modules.member.application.port.query.MyAttendanceMonthlyQuery;
 import jakarta.validation.Valid;
@@ -45,16 +48,16 @@ public class MemberController implements MemberControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
-    @PostMapping("/me/confirm-status")
-    public CommonResponse<Void> confirmMemberStatus(@CurrentMemberId Long memberId) {
-        memberUseCase.confirmMemberStatus(memberId);
-
-        return CommonResponse.of(CommonSuccessCode.SUCCESS);
-    }
-
     @GetMapping("/me")
     public CommonResponse<MyInfoResponse> getMyInfo(@CurrentMemberId Long memberId) {
         MyInfoResponse response = memberUseCase.getMyInfo(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/me/crews")
+    public CommonResponse<List<MyCrewResponse>> getMyCrews(@CurrentMemberId Long memberId) {
+        List<MyCrewResponse> response = memberUseCase.getMyCrews(memberId);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
@@ -83,8 +86,10 @@ public class MemberController implements MemberControllerDocs {
 
     @GetMapping("/me/attendances")
     public CommonResponse<MyAttendanceLogResponse> getMyAttendanceLogs(
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
-        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @RequestParam(required = false) Long crewId,
+            @CurrentMemberId Long memberId) {
+        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId, crewId);
         MyAttendanceLogResponse response = crewScheduleUseCase.getMyAttendanceLogs(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
@@ -92,10 +97,26 @@ public class MemberController implements MemberControllerDocs {
 
     @GetMapping("/me/attendances/calendar")
     public CommonResponse<List<MyAttendanceMonthlyListResponse>> getMyAttendancesForCalendar(
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
-        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId);
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @RequestParam(required = false) Long crewId,
+            @CurrentMemberId Long memberId) {
+        MyAttendanceMonthlyQuery query = MyAttendanceMonthlyQuery.of(yearMonth, memberId, crewId);
         List<MyAttendanceMonthlyListResponse> response = crewScheduleUseCase.getMyAttendancesForCalendar(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/me/providers")
+    public CommonResponse<LinkedProviderResponse> getLinkedProviders(@CurrentMemberId Long memberId) {
+        LinkedProviderResponse response = memberUseCase.getLinkedProviders(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @PatchMapping("/me/profile")
+    public CommonResponse<Void> updateMemberProfile(@CurrentMemberId Long memberId, @Valid @RequestBody UpdateMemberProfileRequest request) {
+        memberUseCase.updateMemberProfile(memberId, request.toCommand());
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 }

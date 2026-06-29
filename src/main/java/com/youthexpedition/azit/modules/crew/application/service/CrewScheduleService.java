@@ -27,6 +27,8 @@ import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttenda
 import com.youthexpedition.azit.modules.member.application.port.in.dto.MyAttendanceMonthlyListResponse;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SavePointHistoryPort;
+import com.youthexpedition.azit.modules.member.domain.model.PointHistory;
 import com.youthexpedition.azit.modules.member.application.port.query.MyAttendanceMonthlyQuery;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
@@ -44,13 +46,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 public class CrewScheduleService implements CrewScheduleUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadCrewSchedulePort loadCrewSchedulePort;
     private final SaveCrewSchedulePort saveCrewSchedulePort;
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
+    private final SavePointHistoryPort savePointHistoryPort;
     private final CrewScheduleResponseMapper crewScheduleResponseMapper;
 
     private static final int ACTIVE_CHECK_IN_WINDOW_HOURS = 1; // 출석 버튼 활성화 윈도우 (전후 1시간)
@@ -59,6 +62,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     private static final double CHECK_IN_AVAILABLE_DISTANCE_METERS = 1000.0;
 
     @Override
+    @Transactional
     public void createSchedule(CreateScheduleCommand command) {
         // 크루 정회원인지 확인
         CrewMember creator = getJoinedMember(command.crewId(), command.creatorId());
@@ -97,6 +101,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void updateSchedule(UpdateScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
@@ -104,9 +109,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         validateCreator(schedule, command.creatorId());
 
         // 출석이 가능한 시간인 경우 수정 및 삭제 불가
-        if (!schedule.isModifiable(LocalDateTime.now())) {
-            throw new BusinessException(CrewErrorCode.SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME);
-        }
+        schedule.validateModifiable(LocalDateTime.now());
 
         // 크루 정회원인지 확인
         CrewMember creator = getJoinedMember(command.crewId(), command.creatorId());
@@ -137,21 +140,18 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void cancelSchedule(CancelScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
         // 이미 취소된 일정인지 확인
-        if (schedule.isCancelled()) {
-            throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
-        }
+        schedule.validateNotCancelled();
 
         // 본인이 생성한 일정인지 확인
         validateCreator(schedule, command.creatorId());
 
         // 출석이 가능한 시간인 경우 수정 및 삭제 불가
-        if (!schedule.isModifiable(LocalDateTime.now())) {
-            throw new BusinessException(CrewErrorCode.SCHEDULE_MODIFICATION_NOT_ALLOWED_TIME);
-        }
+        schedule.validateModifiable(LocalDateTime.now());
 
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.creatorId());
@@ -163,6 +163,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void participateSchedule(CrewScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
@@ -170,18 +171,10 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         getJoinedMember(command.crewId(), command.memberId());
 
         // 일정 참여 가능한지 검증
-        if (schedule.isCancelled()) {
-            throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
-        }
-        if (schedule.isParticipating(command.memberId())) {
-            throw new BusinessException(CrewErrorCode.ALREADY_PARTICIPATED);
-        }
-        if (schedule.isFull()) {
-            throw new BusinessException(CrewErrorCode.EXCEEDED_MAX_PARTICIPANTS);
-        }
-        if (!schedule.isParticipationModifiable(LocalDateTime.now())) {
-            throw new BusinessException(CrewErrorCode.PARTICIPATION_AND_CANCEL_CLOSED);
-        }
+        schedule.validateNotCancelled();
+        schedule.validateNotParticipating(command.memberId());
+        schedule.validateNotFull();
+        schedule.validateParticipationModifiable(LocalDateTime.now());
 
         // 기존 일정과의 시간 간격 검증
         validateScheduleInterval(command.memberId(), schedule.getMeetingAt());
@@ -191,13 +184,12 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void cancelParticipation(CrewScheduleCommand command) {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
         // 참여 중인지 확인
-        if (!schedule.isParticipating(command.memberId())) {
-            throw new BusinessException(CrewErrorCode.NOT_PARTICIPATING_SCHEDULE);
-        }
+        schedule.validateParticipating(command.memberId());
         // 본인이 일정 생성자인지 확인
         if (schedule.getCreatorId().equals(command.memberId())) {
             throw new BusinessException(CrewErrorCode.CREATOR_CANNOT_CANCEL_PARTICIPATION);
@@ -205,9 +197,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         if (schedule.isCheckedIn(command.memberId())) {
             throw new BusinessException(CrewErrorCode.CANNOT_CANCEL_AFTER_CHECK_IN);
         }
-        if (!schedule.isParticipationModifiable(LocalDateTime.now())) {
-            throw new BusinessException(CrewErrorCode.PARTICIPATION_AND_CANCEL_CLOSED);
-        }
+        schedule.validateParticipationModifiable(LocalDateTime.now());
 
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.memberId());
@@ -218,7 +208,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         saveCrewSchedulePort.save(schedule);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public CrewScheduleDetailResponse getScheduleDetail(CrewScheduleCommand command) {
         ScheduleData data = getValidatedScheduleData(command);
@@ -228,7 +217,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public SliceResponse<ParticipantResponse> getScheduleParticipants(CrewScheduleCommand command, CursorPageQuery query) {
         ScheduleData data = getValidatedScheduleData(command);
 
@@ -241,9 +229,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         CrewSchedule schedule = getSchedule(command.scheduleId());
 
         // 취소된 일정인지 확인
-        if (schedule.isCancelled()) {
-            throw new BusinessException(CrewErrorCode.ALREADY_CANCELLED_SCHEDULE);
-        }
+        schedule.validateNotCancelled();
 
         // 크루 정회원인지 확인
         getJoinedMember(command.crewId(), command.memberId());
@@ -263,14 +249,13 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return new ScheduleData(schedule, profileMap, crewMemberMap);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<CrewScheduleListResponse> getSchedules(CrewScheduleQuery query) {
-        // 정회원인지 확인
+        validateDateRange(query.startDate(), query.endDate());
         getJoinedMember(query.crewId(), query.memberId());
 
         // 필터링된 일정 목록 조회
-        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.yearMonth(), query.runType());
+        List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByFilter(query.crewId(), query.date(), query.startDate(), query.endDate(), query.yearMonth(), query.runType());
 
         List<Long> allParticipantIds = schedules.stream()
                 .flatMap(s -> s.getParticipantIds().stream()).distinct().toList();
@@ -284,18 +269,17 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return crewScheduleResponseMapper.toScheduleListResponse(schedules, query.memberId(), activeMemberIdsMap);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<CrewScheduleMonthlyListResponse> getMonthlySchedulesForCalendar(CrewScheduleMonthlyQuery query) {
         // 정회원인지 확인
         getJoinedMember(query.crewId(), query.memberId());
+        validateDateRange(query.startDate(), query.endDate());
 
-        Map<LocalDate, Set<RunType>> monthlyScheduleMap = loadCrewSchedulePort.findMonthlySchedulesForCalendar(query.crewId(), query.yearMonth());
+        Map<LocalDate, Set<RunType>> monthlyScheduleMap = loadCrewSchedulePort.findMonthlySchedulesForCalendar(query.crewId(), query.startDate(), query.endDate(), query.yearMonth());
 
         return crewScheduleResponseMapper.toScheduleMonthlyListResponse(monthlyScheduleMap);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<CrewScheduleListResponse> getMySchedules(Long memberId) {
         // 참여 중인 일정 조회
@@ -312,7 +296,6 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return crewScheduleResponseMapper.toScheduleListResponse(schedules, memberId, activeMemberIdsMap);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public CheckInStatusResponse getCheckInStatus(Long memberId) {
         LocalDateTime now = LocalDateTime.now();
@@ -395,6 +378,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
     }
 
     @Override
+    @Transactional
     public void checkInSchedule(CheckInCommand command) {
         LocalDateTime now = LocalDateTime.now();
         CrewSchedule schedule = getSchedule(command.scheduleId());
@@ -421,9 +405,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
 
         // 출석 처리
-        if (!schedule.isParticipating(command.memberId())) {
-            throw new BusinessException(CrewErrorCode.NOT_PARTICIPATING_SCHEDULE);
-        }
+        schedule.validateParticipating(command.memberId());
         schedule.checkIn(command.memberId(), now);
         member.updateAttendanceCount();
 
@@ -432,15 +414,17 @@ public class CrewScheduleService implements CrewScheduleUseCase {
 
         saveCrewSchedulePort.save(schedule);
         saveMemberPort.save(member);
+
+        // 포인트 이력 저장
+        savePointHistoryPort.save(PointHistory.ofAttendance(command.memberId(), command.scheduleId(), CHECK_IN_POINTS, now));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public MyAttendanceLogResponse getMyAttendanceLogs(MyAttendanceMonthlyQuery query) {
         LocalDateTime now = LocalDateTime.now();
 
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberIdAndMonth(
-                query.memberId(), query.yearMonth(), now);
+                query.memberId(), query.yearMonth(), now, query.crewId());
 
         List<MyAttendanceLogResponse.DailyAttendanceLog> attendanceLogs = crewScheduleResponseMapper.toDailyAttendanceLogs(schedules, query.memberId());
 
@@ -455,13 +439,12 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         return crewScheduleResponseMapper.toMyAttendanceLogResponse(attendanceCount, totalPoints, attendanceLogs);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<MyAttendanceMonthlyListResponse> getMyAttendancesForCalendar(MyAttendanceMonthlyQuery query) {
         LocalDateTime now = LocalDateTime.now();
 
         Map<LocalDate, Set<RunType>> attendanceMap = loadCrewSchedulePort.findMyMonthlyAttendanceForCalendar(
-                query.memberId(), query.yearMonth(), now);
+                query.memberId(), query.yearMonth(), now, query.crewId());
 
         return crewScheduleResponseMapper.toMyAttendanceMonthlyListResponse(attendanceMap);
     }
@@ -516,10 +499,19 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         }
     }
 
+    private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+        // startDate 또는 endDate 둘 중 하나만 있을 경우
+        boolean onlyOnePresent = (startDate == null) != (endDate == null);
+        // startDate가 endDate보다 과거일 경우
+        boolean startAfterEnd = startDate != null && startDate.isAfter(endDate);
+        if (onlyOnePresent || startAfterEnd) {
+            throw new BusinessException(CrewErrorCode.INVALID_DATE_RANGE);
+        }
+    }
+
     // 생성할 일정 유효성 체크
     private void validateSchedule(CrewSchedule schedule) {
-        // 현재보다 이후의 시간인지 검증
-        if (!schedule.isMeetingTimeValid()) throw new BusinessException(CrewErrorCode.INVALID_SCHEDULE_TIME);
+        schedule.validateMeetingTime(LocalDateTime.now());
     }
 
     // 신청하려는 일정과 기존 일정 사이의 간격 검증, 신청하기/일정 생성 시 사용

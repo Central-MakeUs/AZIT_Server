@@ -6,7 +6,9 @@ import com.youthexpedition.azit.infrastructure.common.response.CommonResponse;
 import com.youthexpedition.azit.infrastructure.config.swagger.ApiErrorCodeExamples;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewProfileRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
+import com.youthexpedition.azit.modules.crew.application.port.in.dto.CrewInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,10 +33,12 @@ public interface CrewControllerDocs {
             
             **[제약 사항]** <br>
             * 크루 이름: 최대 15자 이내로 작성해야 합니다. (INVALID_INPUT_VALUE)
-            * 온보딩 단계(PENDING_ONBOARDING) 또는 정회원(ACTIVE) 상태의 사용자만 요청 가능합니다. (INVALID_MEMBER_STATUS)
+            * 크루 이름: 한글, 영문, 숫자만 사용 가능합니다. (INVALID_CREW_NAME_CHARACTERS)
+            * ACTIVE 상태의 사용자만 요청 가능합니다. (INVALID_MEMBER_STATUS)
             """
     )
     @ApiErrorCodeExamples({
+            "INVALID_CREW_NAME_CHARACTERS", "RESERVED_CREW_NAME_KEYWORD", "CREW_JOIN_LIMIT_EXCEEDED", "INVITATION_CODE_GENERATION_FAILED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN" // 인증 관련 에러
     })
     CommonResponse<CreateCrewResponse> createCrew(
@@ -49,10 +53,11 @@ public interface CrewControllerDocs {
             **[제약 사항]** <br>
             * 본인이 리더인 크루이거나 이미 멤버로 등록된 크루에는 재신청이 불가합니다. (ALREADY_JOINED_CREW)
             * 유효하지 않은 초대 코드를 입력할 경우 가입이 불가합니다. (CREW_NOT_FOUND)
+            * 방출된 크루가 존재할 시 24시간 내에는 재가입 신청이 불가합니다. (EXPELLED_REJOINING_COOLDOWN)
             """
     )
     @ApiErrorCodeExamples({
-            "CREW_NOT_FOUND", "ALREADY_JOINED_CREW",
+            "CREW_NOT_FOUND", "ALREADY_JOINED_CREW", "EXPELLED_REJOINING_COOLDOWN", "CREW_JOIN_LIMIT_EXCEEDED",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<Void> joinCrew(@Parameter(hidden = true) @CurrentMemberId Long memberId, @Valid @RequestBody JoinCrewRequest request);
@@ -65,11 +70,11 @@ public interface CrewControllerDocs {
             사용자가 가입 신청을 하기 전, 크루 정보를 미리 확인할 때 사용합니다. <br><br>
             
             **[제약 사항]** <br>
-            * 존재하지 않거나 잘못된 초대 코드일 경우 CREW_NOT_FOUND 오류가 발생합니다.
+            * 유효하지 않거나 만료된 초대 코드일 경우 INVALID_INVITATION_CODE 오류가 발생합니다.
             """
     )
     @ApiErrorCodeExamples({
-            "CREW_NOT_FOUND",
+            "INVALID_INVITATION_CODE",
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
     })
     CommonResponse<CrewInvitationResponse> getCrewByInvitation(@PathVariable String invitationCode);
@@ -149,6 +154,40 @@ public interface CrewControllerDocs {
     CommonResponse<CrewMemberListResponse> getCrewMembers(@PathVariable Long crewId, @CurrentMemberId Long memberId, CursorPageQuery query);
 
     @Operation(
+            summary = "크루 가입 신청 취소",
+            description = """
+                    승인 대기 중인 크루 가입 신청을 취소합니다. <br><br>
+
+                    **[제약 사항]** <br>
+                    * 가입 신청(REQUESTED) 상태인 경우에만 취소가 가능합니다. (JOIN_REQUEST_NOT_FOUND) <br>
+                    * 취소 후 1시간 이내에는 동일 크루에 재신청이 불가합니다. (CANCEL_REJOINING_COOLDOWN)
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "JOIN_REQUEST_NOT_FOUND", "MEMBER_NOT_FOUND", "CANCEL_REJOINING_COOLDOWN",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> cancelJoinRequest(
+            @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "크루 탈퇴",
+            description = """
+            로그인한 사용자가 특정 크루에서 자진 탈퇴합니다. <br><br>
+
+            **[제약 사항]** <br>
+            * 크루 리더(LEADER)는 크루 탈퇴가 불가합니다. 리더 권한 위임 또는 크루 해산이 필요합니다. (CANNOT_WITHDRAW_AS_LEADER) <br>
+            * 탈퇴 후 24시간 이내에는 동일 크루 재가입 요청이 차단됩니다. (EXIT_REJOINING_COOLDOWN) <br>
+            * 가입 완료(JOINED) 상태인 경우에만 탈퇴가 가능합니다. (NOT_A_CREW_MEMBER)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "CANNOT_WITHDRAW_AS_LEADER", "NOT_A_CREW_MEMBER", "CREW_NOT_FOUND", "EXIT_REJOINING_COOLDOWN",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> exitCrew(@PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
             summary = "크루 멤버 방출",
             description = """
             크루 리더가 특정 멤버를 크루에서 방출(탈퇴 처리)합니다. <br><br>
@@ -157,7 +196,7 @@ public interface CrewControllerDocs {
             * 해당 크루의 리더(LEADER)만 이 API를 호출할 수 있습니다. (NOT_CREW_LEADER)
             * 리더 본인은 스스로를 방출할 수 없습니다. (CANNOT_KICK_SELF)
             * 가입 완료(JOINED) 상태인 멤버만 방출 가능합니다. (NOT_A_CREW_MEMBER)
-            * 방출 직후 KICKED_PENDING_CONFIRM 상태로 변경됩니다.
+            * 방출 후 크루 가입 상태(CrewMemberStatus)가 EXPELLED로 변경됩니다.
             """
     )
     @ApiErrorCodeExamples({
@@ -165,4 +204,111 @@ public interface CrewControllerDocs {
             "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN"
     })
     CommonResponse<Void> deleteCrewMember(@PathVariable Long crewId, @PathVariable Long targetMemberId, @Parameter(hidden = true) @CurrentMemberId Long leaderId);
+
+    @Operation(
+            summary = "초대 코드 재발급",
+            description = """
+                    크루 리더가 기존 초대 코드를 폐기하고 새로운 초대 코드를 발급합니다. <br><br>
+
+                    **[제약 사항]** <br>
+                    * 해당 크루의 리더(LEADER)만 해당 API를 호출할 수 있습니다. (NOT_CREW_LEADER) <br>
+                    * 재발급 즉시 기존 코드는 무효화됩니다.
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_CREW_LEADER", "INVITATION_CODE_GENERATION_FAILED", "NOT_A_CREW_MEMBER",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<InvitationCodeResponse> regenerateInvitationCode(
+            @PathVariable Long crewId, @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "크루 정보 조회",
+            description = """
+                    크루 이미지, 크루명, 크루 한줄 소개를 조회합니다. <br><br>
+
+                    **[제약 사항]** <br>
+                    * 해당 크루에 가입된 멤버(JOINED 상태)만 조회할 수 있습니다. (NOT_A_CREW_MEMBER)
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<CrewInfoResponse> getCrewInfo(
+            @PathVariable Long crewId,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "크루 프로필 수정",
+            description = """
+                    크루 프로필을 수정합니다. <br><br>
+                    
+                    **[크루 이미지 URL 제약 사항]** <br>
+                    크루 이미지 URL은 아래 세 가지 중 하나여야 합니다.<br>
+                    1. temp 경로가 포함된 CloudFront URL (새 커스텀 이미지 적용 시)<br>
+                    2. default 경로가 포함된 URL (기본 이미지 적용 시 — 프론트에서 전달)<br>
+                    3. 현재 이미지 URL (이미지 변경 없음) <br><br>
+
+                    **[이미지 처리 방식]** <br>
+                    imageUrl 값에 따라 아래 두 가지 케이스로 처리됩니다. <br>
+                    1. **새 이미지 적용**: temp/ 경로가 포함된 CloudFront URL 전달 <br>
+                       - 사전에 POST /api/v1/images/presigned-url에 type: CREW_IMAGE, crewId를 전달하여 Presigned URL 발급 후 S3에 실제 업로드 필요 <br>
+                       - 업로드되지 않은 URL이면 IMAGE_NOT_UPLOADED 오류 <br>
+                       - Presigned URL 발급 시 사용한 crewId와 요청 경로의 crewId가 일치해야 합니다. (IMAGE_OWNERSHIP_MISMATCH) <br>
+                    2. **이미지 변경 없음**: 현재 저장된 이미지 URL 그대로 전달 <br>
+                       - S3 작업 없이 크루명·소개만 수정됨 <br><br>
+
+                    **[이외 제약 사항]** <br>
+                    * 리더만 수정할 수 있습니다. (NOT_CREW_LEADER) <br>
+                    * 크루 이름은 필수이며 최대 15자까지 입력 가능합니다. <br>
+                    * 크루 이름: 한글, 영문, 숫자만 사용 가능합니다. (INVALID_CREW_NAME_CHARACTERS) <br>
+                    * 크루 한줄 소개는 선택이며 최대 20자까지 입력 가능합니다. (미입력 시 null로 저장)
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER",
+            "IMAGE_NOT_UPLOADED", "IMAGE_OWNERSHIP_MISMATCH", "INVALID_CREW_NAME_CHARACTERS", "RESERVED_CREW_NAME_KEYWORD",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> updateCrewProfile(
+            @PathVariable Long crewId,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId,
+            @Valid @RequestBody UpdateCrewProfileRequest request);
+
+    @Operation(
+            summary = "크루 해산",
+            description = """
+            리더가 크루를 영구적으로 해산합니다. <br><br>
+
+            **[처리 내용]** <br>
+            * 미래 ACTIVE 일정이 모두 CANCELLED 처리됩니다. <br>
+            * 정회원(JOINED) 전원이 EXITED 처리됩니다. <br>
+            * 크루 인원 수가 0으로 초기화되고 상태가 DISSOLVED로 변경됩니다. <br>
+            * 과거 일정 및 출석 로그는 보존됩니다. <br><br>
+
+            **[제약 사항]** <br>
+            * 크루 리더만 해산을 요청할 수 있습니다. (NOT_CREW_LEADER)
+            * 이미 해산된 크루는 재해산이 불가합니다. (CREW_ALREADY_DISSOLVED)
+            """
+    )
+    @ApiErrorCodeExamples({
+            "CREW_NOT_FOUND", "NOT_A_CREW_MEMBER", "NOT_CREW_LEADER", "CREW_ALREADY_DISSOLVED",
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<Void> dissolveCrew(
+            @PathVariable Long crewId,
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
+
+    @Operation(
+            summary = "가입 완료한 크루 목록 조회",
+            description = """
+                    사용자가 가입 완료(JOINED) 상태인 크루 목록을 조회합니다. <br><br>
+                    """
+    )
+    @ApiErrorCodeExamples({
+            "UNAUTHORIZED", "EXPIRED_TOKEN", "INVALID_TOKEN", "TOKEN_REUSE_DETECTED", "BLACKLISTED_TOKEN"
+    })
+    CommonResponse<List<JoinedCrewResponse>> getJoinedCrews(
+            @Parameter(hidden = true) @CurrentMemberId Long memberId);
 }

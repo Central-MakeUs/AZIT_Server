@@ -1,17 +1,31 @@
 package com.youthexpedition.azit.modules.member.application.service;
 
+import com.youthexpedition.azit.infrastructure.common.util.image.ImageUpdateUtil;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
 import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
-import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
-import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
-import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.crew.domain.model.Crew;
+import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
+import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus;
+import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
 import com.youthexpedition.azit.modules.member.application.port.in.command.AgreeToTermsCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.command.UpdateMemberProfileCommand;
+import com.youthexpedition.azit.modules.member.application.port.in.dto.MyCrewResponse;
+import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.LoadTermsVersionPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberTermsConsentPort;
+import com.youthexpedition.azit.modules.member.application.service.mapper.MemberResponseMapper;
+import com.youthexpedition.azit.modules.member.domain.model.Member;
+import com.youthexpedition.azit.modules.member.domain.model.MemberTermsConsentHistory;
+import com.youthexpedition.azit.modules.member.domain.model.TermsVersion;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
-import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.enums.SocialProvider;
+import com.youthexpedition.azit.modules.member.domain.model.enums.TermsType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,13 +34,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MemberService 단위 테스트")
@@ -41,9 +60,19 @@ class MemberServiceTest {
     @Mock
     private LoadCrewMemberPort loadCrewMemberPort;
     @Mock
+    private LoadCrewPort loadCrewPort;
+    @Mock
     private SocialAuthPort socialAuthPort;
     @Mock
     private TokenPort tokenPort;
+    @Mock
+    private MemberResponseMapper memberResponseMapper;
+    @Mock
+    private ImageUpdateUtil imageUpdateUtil;
+    @Mock
+    private LoadTermsVersionPort loadTermsVersionPort;
+    @Mock
+    private SaveMemberTermsConsentPort saveMemberTermsConsentPort;
 
     @InjectMocks
     private MemberService memberService;
@@ -61,6 +90,7 @@ class MemberServiceTest {
         void withdraw_success() {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doNothing().when(socialAuthPort).revoke(any());
             doNothing().when(tokenPort).deleteByMemberId(memberId);
@@ -72,6 +102,7 @@ class MemberServiceTest {
 
             // then
             verify(loadMemberPort, times(1)).findById(memberId);
+            verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
             verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(socialAuthPort, times(1)).revoke(any());
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
@@ -122,6 +153,7 @@ class MemberServiceTest {
         void withdraw_fail_tokenDeletionFails() {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doNothing().when(socialAuthPort).revoke(any());
             doThrow(new RuntimeException("Token deletion failed")).when(tokenPort).deleteByMemberId(memberId);
@@ -133,6 +165,7 @@ class MemberServiceTest {
 
             verify(loadMemberPort, times(1)).findById(memberId);
             verify(socialAuthPort, times(1)).revoke(any());
+            verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
             verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, never()).addToBlacklist(anyString(), anyString());
@@ -147,30 +180,110 @@ class MemberServiceTest {
         private final Long memberId = 1L;
         private final Member member = Member.create(SocialProvider.KAKAO, "socialId", "test@example.com", "password", true, "nickname");
 
+        private final List<TermsVersion> allLatestVersions = List.of(
+                termsVersion(1L, TermsType.SERVICE, true),
+                termsVersion(2L, TermsType.PRIVACY, true),
+                termsVersion(3L, TermsType.LOCATION, true),
+                termsVersion(4L, TermsType.THIRD_PARTY, true),
+                termsVersion(5L, TermsType.MARKETING, false),
+                termsVersion(6L, TermsType.NOTIFICATION, false)
+        );
+
         @Test
-        @DisplayName("성공")
-        void agreeToTerms_success() {
+        @DisplayName("성공 - 선택 약관 포함 전체 동의")
+        void agreeToTerms_success_withAllTermsAgreed() {
             // given
             AgreeToTermsCommand command = new AgreeToTermsCommand(true, true, true, true, true, true);
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
             doReturn(member).when(saveMemberPort).save(any(Member.class));
+            doReturn(allLatestVersions).when(loadTermsVersionPort).findAllLatest();
 
             // when
             memberService.agreeToTerms(memberId, command);
 
             // then
-            verify(loadMemberPort, times(1)).findById(memberId);
             verify(saveMemberPort, times(1)).save(member);
+            verify(saveMemberTermsConsentPort, times(1)).saveAll(argThat(consents ->
+                    consents.size() == 6 // 전체 6종 동의
+            ));
+            verify(saveMemberTermsConsentPort, times(1)).saveAllHistory(argThat(histories ->
+                    histories.size() == 6 && histories.stream().allMatch(MemberTermsConsentHistory::isAgreed)
+            ));
             assertTrue(member.isMarketingTermsAgreed());
             assertTrue(member.isNotificationAgreed());
             assertNotNull(member.getEssentialTermsAgreedAt());
         }
 
         @Test
+        @DisplayName("성공 - 선택 약관 미동의 시 consent는 저장되지 않고 history에만 미동의 이력 저장")
+        void agreeToTerms_success_withOptionalTermsDeclined() {
+            // given
+            AgreeToTermsCommand command = new AgreeToTermsCommand(true, true, true, true, false, false);
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+            doReturn(allLatestVersions).when(loadTermsVersionPort).findAllLatest();
+
+            // when
+            memberService.agreeToTerms(memberId, command);
+
+            // then
+            verify(saveMemberTermsConsentPort, times(1)).saveAll(argThat(consents ->
+                    consents.size() == 4 // 필수 4종만 저장
+            ));
+            verify(saveMemberTermsConsentPort, times(1)).saveAllHistory(argThat(histories ->
+                    histories.size() == 6 // 전체 6종 이력 저장
+                    && histories.stream().filter(h -> !h.isAgreed()).count() == 2 // 미동의 2건 포함
+            ));
+            assertFalse(member.isMarketingTermsAgreed());
+            assertFalse(member.isNotificationAgreed());
+        }
+
+        @Test
+        @DisplayName("성공 - 기존 동의한 선택 약관 철회 시 consent 삭제 및 철회 이력 저장")
+        void agreeToTerms_success_withOptionalTermsWithdrawn() {
+            // given - 이전에 전체(필수 4종 + 선택 2종) 동의한 상태에서 선택 약관만 철회
+            AgreeToTermsCommand command = new AgreeToTermsCommand(true, true, true, true, false, false);
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+            doReturn(allLatestVersions).when(loadTermsVersionPort).findAllLatest();
+            doReturn(Set.of(1L, 2L, 3L, 4L, 5L, 6L)).when(loadTermsVersionPort).findConsentedVersionIdsByMemberId(memberId);
+
+            // when
+            memberService.agreeToTerms(memberId, command);
+
+            // then
+            verify(saveMemberTermsConsentPort, times(1)).saveAll(argThat(List::isEmpty)); // 신규 INSERT 없음
+            verify(saveMemberTermsConsentPort, times(1)).updateAgreedAt(eq(memberId), eq(Set.of(1L, 2L, 3L, 4L)), any()); // 필수 4종 재동의 갱신
+            verify(saveMemberTermsConsentPort, times(1)).deleteByMemberIdAndVersionIds(memberId, Set.of(5L, 6L)); // 선택 2종 철회 삭제
+            verify(saveMemberTermsConsentPort, times(1)).saveAllHistory(argThat(histories ->
+                    histories.size() == 6
+                    && histories.stream().filter(h -> !h.isAgreed()).count() == 2 // 철회 이력 2건 포함
+            ));
+            assertFalse(member.isMarketingTermsAgreed());
+            assertFalse(member.isNotificationAgreed());
+        }
+
+        @Test
+        @DisplayName("성공 - 기존에 미동의한 선택 약관은 철회 삭제 대상이 아님")
+        void agreeToTerms_success_noDeleteWhenNeverConsented() {
+            // given - 필수 4종만 동의된 상태에서 동일하게 재동의 (선택 약관은 원래 미동의)
+            AgreeToTermsCommand command = new AgreeToTermsCommand(true, true, true, true, false, false);
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+            doReturn(allLatestVersions).when(loadTermsVersionPort).findAllLatest();
+            doReturn(Set.of(1L, 2L, 3L, 4L)).when(loadTermsVersionPort).findConsentedVersionIdsByMemberId(memberId);
+
+            // when
+            memberService.agreeToTerms(memberId, command);
+
+            // then
+            verify(saveMemberTermsConsentPort, never()).deleteByMemberIdAndVersionIds(anyLong(), any()); // 삭제할 동의 레코드 없음
+        }
+
+        @Test
         @DisplayName("실패 - 필수 약관 미동의")
         void agreeToTerms_fail_requiredTermsNotAgreed() {
             // given
-            // 서비스 이용약관(serviceTermsAgreed)을 false로 설정
             AgreeToTermsCommand command = new AgreeToTermsCommand(false, true, true, true, false, false);
 
             // when & then
@@ -181,77 +294,363 @@ class MemberServiceTest {
             assertEquals(MemberErrorCode.REQUIRED_TERMS_NOT_AGREED, exception.getErrorCode());
             verify(loadMemberPort, never()).findById(anyLong());
             verify(saveMemberPort, never()).save(any(Member.class));
+            verify(loadTermsVersionPort, never()).findAllLatest();
+            verify(saveMemberTermsConsentPort, never()).saveAll(any());
+        }
+
+        private TermsVersion termsVersion(Long id, TermsType type, boolean isRequired) {
+            return TermsVersion.builder()
+                    .id(id)
+                    .termsType(type)
+                    .version("1.0")
+                    .isRequired(isRequired)
+                    .effectiveAt(LocalDateTime.of(2024, 1, 1, 0, 0))
+                    .createdAt(LocalDateTime.of(2024, 1, 1, 0, 0))
+                    .build();
         }
     }
 
     @Nested
-    @DisplayName("회원 상태 확정 (결과 확인)")
-    class ConfirmMemberStatus {
+    @DisplayName("프로필 수정 (닉네임 + 이미지 통합)")
+    class UpdateMemberProfile {
 
         private final Long memberId = 1L;
+        private final String currentImageUrl = "/profile/1/old_image.jpg";
 
         @Test
-        @DisplayName("성공 - 승인 대기 상태에서 정회원(ACTIVE)으로 전환")
-        void confirmMemberStatus_success_toActive() {
+        @DisplayName("성공 - 닉네임만 수정 (이미지 URL 동일)")
+        void updateMemberProfile_success_nicknameOnly() {
             // given
-            // 1. 승인 확인 대기 상태의 멤버 생성 (Member.java에 정의된 로직 기반)
-            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, "imageUrl");
-
-            // 가입 신청 단계 -> 리더 승인 단계 순서대로 호출
-            member.completeTermsAgreement(true, true); // PENDING_ONBOARDING
-            member.applyForJoin(); // WAITING_FOR_APPROVE
-            member.approveJoin(); // APPROVED_PENDING_CONFIRM
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", currentImageUrl);
 
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
             doReturn(member).when(saveMemberPort).save(any(Member.class));
 
             // when
-            memberService.confirmMemberStatus(memberId);
+            memberService.updateMemberProfile(memberId, command);
 
             // then
-            assertEquals(MemberStatus.ACTIVE, member.getStatus()); // 정회원으로 변경되었는지 확인
-            verify(loadMemberPort, times(1)).findById(memberId);
+            assertEquals("newNickname", member.getNickname());
+            assertEquals(currentImageUrl, member.getProfileImageUrl());
+            verify(imageUpdateUtil).update(eq(currentImageUrl), eq(currentImageUrl), eq(memberId), eq(true), any());
             verify(saveMemberPort, times(1)).save(member);
         }
 
         @Test
-        @DisplayName("성공 - 거절 확인 후 다시 온보딩 대기(PENDING_ONBOARDING)로 전환")
-        void confirmMemberStatus_success_toPendingOnboarding() {
+        @DisplayName("성공 - 새 커스텀 이미지로 변경 (콜백으로 URL 갱신)")
+        void updateMemberProfile_success_newCustomImage() {
             // given
-            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, "imageUrl");
-            member.completeTermsAgreement(true, true);
-            member.applyForJoin();
-            member.rejectJoin(); // REJECTED_PENDING_CONFIRM 상태로 생성
+            String newTempUrl = "https://images.azitcrew.com/temp/profile/1/2026-04-22_uuid.jpg";
+            String finalS3Key = "profile/1/2026-04-22_uuid.jpg";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", newTempUrl);
 
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doAnswer(inv -> {
+                Consumer<String> updateUrl = inv.getArgument(4);
+                updateUrl.accept("/" + finalS3Key);
+                return null;
+            }).when(imageUpdateUtil).update(eq(newTempUrl), eq(currentImageUrl), eq(memberId), eq(true), any());
             doReturn(member).when(saveMemberPort).save(any(Member.class));
 
             // when
-            memberService.confirmMemberStatus(memberId);
+            memberService.updateMemberProfile(memberId, command);
 
             // then
-            assertEquals(MemberStatus.PENDING_ONBOARDING, member.getStatus()); // 다시 처음으로 돌아갔는지 확인
-            verify(loadMemberPort, times(1)).findById(memberId);
+            assertEquals("newNickname", member.getNickname());
+            assertEquals("/" + finalS3Key, member.getProfileImageUrl());
             verify(saveMemberPort, times(1)).save(member);
         }
 
         @Test
-        @DisplayName("실패 - 확정 가능한 상태가 아닐 때 예외 발생")
-        void confirmMemberStatus_fail_invalidStatus() {
+        @DisplayName("성공 - 기본 이미지로 변경 (콜백으로 URL 갱신)")
+        void updateMemberProfile_success_defaultImage() {
             // given
-            // 확정할 수 없는 상태(예: 처음 가입한 상태)의 멤버
-            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, "imageUrl");
+            String defaultUrl = "/default/profile/2.png";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", defaultUrl);
 
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doAnswer(inv -> {
+                Consumer<String> updateUrl = inv.getArgument(4);
+                updateUrl.accept(defaultUrl);
+                return null;
+            }).when(imageUpdateUtil).update(eq(defaultUrl), eq(currentImageUrl), eq(memberId), eq(true), any());
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals("newNickname", member.getNickname());
+            assertEquals(defaultUrl, member.getProfileImageUrl());
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("성공 - 기본 이미지에서 다른 기본 이미지로 변경")
+        void updateMemberProfile_success_defaultToOtherDefault() {
+            // given
+            String existingDefaultUrl = "/default/profile/1.png";
+            String newDefaultUrl = "/default/profile/3.png";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, existingDefaultUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("nickname", newDefaultUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doAnswer(inv -> {
+                Consumer<String> updateUrl = inv.getArgument(4);
+                updateUrl.accept(newDefaultUrl);
+                return null;
+            }).when(imageUpdateUtil).update(eq(newDefaultUrl), eq(existingDefaultUrl), eq(memberId), eq(true), any());
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals(newDefaultUrl, member.getProfileImageUrl());
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("실패 - temp 이미지가 S3에 존재하지 않음")
+        void updateMemberProfile_fail_imageNotUploaded() {
+            // given
+            String newTempUrl = "https://images.azitcrew.com/temp/profile/1/2026-04-22_uuid.jpg";
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", newTempUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doThrow(new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED))
+                    .when(imageUpdateUtil).update(any(), any(), any(), anyBoolean(), any());
 
             // when & then
             BusinessException exception = assertThrows(BusinessException.class, () ->
-                    memberService.confirmMemberStatus(memberId)
+                    memberService.updateMemberProfile(memberId, command)
             );
 
-            assertEquals(MemberErrorCode.INVALID_MEMBER_STATUS, exception.getErrorCode());
-            verify(loadMemberPort, times(1)).findById(memberId);
+            assertEquals(ImageErrorCode.IMAGE_NOT_UPLOADED.getCode(), exception.getErrorCode().getCode());
             verify(saveMemberPort, never()).save(any(Member.class));
+        }
+
+        @Test
+        @DisplayName("실패 - 다른 사람이 업로드한 이미지 URL (소유권 불일치)")
+        void updateMemberProfile_fail_imageOwnershipMismatch() {
+            // given - memberId=1 이지만 이미지 경로의 entityId=99
+            String otherMemberTempUrl = "https://images.azitcrew.com/temp/profile/99/2026-04-22_uuid.jpg";
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", otherMemberTempUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doThrow(new BusinessException(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH))
+                    .when(imageUpdateUtil).update(any(), any(), any(), anyBoolean(), any());
+
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class, () ->
+                    memberService.updateMemberProfile(memberId, command)
+            );
+
+            assertEquals(ImageErrorCode.IMAGE_OWNERSHIP_MISMATCH.getCode(), exception.getErrorCode().getCode());
+            verify(saveMemberPort, never()).save(any(Member.class));
+        }
+
+        @Test
+        @DisplayName("실패 - 유효하지 않은 이미지 URL (S3 키 추출 불가)")
+        void updateMemberProfile_fail_invalidImageUrl() {
+            // given
+            String invalidUrl = "not-a-valid-url";
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, currentImageUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", invalidUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doThrow(new BusinessException(ImageErrorCode.IMAGE_NOT_UPLOADED))
+                    .when(imageUpdateUtil).update(any(), any(), any(), anyBoolean(), any());
+
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class, () ->
+                    memberService.updateMemberProfile(memberId, command)
+            );
+
+            assertEquals(ImageErrorCode.IMAGE_NOT_UPLOADED.getCode(), exception.getErrorCode().getCode());
+            verify(saveMemberPort, never()).save(any(Member.class));
+        }
+
+        @Test
+        @DisplayName("성공 - 소셜 로그인 외부 URL 사용자가 닉네임만 수정 (이미지 URL 동일)")
+        void updateMemberProfile_success_externalUrlUnchanged() {
+            // given - 카카오 프로필 이미지(외부 URL)를 그대로 유지
+            String externalUrl = "https://k.kakao.com/profile/abc123.jpg";
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "oldNickname", "test@example.com", true, externalUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("newNickname", externalUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals("newNickname", member.getNickname());
+            assertEquals(externalUrl, member.getProfileImageUrl());
+            verify(imageUpdateUtil).update(eq(externalUrl), eq(externalUrl), eq(memberId), eq(true), any());
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("성공 - 소셜 로그인 외부 URL 사용자가 새 커스텀 이미지로 변경 (S3 삭제 없이 이동만)")
+        void updateMemberProfile_success_externalUrlToCustomImage() {
+            // given - 소셜 프로필(외부 URL)에서 새로 업로드한 커스텀 이미지로 교체
+            String externalUrl = "https://k.kakao.com/profile/abc123.jpg";
+            String newTempUrl = "https://images.azitcrew.com/temp/profile/1/2026-04-22_uuid.jpg";
+            String finalS3Key = "profile/1/2026-04-22_uuid.jpg";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, externalUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("nickname", newTempUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doAnswer(inv -> {
+                Consumer<String> updateUrl = inv.getArgument(4);
+                updateUrl.accept("/" + finalS3Key);
+                return null;
+            }).when(imageUpdateUtil).update(eq(newTempUrl), eq(externalUrl), eq(memberId), eq(true), any());
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals("/" + finalS3Key, member.getProfileImageUrl());
+            verify(saveMemberPort, times(1)).save(member);
+        }
+
+        @Test
+        @DisplayName("성공 - 소셜 로그인 외부 URL 사용자가 기본 이미지로 변경")
+        void updateMemberProfile_success_externalUrlToDefault() {
+            // given
+            String externalUrl = "https://k.kakao.com/profile/abc123.jpg";
+            String newDefaultUrl = "/default/profile/2.png";
+
+            Member member = Member.create(SocialProvider.KAKAO, "socialId", "nickname", "test@example.com", true, externalUrl);
+            UpdateMemberProfileCommand command = UpdateMemberProfileCommand.of("nickname", newDefaultUrl);
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doAnswer(inv -> {
+                Consumer<String> updateUrl = inv.getArgument(4);
+                updateUrl.accept(newDefaultUrl);
+                return null;
+            }).when(imageUpdateUtil).update(eq(newDefaultUrl), eq(externalUrl), eq(memberId), eq(true), any());
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.updateMemberProfile(memberId, command);
+
+            // then
+            assertEquals(newDefaultUrl, member.getProfileImageUrl());
+            verify(saveMemberPort, times(1)).save(member);
+        }
+    }
+
+    @Nested
+    @DisplayName("내 크루 목록 조회")
+    class GetMyCrews {
+
+        private final Long memberId = 1L;
+
+        private CrewMember joinedCrewMember(Long crewId, CrewMemberRole role) {
+            return CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .role(role)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+        }
+
+        private CrewMember requestedCrewMember(Long crewId) {
+            return CrewMember.builder()
+                    .crewId(crewId)
+                    .memberId(memberId)
+                    .status(CrewMemberStatus.REQUESTED)
+                    .build();
+        }
+
+        private Crew crew(Long crewId, String name) {
+            return Crew.builder()
+                    .id(crewId)
+                    .name(name)
+                    .invitationCode("CODE01")
+                    .build();
+        }
+
+        @Test
+        @DisplayName("성공 - 가입된 크루가 없으면 빈 목록 반환")
+        void getMyCrews_success_returnsEmpty_whenNoActiveCrews() {
+            // given
+            given(loadCrewMemberPort.findAllActiveByMemberId(memberId)).willReturn(List.of());
+
+            // when
+            List<MyCrewResponse> result = memberService.getMyCrews(memberId);
+
+            // then
+            assertThat(result).isEmpty();
+            verify(loadCrewPort, never()).findAllByIds(any());
+        }
+
+        @Test
+        @DisplayName("성공 - JOINED 크루만 있는 경우 목록 반환")
+        void getMyCrews_success_returnsList_whenOnlyJoinedCrews() {
+            // given
+            CrewMember crewMember1 = joinedCrewMember(1L, CrewMemberRole.LEADER);
+            CrewMember crewMember2 = joinedCrewMember(2L, CrewMemberRole.MEMBER);
+            Crew crew1 = crew(1L, "크루A");
+            Crew crew2 = crew(2L, "크루B");
+
+            given(loadCrewMemberPort.findAllActiveByMemberId(memberId)).willReturn(List.of(crewMember1, crewMember2));
+            given(loadCrewPort.findAllByIds(List.of(1L, 2L))).willReturn(List.of(crew1, crew2));
+            given(memberResponseMapper.toMyCrewResponse(crewMember1, crew1))
+                    .willReturn(MyCrewResponse.of(1L, "크루A", null, CrewMemberRole.LEADER, CrewMemberStatus.JOINED, "CODE01"));
+            given(memberResponseMapper.toMyCrewResponse(crewMember2, crew2))
+                    .willReturn(MyCrewResponse.of(2L, "크루B", null, CrewMemberRole.MEMBER, CrewMemberStatus.JOINED, null));
+
+            // when
+            List<MyCrewResponse> result = memberService.getMyCrews(memberId);
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).memberStatus()).isEqualTo(CrewMemberStatus.JOINED);
+            assertThat(result.get(0).memberRole()).isEqualTo(CrewMemberRole.LEADER);
+            assertThat(result.get(1).memberStatus()).isEqualTo(CrewMemberStatus.JOINED);
+            assertThat(result.get(1).memberRole()).isEqualTo(CrewMemberRole.MEMBER);
+        }
+
+        @Test
+        @DisplayName("성공 - JOINED + REQUESTED 혼합 반환")
+        void getMyCrews_success_returnsMixed_joinedAndRequested() {
+            // given
+            CrewMember joinedMember = joinedCrewMember(1L, CrewMemberRole.MEMBER);
+            CrewMember requestedMember = requestedCrewMember(2L);
+
+            Crew crew1 = crew(1L, "크루A");
+            Crew crew2 = crew(2L, "크루B");
+
+            given(loadCrewMemberPort.findAllActiveByMemberId(memberId))
+                    .willReturn(List.of(joinedMember, requestedMember));
+            given(loadCrewPort.findAllByIds(List.of(1L, 2L))).willReturn(List.of(crew1, crew2));
+            given(memberResponseMapper.toMyCrewResponse(joinedMember, crew1))
+                    .willReturn(MyCrewResponse.of(1L, "크루A", null, CrewMemberRole.MEMBER, CrewMemberStatus.JOINED, null));
+            given(memberResponseMapper.toMyCrewResponse(requestedMember, crew2))
+                    .willReturn(MyCrewResponse.of(2L, "크루B", null, null, CrewMemberStatus.REQUESTED, null));
+
+            // when
+            List<MyCrewResponse> result = memberService.getMyCrews(memberId);
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).memberStatus()).isEqualTo(CrewMemberStatus.JOINED);
+            assertThat(result.get(1).memberStatus()).isEqualTo(CrewMemberStatus.REQUESTED);
         }
     }
 }

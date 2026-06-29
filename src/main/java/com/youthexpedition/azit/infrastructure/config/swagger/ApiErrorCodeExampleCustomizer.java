@@ -5,6 +5,7 @@ import com.youthexpedition.azit.infrastructure.common.response.code.BaseErrorCod
 import com.youthexpedition.azit.infrastructure.common.response.code.CommonErrorCode;
 import com.youthexpedition.azit.modules.auth.domain.model.enums.AuthErrorCode;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewErrorCode;
+import com.youthexpedition.azit.modules.image.domain.model.enums.ImageErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.DeliveryAddressErrorCode;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
 import com.youthexpedition.azit.modules.store.domain.model.enums.StoreErrorCode;
@@ -43,7 +44,8 @@ public class ApiErrorCodeExampleCustomizer implements OperationCustomizer {
 
         // 검색 대상이 될 도메인별 에러 Enum 리스트
         List<Class<? extends BaseErrorCode>> errorCodeEnums = List.of(
-                 MemberErrorCode.class, AuthErrorCode.class, CrewErrorCode.class, StoreErrorCode.class, DeliveryAddressErrorCode.class
+                 MemberErrorCode.class, AuthErrorCode.class, CrewErrorCode.class, StoreErrorCode.class, DeliveryAddressErrorCode.class,
+                ImageErrorCode.class
         );
 
         // 어노테이션에 명시된 에러 코드들을 찾아서 추가

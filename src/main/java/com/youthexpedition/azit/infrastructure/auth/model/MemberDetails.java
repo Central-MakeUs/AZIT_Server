@@ -45,7 +45,7 @@ public class MemberDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // ACTIVE일 때만 로그인 허용
-        return member.getStatus() == MemberStatus.ACTIVE;
+        // WITHDRAWN(탈퇴) 상태는 비활성 처리 (토큰 블랙리스트와 이중 방어)
+        return member.getStatus() != MemberStatus.WITHDRAWN;
     }
 }

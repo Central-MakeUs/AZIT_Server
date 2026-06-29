@@ -7,6 +7,7 @@ import com.youthexpedition.azit.infrastructure.common.response.code.CommonSucces
 import com.youthexpedition.azit.modules.crew.adapter.in.web.docs.CrewControllerDocs;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.CreateCrewRequest;
 import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.JoinCrewRequest;
+import com.youthexpedition.azit.modules.crew.adapter.in.web.dto.UpdateCrewProfileRequest;
 import com.youthexpedition.azit.modules.crew.application.port.in.CrewUseCase;
 import com.youthexpedition.azit.modules.crew.application.port.in.command.ProcessJoinCommand;
 import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
@@ -80,6 +81,20 @@ public class CrewController implements CrewControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
     }
 
+    @DeleteMapping("/{crewId}/join-request")
+    public CommonResponse<Void> cancelJoinRequest(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        crewUseCase.cancelJoinRequest(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @DeleteMapping("/{crewId}/members/me")
+    public CommonResponse<Void> exitCrew(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        crewUseCase.exitCrew(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
     @DeleteMapping("/{crewId}/members/{targetMemberId}")
     public CommonResponse<Void> deleteCrewMember(@PathVariable Long crewId, @PathVariable Long targetMemberId, @CurrentMemberId Long leaderId) {
         crewUseCase.expelCrewMember(crewId, leaderId, targetMemberId);
@@ -87,4 +102,38 @@ public class CrewController implements CrewControllerDocs {
         return CommonResponse.of(CommonSuccessCode.SUCCESS);
     }
 
+    @PostMapping("/{crewId}/invitation-code")
+    public CommonResponse<InvitationCodeResponse> regenerateInvitationCode(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        InvitationCodeResponse response = crewUseCase.regenerateInvitationCode(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @GetMapping("/{crewId}/info")
+    public CommonResponse<CrewInfoResponse> getCrewInfo(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        CrewInfoResponse response = crewUseCase.getCrewInfo(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
+
+    @PatchMapping("/{crewId}/info")
+    public CommonResponse<Void> updateCrewProfile(@PathVariable Long crewId, @CurrentMemberId Long memberId, @Valid @RequestBody UpdateCrewProfileRequest request) {
+        crewUseCase.updateCrewProfile(crewId, memberId, request.toCommand());
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @DeleteMapping("/{crewId}")
+    public CommonResponse<Void> dissolveCrew(@PathVariable Long crewId, @CurrentMemberId Long memberId) {
+        crewUseCase.dissolveCrew(crewId, memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS);
+    }
+
+    @GetMapping("/me")
+    public CommonResponse<List<JoinedCrewResponse>> getJoinedCrews(@CurrentMemberId Long memberId) {
+        List<JoinedCrewResponse> response = crewUseCase.getJoinedCrews(memberId);
+
+        return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
+    }
 }

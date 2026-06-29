@@ -92,9 +92,14 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
 
     @GetMapping
     public CommonResponse<List<CrewScheduleListResponse>> getCrewSchedules(
-            @PathVariable Long crewId, @RequestParam(required = false) LocalDate date,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @RequestParam(required = false) RunType runType, @CurrentMemberId Long memberId) {
-        CrewScheduleQuery query = CrewScheduleQuery.of(crewId, date, yearMonth, runType, memberId);
+            @PathVariable Long crewId,
+            @RequestParam(required = false) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @RequestParam(required = false) RunType runType,
+            @CurrentMemberId Long memberId) {
+        CrewScheduleQuery query = CrewScheduleQuery.of(crewId, date, startDate, endDate, yearMonth, runType, memberId);
         List<CrewScheduleListResponse> response = crewScheduleUseCase.getSchedules(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);
@@ -102,8 +107,12 @@ public class CrewScheduleController implements CrewScheduleControllerDocs {
 
     @GetMapping("/calendar")
     public CommonResponse<List<CrewScheduleMonthlyListResponse>> getMonthlySchedulesForCalendar(
-            @PathVariable Long crewId, @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth, @CurrentMemberId Long memberId) {
-        CrewScheduleMonthlyQuery query = CrewScheduleMonthlyQuery.of(crewId, yearMonth, memberId);
+            @PathVariable Long crewId,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
+            @CurrentMemberId Long memberId) {
+        CrewScheduleMonthlyQuery query = CrewScheduleMonthlyQuery.of(crewId, startDate, endDate, yearMonth, memberId);
         List<CrewScheduleMonthlyListResponse> response = crewScheduleUseCase.getMonthlySchedulesForCalendar(query);
 
         return CommonResponse.of(CommonSuccessCode.SUCCESS, response);

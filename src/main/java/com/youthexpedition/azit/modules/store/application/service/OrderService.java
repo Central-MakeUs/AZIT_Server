@@ -9,6 +9,8 @@ import com.youthexpedition.azit.modules.member.application.port.in.dto.DeliveryA
 import com.youthexpedition.azit.modules.member.application.port.out.LoadDeliveryAddressPort;
 import com.youthexpedition.azit.modules.member.application.port.out.LoadMemberPort;
 import com.youthexpedition.azit.modules.member.application.port.out.SaveMemberPort;
+import com.youthexpedition.azit.modules.member.application.port.out.SavePointHistoryPort;
+import com.youthexpedition.azit.modules.member.domain.model.PointHistory;
 import com.youthexpedition.azit.modules.member.application.service.mapper.DeliveryAddressResponseMapper;
 import com.youthexpedition.azit.modules.member.domain.model.Member;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberErrorCode;
@@ -37,12 +39,13 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class OrderService implements OrderUseCase {
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
@@ -53,11 +56,11 @@ public class OrderService implements OrderUseCase {
     private final SaveCartPort saveCartPort;
     private final LoadOrderPort loadOrderPort;
     private final SaveOrderPort saveOrderPort;
+    private final SavePointHistoryPort savePointHistoryPort;
     private final OrderResponseMapper orderResponseMapper;
     private final DeliveryAddressResponseMapper deliveryAddressResponseMapper;
 
     @Override
-    @Transactional(readOnly = true)
     public OrderCheckoutResponse getCheckoutInfoFromCart(Long memberId, List<Long> cartItemIds, Long deliveryAddressId) {
         Member member = getMember(memberId);
 
@@ -74,7 +77,6 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public OrderCheckoutResponse getCheckoutInfoDirect(Long memberId, Long skuId, Integer quantity, Long deliveryAddressId) {
         Member member = getMember(memberId);
 
@@ -92,6 +94,7 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
+    @Transactional
     @Retryable(
             retryFor = {DataIntegrityViolationException.class}, // db 에러 시 재시도
             maxAttempts = 3,
@@ -183,12 +186,15 @@ public class OrderService implements OrderUseCase {
         Order savedOrder = saveOrderPort.save(order);
 
         // 포인트 검증
-        if (!member.hasEnoughPoints(command.usedPoints())) {
-            throw new BusinessException(MemberErrorCode.INSUFFICIENT_POINTS);
-        }
+        member.validateEnoughPoints(command.usedPoints());
         // 포인트 차감
         member.deductPoints(command.usedPoints());
         saveMemberPort.save(member);
+
+        // 포인트 사용 이력 저장
+        if (command.usedPoints() > 0) {
+            savePointHistoryPort.save(PointHistory.ofStoreUse(command.memberId(), savedOrder.getId(), command.usedPoints(), LocalDateTime.now()));
+        }
 
         // cartItems Id가 있을 경우 장바구니 비우기
         if (command.cartItemIds() != null && !command.cartItemIds().isEmpty()) {
@@ -199,7 +205,6 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public OrderDetailResponse getOrderDetail(Long memberId, String orderNumber) {
         Order order = loadOrderPort.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new BusinessException(StoreErrorCode.ORDER_NOT_FOUND));
@@ -213,7 +218,6 @@ public class OrderService implements OrderUseCase {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public SliceResponse<OrderListResponse> getOrders(Long memberId, CursorPageQuery query) {
         SliceResponse<Order> orderSlice = loadOrderPort.findOrdersByMemberId(memberId, query);
 
@@ -236,9 +240,7 @@ public class OrderService implements OrderUseCase {
         }
 
         // 주문 취소 가능한 상태인지 확인
-        if (!order.isCancellable()) {
-            throw new BusinessException(StoreErrorCode.CANNOT_CANCEL_ORDER);
-        }
+        order.validateCancellable();
         // 주문 취소 상태로 변경
         order.cancel();
 
@@ -254,6 +256,9 @@ public class OrderService implements OrderUseCase {
             log.info("[ORDER] memberId: {}, usePoints: {} 포인트를 환불합니다.", memberId, order.getUsedPoints());
             member.addPoints(order.getUsedPoints()); // 사용한 포인트만큼 복구
             saveMemberPort.save(member);
+
+            // 포인트 환불 이력 저장
+            savePointHistoryPort.save(PointHistory.ofStoreUseRefund(memberId, order.getId(), order.getUsedPoints(), LocalDateTime.now()));
         }
 
         saveOrderPort.save(order);

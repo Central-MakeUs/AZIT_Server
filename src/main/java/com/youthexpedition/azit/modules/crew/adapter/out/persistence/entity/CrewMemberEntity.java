@@ -6,6 +6,8 @@ import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberStatus
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "crew_member")
 @Getter
@@ -32,4 +34,13 @@ public class CrewMemberEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private CrewMemberStatus status;
+
+    @Column(name = "expelled_at")
+    private LocalDateTime expelledAt;
+
+    @Column(name = "exited_at")
+    private LocalDateTime exitedAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
 }

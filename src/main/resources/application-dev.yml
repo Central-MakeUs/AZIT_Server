@@ -72,6 +72,7 @@ jwt:
   refresh-token-name: azit_rt_dev
   cookie:
     secure: true
+    same-site: None
 
 payment:
   bank:
