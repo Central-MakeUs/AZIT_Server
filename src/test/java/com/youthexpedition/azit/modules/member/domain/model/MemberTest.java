@@ -90,6 +90,21 @@ class MemberTest {
     }
 
     @Test
+    @DisplayName("실패: 이미 파기 완료된(DELETED) 회원은 재활성화할 수 없다.")
+    void reactivate_throwsException_whenDeleted() {
+        // given
+        Member member = Member.builder()
+                .status(MemberStatus.DELETED)
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> member.reactivate(LocalDateTime.of(2026, 7, 9, 12, 0)))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", MemberErrorCode.WITHDRAWAL_GRACE_PERIOD_EXPIRED);
+        assertThat(member.getStatus()).isEqualTo(MemberStatus.DELETED);
+    }
+
+    @Test
     @DisplayName("성공: 유예기간 마지막 날(30일째)까지는 재활성화할 수 있다.")
     void reactivate_success_onLastDayOfGracePeriod() {
         // given

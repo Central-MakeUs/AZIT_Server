@@ -81,8 +81,9 @@ public class Member {
         this.isEmailSharingEnabled = isEnabled;
     }
 
+    // 탈퇴(유예기간 중) 또는 파기 완료 상태인지 확인
     public boolean isWithdrawn() {
-        return this.status == MemberStatus.WITHDRAWN;
+        return this.status == MemberStatus.WITHDRAWN || this.status == MemberStatus.DELETED;
     }
 
     public void validateNotWithdrawn() {
@@ -97,6 +98,9 @@ public class Member {
 
     // 탈퇴 유예기간 내 재로그인 할 경우 ACTIVE 처리
     public void reactivate(LocalDateTime now) {
+        if (this.status == MemberStatus.DELETED) {
+            throw new BusinessException(MemberErrorCode.WITHDRAWAL_GRACE_PERIOD_EXPIRED); // 파기 완료된 계정은 복구 불가
+        }
         if (this.status != MemberStatus.WITHDRAWN) {
             return; // 탈퇴 상태가 아니면 패스
         }

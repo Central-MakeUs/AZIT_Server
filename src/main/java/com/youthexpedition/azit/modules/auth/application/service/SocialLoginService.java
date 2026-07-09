@@ -102,8 +102,8 @@ public class SocialLoginService implements SocialLoginUseCase {
                     );
                 });
 
-        // 탈퇴한 회원인 경우 재활성화 (유예기간 만료 시 예외 발생)
-        if (member.getStatus() == MemberStatus.WITHDRAWN) {
+        // 탈퇴한 회원인 경우 재활성화 (유예기간 만료 또는 파기 완료 시 예외 발생)
+        if (member.isWithdrawn()) {
             member.reactivate(LocalDateTime.now());
             log.info("[SOCIAL_LOGIN] 탈퇴했던 회원 memberId: {}, socialProviderId: {} 가 재로그인하여 계정이 재활성화 되었습니다.", member.getId(), profile.socialProviderId());
         }
