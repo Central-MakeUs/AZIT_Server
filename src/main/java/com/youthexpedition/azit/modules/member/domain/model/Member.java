@@ -32,8 +32,11 @@ public class Member {
     private LocalDateTime marketingTermsAgreedAt; // 마케팅 동의 시점
     private boolean isNotificationAgreed; // 알림 동의 여부
     private LocalDateTime notificationAgreedAt; // 알림 동의 시점
+    private LocalDateTime withdrawnAt; // 탈퇴 시점 (유예기간 만료 후 배치 파기 기준)
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private static final long WITHDRAWAL_GRACE_PERIOD_DAYS = 30L; // 탈퇴 유예기간 (이내 재로그인 시 복구 가능)
 
     public static Member create(SocialProvider provider, String socialProviderId,
                                 String nickname, String email, boolean isEmailSharingEnabled, String profileImageUrl) {
@@ -87,17 +90,26 @@ public class Member {
     }
 
     // 탈퇴 상태로 변경
-    public void withdraw() {
+    public void withdraw(LocalDateTime withdrawnAt) {
         this.status = MemberStatus.WITHDRAWN;
-        this.appleRefreshToken = null;
+        this.withdrawnAt = withdrawnAt;
     }
 
-    // 탈퇴 상태에서 재로그인 할 경우 ACTIVE 처리
-    public void reactivate() {
+    // 탈퇴 유예기간 내 재로그인 할 경우 ACTIVE 처리
+    public void reactivate(LocalDateTime now) {
         if (this.status != MemberStatus.WITHDRAWN) {
             return; // 탈퇴 상태가 아니면 패스
         }
+        if (isGracePeriodExpired(now)) {
+            throw new BusinessException(MemberErrorCode.WITHDRAWAL_GRACE_PERIOD_EXPIRED);
+        }
         this.status = MemberStatus.ACTIVE;
+        this.withdrawnAt = null;
+    }
+
+    // 탈퇴 유예기간 만료 여부
+    public boolean isGracePeriodExpired(LocalDateTime now) {
+        return this.withdrawnAt != null && this.withdrawnAt.plusDays(WITHDRAWAL_GRACE_PERIOD_DAYS).isBefore(now);
     }
 
     // 포인트가 충분한지 체크

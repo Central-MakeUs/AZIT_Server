@@ -20,6 +20,7 @@ import com.youthexpedition.azit.modules.member.domain.model.TermsVersion;
 import com.youthexpedition.azit.modules.member.domain.model.enums.MemberStatus;
 import com.youthexpedition.azit.modules.member.domain.model.provider.ProfileImageProvider;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -101,10 +102,10 @@ public class SocialLoginService implements SocialLoginUseCase {
                     );
                 });
 
-        // 탈퇴한 회원인 경우 재활성화
+        // 탈퇴한 회원인 경우 재활성화 (유예기간 만료 시 예외 발생)
         if (member.getStatus() == MemberStatus.WITHDRAWN) {
+            member.reactivate(LocalDateTime.now());
             log.info("[SOCIAL_LOGIN] 탈퇴했던 회원 memberId: {}, socialProviderId: {} 가 재로그인하여 계정이 재활성화 되었습니다.", member.getId(), profile.socialProviderId());
-            member.reactivate();
         }
 
         // 애플 리프레시 토큰이 존재하는 경우 최신값으로 업데이트

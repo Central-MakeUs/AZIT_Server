@@ -27,6 +27,7 @@ public class MemberMapper {
                 .marketingTermsAgreedAt(entity.getMarketingTermsAgreedAt())
                 .isNotificationAgreed(entity.isNotificationAgreed())
                 .notificationAgreedAt(entity.getNotificationAgreedAt())
+                .withdrawnAt(entity.getWithdrawnAt())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -51,6 +52,7 @@ public class MemberMapper {
                 .marketingTermsAgreedAt(domain.getMarketingTermsAgreedAt())
                 .isNotificationAgreed(domain.isNotificationAgreed())
                 .notificationAgreedAt(domain.getNotificationAgreedAt())
+                .withdrawnAt(domain.getWithdrawnAt())
                 .build();
     }
 }
