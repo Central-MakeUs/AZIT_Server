@@ -2,7 +2,6 @@ package com.youthexpedition.azit.modules.member.application.service;
 
 import com.youthexpedition.azit.infrastructure.common.util.image.ImageUpdateUtil;
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
@@ -62,8 +61,6 @@ class MemberServiceTest {
     @Mock
     private LoadCrewPort loadCrewPort;
     @Mock
-    private SocialAuthPort socialAuthPort;
-    @Mock
     private TokenPort tokenPort;
     @Mock
     private MemberResponseMapper memberResponseMapper;
@@ -86,13 +83,12 @@ class MemberServiceTest {
         private final Member member = Member.create(SocialProvider.KAKAO, "socialId", "test@example.com", "password", true, "nickname");
 
         @Test
-        @DisplayName("성공")
+        @DisplayName("성공 - 탈퇴 시점이 기록되고 소셜 연동은 해제하지 않음")
         void withdraw_success() {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
-            doNothing().when(socialAuthPort).revoke(any());
             doNothing().when(tokenPort).deleteByMemberId(memberId);
             doNothing().when(tokenPort).addToBlacklist(anyString(), anyString());
             doReturn(member).when(saveMemberPort).save(any(Member.class));
@@ -104,10 +100,11 @@ class MemberServiceTest {
             verify(loadMemberPort, times(1)).findById(memberId);
             verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
             verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
-            verify(socialAuthPort, times(1)).revoke(any());
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, times(1)).addToBlacklist(accessToken, "withdrawn");
             verify(saveMemberPort, times(1)).save(member);
+            assertTrue(member.isWithdrawn());
+            assertNotNull(member.getWithdrawnAt()); // 유예기간 계산 기준 시각 기록
         }
 
         @Test
@@ -122,7 +119,6 @@ class MemberServiceTest {
             );
 
             verify(loadMemberPort, times(1)).findById(memberId);
-            verify(socialAuthPort, never()).revoke(any());
             verify(tokenPort, never()).deleteByMemberId(anyLong());
             verify(tokenPort, never()).addToBlacklist(anyString(), anyString());
             verify(saveMemberPort, never()).save(any(Member.class));
@@ -130,21 +126,21 @@ class MemberServiceTest {
         }
 
         @Test
-        @DisplayName("실패 - 소셜 연동 해제 실패")
-        void withdraw_fail_socialRevokeFails() {
+        @DisplayName("실패 - 이미 탈퇴한 회원이면 크루 차감 등 부수효과 없이 예외 발생")
+        void withdraw_fail_alreadyWithdrawn() {
             // given
-            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
-            doThrow(new RuntimeException("Social revoke failed")).when(socialAuthPort).revoke(any());
+            Member withdrawnMember = Member.create(SocialProvider.KAKAO, "socialId", "test@example.com", "password", true, "nickname");
+            withdrawnMember.withdraw(LocalDateTime.now());
+            doReturn(Optional.of(withdrawnMember)).when(loadMemberPort).findById(memberId);
 
             // when & then
-            assertThrows(RuntimeException.class, () ->
+            BusinessException exception = assertThrows(BusinessException.class, () ->
                     memberService.withdraw(memberId, accessToken)
             );
 
-            verify(loadMemberPort, times(1)).findById(memberId);
-            verify(socialAuthPort, times(1)).revoke(any());
+            assertEquals(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN.getCode(), exception.getErrorCode().getCode());
+            verify(loadCrewMemberPort, never()).findAllByMemberId(anyLong());
             verify(tokenPort, never()).deleteByMemberId(anyLong());
-            verify(tokenPort, never()).addToBlacklist(anyString(), anyString());
             verify(saveMemberPort, never()).save(any(Member.class));
         }
 
@@ -155,7 +151,6 @@ class MemberServiceTest {
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
-            doNothing().when(socialAuthPort).revoke(any());
             doThrow(new RuntimeException("Token deletion failed")).when(tokenPort).deleteByMemberId(memberId);
 
             // when & then
@@ -164,12 +159,54 @@ class MemberServiceTest {
             );
 
             verify(loadMemberPort, times(1)).findById(memberId);
-            verify(socialAuthPort, times(1)).revoke(any());
             verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
             verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, never()).addToBlacklist(anyString(), anyString());
             verify(saveMemberPort, never()).save(any(Member.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("소셜 정보 기반 탈퇴 (애플 웹훅)")
+    class WithdrawBySocialInfo {
+
+        @Test
+        @DisplayName("성공 - 이미 탈퇴한 회원이면 중복 웹훅으로 간주하고 무시")
+        void withdrawBySocialInfo_ignored_whenAlreadyWithdrawn() {
+            // given
+            Member withdrawnMember = Member.create(SocialProvider.APPLE, "appleSub", "nickname", "test@example.com", true, "imageUrl");
+            withdrawnMember.withdraw(LocalDateTime.now());
+            doReturn(Optional.of(withdrawnMember)).when(loadMemberPort).findBySocialInfo(SocialProvider.APPLE, "appleSub");
+
+            // when
+            memberService.withdrawBySocialInfo("appleSub", SocialProvider.APPLE);
+
+            // then
+            verify(loadCrewMemberPort, never()).findAllByMemberId(anyLong());
+            verify(tokenPort, never()).deleteByMemberId(anyLong());
+            verify(saveMemberPort, never()).save(any(Member.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("이메일 공유 상태 변경")
+    class UpdateEmailSharingStatus {
+
+        @Test
+        @DisplayName("성공 - 탈퇴한 회원이면 갱신하지 않고 무시")
+        void updateEmailSharingStatus_ignored_whenWithdrawn() {
+            // given
+            Member withdrawnMember = Member.create(SocialProvider.APPLE, "appleSub", "nickname", "test@example.com", true, "imageUrl");
+            withdrawnMember.withdraw(LocalDateTime.now());
+            doReturn(Optional.of(withdrawnMember)).when(loadMemberPort).findBySocialInfo(SocialProvider.APPLE, "appleSub");
+
+            // when
+            memberService.updateEmailSharingStatus("appleSub", SocialProvider.APPLE, false);
+
+            // then
+            verify(saveMemberPort, never()).save(any(Member.class));
+            assertTrue(withdrawnMember.isEmailSharingEnabled()); // 기존 값 유지
         }
     }
 

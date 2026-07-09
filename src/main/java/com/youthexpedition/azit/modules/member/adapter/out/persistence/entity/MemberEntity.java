@@ -25,7 +25,7 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name = "social_provider", nullable = false, length = 20)
     private SocialProvider socialProvider;
 
-    @Column(name = "social_provider_id", nullable = false, length = 255)
+    @Column(name = "social_provider_id", length = 255)
     private String socialProviderId;
 
     @Column(name = "nickname", nullable = false, length = 20)
@@ -75,4 +75,7 @@ public class MemberEntity extends BaseTimeEntity {
 
     @Column(name = "notification_agreed_at")
     private LocalDateTime notificationAgreedAt; // 알림 수신 동의 시점
+
+    @Column(name = "withdrawn_at")
+    private LocalDateTime withdrawnAt; // 탈퇴 시점
 }
