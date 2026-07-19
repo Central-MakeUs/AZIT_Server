@@ -11,11 +11,13 @@ import com.youthexpedition.azit.modules.crew.application.port.in.dto.*;
 import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleMonthlyQuery;
 import com.youthexpedition.azit.modules.crew.application.port.in.query.CrewScheduleQuery;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewSchedulePort;
 import com.youthexpedition.azit.modules.crew.application.port.out.query.MemberProfileDto;
 import com.youthexpedition.azit.modules.crew.application.service.dto.ScheduleData;
 import com.youthexpedition.azit.modules.crew.application.service.mapper.CrewScheduleResponseMapper;
+import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewSchedule;
 import com.youthexpedition.azit.modules.crew.domain.model.Location;
@@ -49,6 +51,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CrewScheduleService implements CrewScheduleUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
+    private final LoadCrewPort loadCrewPort;
     private final LoadCrewSchedulePort loadCrewSchedulePort;
     private final SaveCrewSchedulePort saveCrewSchedulePort;
     private final LoadMemberPort loadMemberPort;
@@ -426,7 +429,15 @@ public class CrewScheduleService implements CrewScheduleUseCase {
         List<CrewSchedule> schedules = loadCrewSchedulePort.findAllByMemberIdAndMonth(
                 query.memberId(), query.yearMonth(), now, query.crewId());
 
-        List<MyAttendanceLogResponse.DailyAttendanceLog> attendanceLogs = crewScheduleResponseMapper.toDailyAttendanceLogs(schedules, query.memberId());
+        // 각 일정의 크루명 조회
+        List<Long> crewIds = schedules.stream()
+                .map(CrewSchedule::getCrewId)
+                .distinct()
+                .toList();
+        Map<Long, String> crewNameMap = loadCrewPort.findAllByIds(crewIds).stream()
+                .collect(Collectors.toMap(Crew::getId, Crew::getName));
+
+        List<MyAttendanceLogResponse.DailyAttendanceLog> attendanceLogs = crewScheduleResponseMapper.toDailyAttendanceLogs(schedules, query.memberId(), crewNameMap);
 
         // 총 출석 날짜 계산
         int attendanceCount = (int) schedules.stream()
