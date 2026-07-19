@@ -434,7 +434,7 @@ public class CrewScheduleService implements CrewScheduleUseCase {
                 .map(CrewSchedule::getCrewId)
                 .distinct()
                 .toList();
-        Map<Long, String> crewNameMap = loadCrewPort.findAllByIds(crewIds).stream()
+        Map<Long, String> crewNameMap = crewIds.isEmpty() ? Map.of() : loadCrewPort.findAllByIds(crewIds).stream()
                 .collect(Collectors.toMap(Crew::getId, Crew::getName));
 
         List<MyAttendanceLogResponse.DailyAttendanceLog> attendanceLogs = crewScheduleResponseMapper.toDailyAttendanceLogs(schedules, query.memberId(), crewNameMap);
