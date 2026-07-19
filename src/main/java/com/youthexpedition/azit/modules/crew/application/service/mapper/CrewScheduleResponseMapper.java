@@ -173,7 +173,7 @@ public class CrewScheduleResponseMapper {
         return MyAttendanceLogResponse.of(attendanceCount, totalPoints, attendanceLogs);
     }
 
-    public List<MyAttendanceLogResponse.DailyAttendanceLog> toDailyAttendanceLogs(List<CrewSchedule> schedules, Long memberId) {
+    public List<MyAttendanceLogResponse.DailyAttendanceLog> toDailyAttendanceLogs(List<CrewSchedule> schedules, Long memberId, Map<Long, String> crewNameMap) {
         return schedules.stream()
                 .map(s -> {
                     boolean isCheckedIn = s.isCheckedIn(memberId);
@@ -181,11 +181,14 @@ public class CrewScheduleResponseMapper {
 
                     return MyAttendanceLogResponse.DailyAttendanceLog.of(
                             s.getId(),
+                            crewNameMap.get(s.getCrewId()),
                             s.getTitle(),
                             s.getRunType(),
                             s.getMeetingAt(),
                             s.getLocation().getPlaceName(),
-                            status
+                            status,
+                            s.getMaxParticipants(),
+                            s.getParticipantIds().size()
                     );
                 })
                 .toList();

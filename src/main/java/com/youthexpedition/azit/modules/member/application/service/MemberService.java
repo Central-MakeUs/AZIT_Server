@@ -1,8 +1,6 @@
 package com.youthexpedition.azit.modules.member.application.service;
 
 import com.youthexpedition.azit.infrastructure.exception.BusinessException;
-import com.youthexpedition.azit.modules.auth.application.port.in.command.SocialRevokeCommand;
-import com.youthexpedition.azit.modules.auth.application.port.out.SocialAuthPort;
 import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
@@ -53,7 +51,6 @@ public class MemberService implements MemberUseCase {
     private final LoadCrewMemberPort loadCrewMemberPort;
     private final LoadCrewPort loadCrewPort;
     private final SaveCrewPort saveCrewPort;
-    private final SocialAuthPort socialAuthPort;
     private final TokenPort tokenPort;
     private final MemberResponseMapper memberResponseMapper;
     private final ImageUpdateUtil imageUpdateUtil;
@@ -116,18 +113,17 @@ public class MemberService implements MemberUseCase {
     public void withdraw(Long memberId, String accessToken) {
         Member member = getMember(memberId);
 
+        // 이미 탈퇴한 회원인지 확인
+        member.validateNotWithdrawn();
+
         // 탈퇴 가능한지 확인
         validateWithdrawal(memberId);
-
-        // 소셜 연동 해제
-        socialAuthPort.revoke(SocialRevokeCommand.from(member));
 
         // 가입한 크루 인원 수 차감 및 상태 변경
         processCrewWithdrawal(memberId);
 
-        // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
-        member.validateNotWithdrawn();
-        member.withdraw();
+        // 탈퇴 상태로 변경 (소셜 연동 해제 및 개인정보 파기는 유예기간 만료 후 배치에서 처리)
+        member.withdraw(LocalDateTime.now());
 
         tokenPort.deleteByMemberId(memberId); // 리프레시 토큰 삭제
         tokenPort.addToBlacklist(accessToken, BLACKLIST_REASON_WITHDRAWN); // 블랙리스트에 액세스 토큰 추가
@@ -140,15 +136,20 @@ public class MemberService implements MemberUseCase {
         Member member = loadMemberPort.findBySocialInfo(socialProvider, socialProviderId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        // 이미 탈퇴한 회원이면 무시 (애플 웹훅 중복 수신 대비)
+        if (member.isWithdrawn()) {
+            log.info("[MEMBER] 이미 탈퇴한 회원(memberId: {})에 대한 탈퇴 요청을 무시합니다.", member.getId());
+            return;
+        }
+
         // 탈퇴 가능한지 확인
         validateWithdrawal(member.getId());
 
         // 가입한 크루 인원 수 차감 및 상태 변경
         processCrewWithdrawal(member.getId());
 
-        // 이미 탈퇴한 회원이 아닌 경우에만 상태 변경
-        member.validateNotWithdrawn();
-        member.withdraw();
+        // 탈퇴 상태로 변경 (개인정보 파기는 유예기간 만료 후 배치에서 처리)
+        member.withdraw(LocalDateTime.now());
 
         tokenPort.deleteByMemberId(member.getId()); // 리프레시 토큰 삭제
         saveMemberPort.save(member);
@@ -159,6 +160,12 @@ public class MemberService implements MemberUseCase {
     public void updateEmailSharingStatus(String socialProviderId, SocialProvider socialProvider, boolean isEnabled) {
         Member member = loadMemberPort.findBySocialInfo(socialProvider, socialProviderId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // 탈퇴한 회원은 갱신하지 않음
+        if (member.isWithdrawn()) {
+            log.info("[MEMBER] 탈퇴한 회원(memberId: {})의 이메일 공유 상태 변경 요청을 무시합니다.", member.getId());
+            return;
+        }
 
         member.updateEmailSharingStatus(isEnabled);
         saveMemberPort.save(member);

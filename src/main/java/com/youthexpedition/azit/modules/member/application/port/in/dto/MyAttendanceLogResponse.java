@@ -20,6 +20,8 @@ public record MyAttendanceLogResponse(
     public record DailyAttendanceLog(
             @Schema(description = "일정 ID")
             Long scheduleId,
+            @Schema(description = "크루명")
+            String crewName,
             @Schema(description = "일정 제목")
             String title,
             @Schema(description = "러닝 타입")
@@ -30,11 +32,17 @@ public record MyAttendanceLogResponse(
             @Schema(description = "집합 장소명")
             String placeName,
             @Schema(description = "출석 상태")
-            AttendanceStatus status
+            AttendanceStatus status,
+            @Schema(description = "최대 인원")
+            Integer maxParticipants,
+            @Schema(description = "현재 참여 인원")
+            Integer currentParticipants
     ) {
-        public static DailyAttendanceLog of(Long scheduleId, String title, RunType runType,
-                                            LocalDateTime meetingAt, String placeName, AttendanceStatus status) {
-            return new DailyAttendanceLog(scheduleId, title, runType, meetingAt, placeName, status);
+        public static DailyAttendanceLog of(Long scheduleId, String crewName, String title, RunType runType,
+                                            LocalDateTime meetingAt, String placeName, AttendanceStatus status,
+                                            Integer maxParticipants, Integer currentParticipants) {
+            return new DailyAttendanceLog(scheduleId, crewName, title, runType, meetingAt, placeName, status,
+                    maxParticipants, currentParticipants);
         }
     }
 

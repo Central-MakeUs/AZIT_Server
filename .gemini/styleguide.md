@@ -38,15 +38,15 @@
 무분별한 줄임말은 지양하되, 업계 표준으로 통용되는 기술 용어는 허용합니다.
 
 - **허용하는 표준 약어**:
-    - `DTO`, `VO`, `Impl`, `API`, `DAO`, `ID` , `INFO`, `PARAM`
-    - 예: `UserSignUpDTO`, `UserServiceImpl` (O)
+  - `DTO`, `VO`, `Impl`, `API`, `DAO`, `ID` , `INFO`, `PARAM`
+  - 예: `UserSignUpDTO`, `UserServiceImpl` (O)
 - **지양하는 모호한 줄임말 (풀네임 권장)**:
-    - `req` -> `Request`, `res` -> `Response`
-    - `cnt` -> `Count`, `svc` -> `Service`
-    - `mgr` -> `Manager`
+  - `req` -> `Request`, `res` -> `Response`
+  - `cnt` -> `Count`, `svc` -> `Service`
+  - `mgr` -> `Manager`
 - **적용 예시**:
-    - `UserSignupReq` (X) -> `UserSignupRequest` (O)
-    - `UserSvc` (X) -> `UserService` (O)
+  - `UserSignupReq` (X) -> `UserSignupRequest` (O)
+  - `UserSvc` (X) -> `UserService` (O)
 
 ### 기술 스택 준수
 - **Java 21**: 최신 문법(Switch Expressions 등)과 가상 스레드(Virtual Threads) 사용을 고려하십시오.
