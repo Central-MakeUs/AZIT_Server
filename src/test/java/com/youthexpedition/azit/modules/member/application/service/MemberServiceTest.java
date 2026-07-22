@@ -6,6 +6,7 @@ import com.youthexpedition.azit.modules.auth.application.port.out.TokenPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewMemberPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.LoadCrewPort;
 import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewMemberPort;
+import com.youthexpedition.azit.modules.crew.application.port.out.SaveCrewPort;
 import com.youthexpedition.azit.modules.crew.domain.model.Crew;
 import com.youthexpedition.azit.modules.crew.domain.model.CrewMember;
 import com.youthexpedition.azit.modules.crew.domain.model.enums.CrewMemberRole;
@@ -57,6 +58,8 @@ class MemberServiceTest {
     @Mock
     private SaveCrewMemberPort saveCrewMemberPort;
     @Mock
+    private SaveCrewPort saveCrewPort;
+    @Mock
     private LoadCrewMemberPort loadCrewMemberPort;
     @Mock
     private LoadCrewPort loadCrewPort;
@@ -88,7 +91,6 @@ class MemberServiceTest {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
-            doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doNothing().when(tokenPort).deleteByMemberId(memberId);
             doNothing().when(tokenPort).addToBlacklist(anyString(), anyString());
             doReturn(member).when(saveMemberPort).save(any(Member.class));
@@ -99,12 +101,47 @@ class MemberServiceTest {
             // then
             verify(loadMemberPort, times(1)).findById(memberId);
             verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
-            verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, times(1)).addToBlacklist(accessToken, "withdrawn");
             verify(saveMemberPort, times(1)).save(member);
             assertTrue(member.isWithdrawn());
             assertNotNull(member.getWithdrawnAt()); // 유예기간 계산 기준 시각 기록
+        }
+
+        @Test
+        @DisplayName("성공 - JOINED 상태는 탈퇴(EXITED)로, REQUESTED 상태는 신청 취소(CANCELLED)로 변경")
+        void withdraw_success_appliesExitOrCancelByStatus() {
+            // given
+            CrewMember joinedCrewMember = CrewMember.builder()
+                    .crewId(10L)
+                    .memberId(memberId)
+                    .role(CrewMemberRole.MEMBER)
+                    .status(CrewMemberStatus.JOINED)
+                    .build();
+            CrewMember requestedCrewMember = CrewMember.builder()
+                    .crewId(20L)
+                    .memberId(memberId)
+                    .role(CrewMemberRole.MEMBER)
+                    .status(CrewMemberStatus.REQUESTED)
+                    .build();
+
+            doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
+            doReturn(List.of(joinedCrewMember, requestedCrewMember)).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
+            doNothing().when(saveCrewPort).decrementMemberCountBatch(anyList());
+            doNothing().when(saveCrewMemberPort).saveAll(anyList());
+            doNothing().when(tokenPort).deleteByMemberId(memberId);
+            doNothing().when(tokenPort).addToBlacklist(anyString(), anyString());
+            doReturn(member).when(saveMemberPort).save(any(Member.class));
+
+            // when
+            memberService.withdraw(memberId, accessToken);
+
+            // then
+            verify(saveCrewPort, times(1)).decrementMemberCountBatch(List.of(10L)); // JOINED 크루만 인원수 차감
+            assertThat(joinedCrewMember.getStatus()).isEqualTo(CrewMemberStatus.EXITED);
+            assertThat(joinedCrewMember.getExitedAt()).isNotNull();
+            assertThat(requestedCrewMember.getStatus()).isEqualTo(CrewMemberStatus.CANCELLED);
+            assertThat(requestedCrewMember.getCancelledAt()).isNotNull();
         }
 
         @Test
@@ -139,7 +176,7 @@ class MemberServiceTest {
             );
 
             assertEquals(MemberErrorCode.MEMBER_ALREADY_WITHDRAWN.getCode(), exception.getErrorCode().getCode());
-            verify(loadCrewMemberPort, never()).findAllByMemberId(anyLong());
+            verify(loadCrewMemberPort, never()).findAllActiveByMemberId(anyLong());
             verify(tokenPort, never()).deleteByMemberId(anyLong());
             verify(saveMemberPort, never()).save(any(Member.class));
         }
@@ -150,7 +187,6 @@ class MemberServiceTest {
             // given
             doReturn(Optional.of(member)).when(loadMemberPort).findById(memberId);
             doReturn(List.of()).when(loadCrewMemberPort).findAllActiveByMemberId(memberId);
-            doReturn(List.of()).when(loadCrewMemberPort).findAllByMemberId(memberId);
             doThrow(new RuntimeException("Token deletion failed")).when(tokenPort).deleteByMemberId(memberId);
 
             // when & then
@@ -160,7 +196,6 @@ class MemberServiceTest {
 
             verify(loadMemberPort, times(1)).findById(memberId);
             verify(loadCrewMemberPort, times(1)).findAllActiveByMemberId(memberId);
-            verify(loadCrewMemberPort, times(1)).findAllByMemberId(memberId);
             verify(tokenPort, times(1)).deleteByMemberId(memberId);
             verify(tokenPort, never()).addToBlacklist(anyString(), anyString());
             verify(saveMemberPort, never()).save(any(Member.class));
@@ -183,7 +218,7 @@ class MemberServiceTest {
             memberService.withdrawBySocialInfo("appleSub", SocialProvider.APPLE);
 
             // then
-            verify(loadCrewMemberPort, never()).findAllByMemberId(anyLong());
+            verify(loadCrewMemberPort, never()).findAllActiveByMemberId(anyLong());
             verify(tokenPort, never()).deleteByMemberId(anyLong());
             verify(saveMemberPort, never()).save(any(Member.class));
         }

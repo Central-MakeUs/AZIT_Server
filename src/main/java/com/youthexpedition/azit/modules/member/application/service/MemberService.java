@@ -116,11 +116,13 @@ public class MemberService implements MemberUseCase {
         // 이미 탈퇴한 회원인지 확인
         member.validateNotWithdrawn();
 
+        List<CrewMember> activeCrewMembers = loadCrewMemberPort.findAllActiveByMemberId(memberId);
+
         // 탈퇴 가능한지 확인
-        validateWithdrawal(memberId);
+        validateWithdrawal(memberId, activeCrewMembers);
 
         // 가입한 크루 인원 수 차감 및 상태 변경
-        processCrewWithdrawal(memberId);
+        processCrewWithdrawal(memberId, activeCrewMembers);
 
         // 탈퇴 상태로 변경 (소셜 연동 해제 및 개인정보 파기는 유예기간 만료 후 배치에서 처리)
         member.withdraw(LocalDateTime.now());
@@ -142,11 +144,13 @@ public class MemberService implements MemberUseCase {
             return;
         }
 
+        List<CrewMember> activeCrewMembers = loadCrewMemberPort.findAllActiveByMemberId(member.getId());
+
         // 탈퇴 가능한지 확인
-        validateWithdrawal(member.getId());
+        validateWithdrawal(member.getId(), activeCrewMembers);
 
         // 가입한 크루 인원 수 차감 및 상태 변경
-        processCrewWithdrawal(member.getId());
+        processCrewWithdrawal(member.getId(), activeCrewMembers);
 
         // 탈퇴 상태로 변경 (개인정보 파기는 유예기간 만료 후 배치에서 처리)
         member.withdraw(LocalDateTime.now());
@@ -219,8 +223,7 @@ public class MemberService implements MemberUseCase {
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
-    private void processCrewWithdrawal(Long memberId) {
-        List<CrewMember> crewMembers = loadCrewMemberPort.findAllByMemberId(memberId);
+    private void processCrewWithdrawal(Long memberId, List<CrewMember> crewMembers) {
         if (crewMembers.isEmpty()) return;
 
         // 가입 상태인 크루 ID 추출
@@ -235,16 +238,22 @@ public class MemberService implements MemberUseCase {
             saveCrewPort.decrementMemberCountBatch(joinedCrewIds);
         }
 
-        // 가입한 모든 크루 상태를 EXITED로 변경 및 저장
+        // 가입 완료 상태는 탈퇴(EXITED)로, 가입 신청 상태는 신청 취소(CANCELLED)로 변경 및 저장
         LocalDateTime now = LocalDateTime.now();
-        crewMembers.forEach(cm -> cm.exit(now));
+        crewMembers.forEach(cm -> {
+            if (cm.getStatus() == CrewMemberStatus.JOINED) {
+                cm.exit(now);
+            } else if (cm.getStatus() == CrewMemberStatus.REQUESTED) {
+                cm.cancel(now);
+            }
+        });
         saveCrewMemberPort.saveAll(crewMembers);
     }
 
     // 본인이 리더인 크루가 있으면 앱 탈퇴 불가
-    private void validateWithdrawal(Long memberId) {
+    private void validateWithdrawal(Long memberId, List<CrewMember> activeCrewMembers) {
         // 사용자가 JOINED 상태이면서 리더인 크루 조회
-        List<CrewMember> crewMembersAsLeader = loadCrewMemberPort.findAllActiveByMemberId(memberId).stream()
+        List<CrewMember> crewMembersAsLeader = activeCrewMembers.stream()
                 .filter(cm -> cm.getStatus() == CrewMemberStatus.JOINED)
                 .filter(cm -> cm.getRole() == CrewMemberRole.LEADER)
                 .toList();
