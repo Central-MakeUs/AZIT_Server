@@ -1,4 +1,6 @@
 # 🏃‍♂️ AZIT (아지트) - 러닝 크루를 위한 운영 및 제휴 서비스
+2026.07.23 부로 https://github.com/AZIT-crew/azit-server 로 레포지토리 이관하였습니다.
+
 <img width="1920" height="1080" alt="1" src="https://github.com/user-attachments/assets/447349c4-98e3-447d-8d09-1e6d7b23c9ca" />
 
 > **"크루원과 함께하는 실시간 출석 인증부터 아지트 전용 스토어까지"**
